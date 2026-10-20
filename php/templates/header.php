@@ -51,54 +51,57 @@ $socials = array_filter([
 <header class="site-header">
   <div class="header-bar">
     <div class="container header-inner">
-      <div class="header-left">
-        <button type="button" class="icon-btn" data-drawer-open aria-label="Цэс нээх"><?= icon('menu', 30) ?></button>
-        <div class="header-info">
-          <div class="info-item"><?= icon('calendar', 26) ?><div><small>Өнөөдөр</small><b><?= date('Y.m.d') ?></b></div></div>
-          <?php if ($weather): list(, $wText) = weather_label($weather['code'], $weather['is_day']); ?>
-            <div class="info-item" title="Улаанбаатар: <?= e($wText) ?>"><?= icon(weather_icon_name($weather['code']), 26) ?><div><small>Улаанбаатар</small><b><?= $weather['temp'] > 0 ? '+' : '' ?><?= $weather['temp'] ?>°C <?= e(weather_short($weather['code'])) ?></b></div></div>
-          <?php endif; ?>
-          <?php if ($rates): $first = key($rates); ?>
-            <div class="info-item" title="<?php foreach ($rates as $c => $v) { echo e($c . ': ' . format_rate($v) . '₮  '); } ?>"><?= icon('coins', 26) ?><div><small>Валютын ханш</small><b><?= e($first) ?>: <?= format_rate($rates[$first]) ?>₮</b></div></div>
-          <?php endif; ?>
-        </div>
-      </div>
       <a href="<?= url('/') ?>" class="logo" aria-label="<?= e($settings['site_name']) ?>">
         <?php if ($logoUrl): ?><img src="<?= e($logoUrl) ?>" alt="<?= e($settings['site_name']) ?>"><?php else: ?><?= e($settings['site_name']) ?><?php endif; ?>
       </a>
-      <div class="header-right">
-        <form action="<?= url('/search') ?>" method="get" class="header-search" role="search">
-          <input type="search" name="q" placeholder="Мэдээ хайх..." value="<?= e($query) ?>" aria-label="Мэдээ хайх">
-          <button type="submit" aria-label="Хайх"><?= icon('search', 24) ?></button>
-        </form>
+      <nav class="main-nav" aria-label="Ангилал">
+        <a href="<?= url('/') ?>" class="<?= $currentPath === '/' ? 'active' : '' ?>">Нүүр</a>
+        <a href="<?= url('/latest') ?>" class="<?= $currentPath === '/latest' ? 'active' : '' ?>">Шинэ</a>
+        <?php foreach ($categories as $c): ?>
+          <a href="<?= url('/category/' . $c['slug']) ?>" class="<?= $currentPath === '/category/' . $c['slug'] ? 'active' : '' ?>"><?= e($c['name']) ?></a>
+        <?php endforeach; ?>
+      </nav>
+      <div class="header-actions">
+        <button type="button" class="icon-btn search-toggle" aria-label="Хайх" aria-expanded="false"><?= icon('search', 23) ?></button>
         <?php if (push_enabled()): list($vapidPublic) = vapid_keys(); ?>
-        <button type="button" class="icon-btn push-btn" hidden data-push-key="<?= e($vapidPublic) ?>" data-push-base="<?= e(url('/')) ?>" title="Шинэ мэдээний мэдэгдэл авах" aria-label="Шинэ мэдээний мэдэгдэл авах"><?= icon('bell', 24) ?><span class="push-dot"></span></button>
+        <button type="button" class="icon-btn push-btn" hidden data-push-key="<?= e($vapidPublic) ?>" data-push-base="<?= e(url('/')) ?>" title="Шинэ мэдээний мэдэгдэл авах" aria-label="Шинэ мэдээний мэдэгдэл авах"><?= icon('bell', 23) ?><span class="push-dot"></span></button>
         <?php endif; ?>
-        <button type="button" class="icon-btn search-toggle" aria-label="Хайх" onclick="document.body.classList.toggle('search-open'); var i = document.querySelector('.header-search input'); if (document.body.classList.contains('search-open')) i.focus();"><?= icon('search', 26) ?></button>
+        <button type="button" class="icon-btn" data-drawer-open aria-label="Цэс нээх"><?= icon('menu', 27) ?></button>
       </div>
     </div>
+    <form action="<?= url('/search') ?>" method="get" class="header-search" role="search">
+      <div class="container header-search-inner">
+        <?= icon('search', 22) ?>
+        <input type="search" name="q" placeholder="Мэдээ хайх..." value="<?= e($query) ?>" aria-label="Мэдээ хайх">
+        <button type="submit">Хайх</button>
+      </div>
+    </form>
   </div>
-  <nav class="cat-bar" aria-label="Ангилал">
-    <div class="container cat-bar-inner">
-      <a href="<?= url('/') ?>" class="<?= $currentPath === '/' ? 'active' : '' ?>">Нүүр</a>
-      <a href="<?= url('/latest') ?>" class="<?= $currentPath === '/latest' ? 'active' : '' ?>">Шинэ</a>
-      <?php foreach ($categories as $c): ?>
-        <a href="<?= url('/category/' . $c['slug']) ?>" class="<?= $currentPath === '/category/' . $c['slug'] ? 'active' : '' ?>"><?= e($c['name']) ?></a>
+  <?php if (!empty($isArticle)): ?><div class="read-progress" aria-hidden="true"><span></span></div><?php endif; ?>
+</header>
+
+<?php $rateRows = rates_with_change(); ?>
+<div class="info-strip">
+  <div class="container info-strip-inner">
+    <div class="strip-items">
+      <b class="strip-date"><?= date('Y.m.d') ?></b>
+      <?php if ($weather): list(, $wText) = weather_label($weather['code'], $weather['is_day']); ?>
+        <span class="strip-weather" title="Улаанбаатар: <?= e($wText) ?>"><?= icon(weather_icon_name($weather['code']), 16) ?>Улаанбаатар <?= $weather['temp'] > 0 ? '+' : '' ?><?= $weather['temp'] ?>°C <?= e(weather_short($weather['code'])) ?></span>
+      <?php endif; ?>
+      <?php foreach ($rateRows as $code => $r): ?>
+        <span class="strip-rate"><?= e($code) ?> <b><?= format_rate($r['value']) ?>₮</b><?php if ($r['change'] !== null && abs($r['change']) >= 0.01): ?> <i class="<?= $r['change'] > 0 ? 'up' : 'down' ?>"><?= $r['change'] > 0 ? '▲' : '▼' ?><?= number_format(abs($r['change']), 1) ?>%</i><?php endif; ?></span>
       <?php endforeach; ?>
     </div>
-  </nav>
-  <?php if (!empty($isArticle)): ?><div class="read-progress" aria-hidden="true"><span></span></div><?php endif; ?>
-  <?php if ($breaking): ?>
-  <div class="breaking">
-    <div class="container breaking-inner">
+    <?php if ($breaking): ?>
+    <div class="strip-breaking">
       <span class="breaking-label"><i class="pulse"></i>Шуурхай</span>
       <div class="ticker"><div class="ticker-track">
         <?php foreach (array_merge($breaking, $breaking) as $a): ?><a href="<?= article_url($a) ?>"><?= e($a['title']) ?></a><?php endforeach; ?>
       </div></div>
     </div>
+    <?php endif; ?>
   </div>
-  <?php endif; ?>
-</header>
+</div>
 
 <div class="drawer-overlay" data-drawer-close></div>
 <nav class="drawer" id="drawer" aria-label="Үндсэн цэс" aria-hidden="true">
@@ -116,6 +119,9 @@ $socials = array_filter([
   <?php if ($rates): ?>
     <div class="drawer-rates"><?php foreach ($rates as $c => $v): ?><span><?= e($c) ?> <b><?= format_rate($v) ?>₮</b></span><?php endforeach; ?></div>
   <?php endif; ?>
+  <form action="<?= url('/search') ?>" method="get" class="drawer-search" role="search">
+    <input type="search" name="q" placeholder="Мэдээ хайх..." aria-label="Мэдээ хайх"><button type="submit" aria-label="Хайх"><?= icon('search', 20) ?></button>
+  </form>
   <ul class="drawer-pages">
     <?php foreach (footer_pages() as $pg): if ($pg['in_footer']): ?><li><a href="<?= url('/p/' . $pg['slug']) ?>"><?= e($pg['title']) ?></a></li><?php endif; endforeach; ?>
   </ul>

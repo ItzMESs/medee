@@ -20,6 +20,19 @@
     });
   });
 
+  // Search drops down under the header bar
+  var searchBtn = document.querySelector('.search-toggle');
+  if (searchBtn) {
+    searchBtn.addEventListener('click', function () {
+      var open = document.body.classList.toggle('search-open');
+      searchBtn.setAttribute('aria-expanded', open ? 'true' : 'false');
+      if (open) document.querySelector('.header-search input').focus();
+    });
+    document.addEventListener('keydown', function (e) {
+      if (e.key === 'Escape') { document.body.classList.remove('search-open'); searchBtn.setAttribute('aria-expanded', 'false'); }
+    });
+  }
+
   // Back to top button
   var toTop = document.querySelector('.to-top');
   if (toTop) {

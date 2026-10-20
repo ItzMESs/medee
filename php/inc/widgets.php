@@ -140,3 +140,31 @@ function format_rate($v)
 {
     return $v >= 100 ? number_format($v, 0, '.', ',') : number_format($v, 2, '.', ',');
 }
+
+// Rates with the change against the last known rates of a previous day:
+// ['USD' => ['value' => 3594.0, 'change' => 0.21], ...]  (change in %, null when unknown)
+function rates_with_change()
+{
+    $rates = currency_rates();
+    if (!$rates) {
+        return [];
+    }
+    $today = date('Y-m-d');
+    $h = json_decode(setting('rates_history'), true);
+    if (!is_array($h) || !isset($h['day'])) {
+        $h = ['day' => $today, 'prev' => null, 'cur' => $rates];
+        save_setting('rates_history', json_encode($h));
+    } elseif ($h['day'] !== $today) {
+        $h = ['day' => $today, 'prev' => $h['cur'], 'cur' => $rates];
+        save_setting('rates_history', json_encode($h));
+    } elseif ($h['cur'] != $rates) {
+        $h['cur'] = $rates;
+        save_setting('rates_history', json_encode($h));
+    }
+    $out = [];
+    foreach ($rates as $code => $value) {
+        $prev = isset($h['prev'][$code]) ? (float) $h['prev'][$code] : 0;
+        $out[$code] = ['value' => $value, 'change' => $prev > 0 ? ($value - $prev) / $prev * 100 : null];
+    }
+    return $out;
+}
