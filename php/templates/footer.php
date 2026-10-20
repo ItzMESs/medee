@@ -3,7 +3,7 @@
   <?php if (ornaments_enabled()): ?><?= ornament('ugalz', 'footer-ugalz') ?><?php endif; ?>
   <div class="container footer-grid">
     <div class="footer-brand">
-      <a href="<?= url('/') ?>" class="logo"><?php if ($settings['logo']): ?><img src="<?= e(media($settings['logo'])) ?>" alt="<?= e($settings['site_name']) ?>"><?php else: ?><?= e($settings['site_name']) ?><?php endif; ?></a>
+      <a href="<?= url('/') ?>" class="logo"><?php if ($logoUrl): ?><img src="<?= e($logoUrl) ?>" alt="<?= e($settings['site_name']) ?>"><?php else: ?><?= e($settings['site_name']) ?><?php endif; ?></a>
       <p><?= e($settings['footer_about'] !== '' ? $settings['footer_about'] : $settings['site_tagline']) ?></p>
       <?php if ($socials): ?><div class="socials"><?php foreach ($socials as $net => $link): ?><a href="<?= e($link) ?>" target="_blank" rel="noopener" aria-label="<?= e($net) ?>"><?= icon($net, 20) ?></a><?php endforeach; ?></div><?php endif; ?>
     </div>

@@ -2,6 +2,10 @@
 $pageTitle = !empty($meta['title']) ? $meta['title'] . ' | ' . $settings['site_name'] : $settings['site_name'] . ' — ' . $settings['site_tagline'];
 $desc = !empty($meta['description']) ? $meta['description'] : $settings['site_tagline'];
 $brand = brand_color();
+$logoUrl = site_logo_url();
+if (empty($meta['image'])) {
+    $meta['image'] = default_og_image();
+}
 $weather = ub_weather();
 $rates = currency_rates();
 $socials = array_filter([
@@ -58,7 +62,7 @@ $socials = array_filter([
         </div>
       </div>
       <a href="<?= url('/') ?>" class="logo" aria-label="<?= e($settings['site_name']) ?>">
-        <?php if ($settings['logo']): ?><img src="<?= e(media($settings['logo'])) ?>" alt="<?= e($settings['site_name']) ?>"><?php else: ?><?= e($settings['site_name']) ?><?php endif; ?>
+        <?php if ($logoUrl): ?><img src="<?= e($logoUrl) ?>" alt="<?= e($settings['site_name']) ?>"><?php else: ?><?= e($settings['site_name']) ?><?php endif; ?>
       </a>
       <div class="header-right">
         <form action="<?= url('/search') ?>" method="get" class="header-search" role="search">
@@ -94,7 +98,7 @@ $socials = array_filter([
 <div class="drawer-overlay" data-drawer-close></div>
 <nav class="drawer" id="drawer" aria-label="Үндсэн цэс" aria-hidden="true">
   <div class="drawer-head">
-    <a href="<?= url('/') ?>" class="logo logo-sm"><?php if ($settings['logo']): ?><img src="<?= e(media($settings['logo'])) ?>" alt="<?= e($settings['site_name']) ?>"><?php else: ?><?= e($settings['site_name']) ?><?php endif; ?></a>
+    <a href="<?= url('/') ?>" class="logo logo-sm"><?php if ($logoUrl): ?><img src="<?= e($logoUrl) ?>" alt="<?= e($settings['site_name']) ?>"><?php else: ?><?= e($settings['site_name']) ?><?php endif; ?></a>
     <button type="button" class="icon-btn" data-drawer-close aria-label="Цэс хаах"><?= icon('close', 28) ?></button>
   </div>
   <ul class="drawer-nav">

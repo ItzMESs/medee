@@ -53,7 +53,7 @@ button { font: inherit; }
 .icon-btn { background: none; border: 0; color: inherit; padding: 4px; cursor: pointer; display: inline-flex; }
 .logo { font-family: var(--serif); font-size: clamp(28px, 2.3vw, 40px); font-weight: 500; color: #fff; letter-spacing: -.5px; line-height: 1; white-space: nowrap; }
 .logo:hover { color: #fff; }
-.logo img { max-height: 64px; width: auto; }
+.logo img { max-height: 72px; width: auto; }
 .header-right { display: flex; justify-content: flex-end; align-items: center; }
 .header-search { display: flex; align-items: center; width: 100%; max-width: 540px; border-bottom: 1px solid rgba(255, 255, 255, .8); }
 .header-search input { flex: 1; min-width: 0; background: transparent; border: 0; color: #fff; padding: 10px 0; font: italic 15px var(--serif); outline: none; }

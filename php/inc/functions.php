@@ -516,3 +516,18 @@ function safe_url($url)
     $url = trim((string) $url);
     return preg_match('#^https?://#i', $url) ? $url : '';
 }
+
+// Logo for the blue header, drawer and navy footer: the uploaded one, else the bundled white logo.
+function site_logo_url()
+{
+    if (setting('logo') !== '') {
+        return media(setting('logo'));
+    }
+    return is_file(ROOT . '/assets/img/nationalrbc-logo-white.png') ? asset('img/nationalrbc-logo-white.png') : '';
+}
+
+// Share image for pages without their own picture.
+function default_og_image()
+{
+    return is_file(ROOT . '/assets/img/og-default.jpg') ? absolute_url('/assets/img/og-default.jpg') : '';
+}
