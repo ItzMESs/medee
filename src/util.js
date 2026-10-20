@@ -1,4 +1,4 @@
-const sanitizeHtml = require('sanitize-html');
+const { FilterXSS } = require('xss');
 
 const TRANSLIT = {
   а: 'a', б: 'b', в: 'v', г: 'g', д: 'd', е: 'e', ё: 'yo', ж: 'j', з: 'z', и: 'i', й: 'i',
@@ -12,21 +12,48 @@ function slugify(text) {
   return latin.replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '').slice(0, 80) || 'medee';
 }
 
+const IFRAME_HOSTS = ['www.youtube.com', 'youtube.com', 'www.facebook.com', 'player.vimeo.com'];
+const BASE = ['class'];
+let droppedIframes = 0;
+const htmlFilter = new FilterXSS({
+  whiteList: {
+    p: BASE, br: [], strong: [], b: [], em: [], i: [], u: [], s: [], span: BASE, sub: [], sup: [],
+    h1: BASE, h2: BASE, h3: BASE, h4: BASE, blockquote: BASE, pre: BASE, code: [],
+    ul: BASE, ol: BASE, li: ['class', 'data-list'], hr: [], figure: BASE, figcaption: [],
+    table: [], thead: [], tbody: [], tr: [], th: [], td: [],
+    a: ['href', 'title', 'target', 'rel'],
+    img: ['src', 'alt', 'title', 'width', 'height'],
+    iframe: ['src', 'width', 'height', 'allow', 'allowfullscreen', 'frameborder', 'class'],
+  },
+  stripIgnoreTag: true,
+  stripIgnoreTagBody: ['script', 'style'],
+  onTag(tag, html, options) {
+    // Only allow embeds from known video hosts; drop the matching closing tag too.
+    if (tag !== 'iframe') return;
+    if (options.isClosing) {
+      if (droppedIframes > 0) { droppedIframes--; return ''; }
+      return;
+    }
+    const m = html.match(/\ssrc\s*=\s*["']?(https:\/\/[^"'\s>]+)/i);
+    let host = '';
+    try { host = m ? new URL(m[1]).hostname : ''; } catch {}
+    if (!IFRAME_HOSTS.includes(host)) { droppedIframes++; return ''; }
+  },
+});
+
+const textFilter = new FilterXSS({ whiteList: {}, stripIgnoreTag: true, stripIgnoreTagBody: ['script', 'style'] });
+
 function cleanHtml(html) {
-  return sanitizeHtml(html || '', {
-    allowedTags: sanitizeHtml.defaults.allowedTags.concat(['img', 'h1', 'h2', 'iframe', 'figure', 'figcaption', 'u', 's']),
-    allowedAttributes: {
-      ...sanitizeHtml.defaults.allowedAttributes,
-      img: ['src', 'alt', 'title', 'width', 'height'],
-      iframe: ['src', 'width', 'height', 'allow', 'allowfullscreen', 'frameborder'],
-      '*': ['class'],
-    },
-    allowedIframeHostnames: ['www.youtube.com', 'youtube.com', 'www.facebook.com', 'player.vimeo.com'],
-  });
+  droppedIframes = 0;
+  return htmlFilter.process(html || '');
 }
 
+const ENTITIES = { '&amp;': '&', '&lt;': '<', '&gt;': '>', '&quot;': '"', '&#39;': "'", '&#x27;': "'", '&nbsp;': ' ' };
+
 function stripTags(html) {
-  return sanitizeHtml(html || '', { allowedTags: [], allowedAttributes: {} }).replace(/\s+/g, ' ').trim();
+  return textFilter.process(String(html || '').replace(/<\/(p|h\d|li|blockquote)>/gi, '$& '))
+    .replace(/&(amp|lt|gt|quot|nbsp|#39|#x27);/g, (e) => ENTITIES[e])
+    .replace(/\s+/g, ' ').trim();
 }
 
 function excerptFrom(html, len = 200) {

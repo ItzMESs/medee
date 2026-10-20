@@ -25,7 +25,7 @@ app.use('/admin', session({
   secret: process.env.SESSION_SECRET || crypto.randomBytes(32).toString('hex'),
   resave: false,
   saveUninitialized: false,
-  cookie: { httpOnly: true, sameSite: 'lax', secure: process.env.NODE_ENV === 'production', maxAge: 7 * 86400e3 },
+  cookie: { httpOnly: true, sameSite: 'lax', secure: 'auto', maxAge: 7 * 86400e3 },
 }), require('./src/routes/admin'));
 
 app.use('/', require('./src/routes/public'));

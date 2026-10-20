@@ -1,12 +1,28 @@
 const path = require('node:path');
 const fs = require('node:fs');
-const { DatabaseSync } = require('node:sqlite');
 const { hashPassword } = require('./auth');
 
 const dataDir = process.env.DATA_DIR || path.join(__dirname, '..', 'data');
 fs.mkdirSync(dataDir, { recursive: true });
 
-const db = new DatabaseSync(path.join(dataDir, 'medee.db'));
+// node:sqlite prints an "experimental" warning on every start; it is expected, so hide it.
+const emitWarning = process.emitWarning;
+process.emitWarning = (warning, ...args) =>
+  (String(warning).includes('SQLite') ? undefined : emitWarning.call(process, warning, ...args));
+
+// Node 22.13+ ships SQLite built in; older Node (common on cPanel hosting) falls back to better-sqlite3.
+function openDatabase(file) {
+  if (process.env.DB_DRIVER !== 'better-sqlite3') {
+    try {
+      const { DatabaseSync } = require('node:sqlite');
+      return new DatabaseSync(file);
+    } catch {}
+  }
+  const Database = require('better-sqlite3');
+  return new Database(file);
+}
+
+const db = openDatabase(path.join(dataDir, 'medee.db'));
 db.exec('PRAGMA journal_mode = WAL; PRAGMA foreign_keys = ON;');
 
 db.exec(`

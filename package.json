@@ -4,9 +4,10 @@
   "description": "Мэдээллийн сайт + админ панел + Facebook пэйж рүү автоматаар нийтлэх",
   "main": "server.js",
   "scripts": {
-    "start": "node --disable-warning=ExperimentalWarning server.js",
-    "dev": "node --watch --disable-warning=ExperimentalWarning server.js",
-    "seed": "node --disable-warning=ExperimentalWarning scripts/seed.js"
+    "start": "node server.js",
+    "dev": "node --watch server.js",
+    "seed": "node scripts/seed.js",
+    "reset-admin": "node scripts/reset-admin.js"
   },
   "repository": {
     "type": "git",
@@ -22,10 +23,13 @@
     "express-session": "^1.19.0",
     "multer": "^2.4.0",
     "quill": "^2.0.2",
-    "sanitize-html": "^2.18.1"
+    "xss": "^1.0.16"
   },
   "private": true,
   "engines": {
-    "node": ">=22.13"
+    "node": ">=18"
+  },
+  "optionalDependencies": {
+    "better-sqlite3": "^11.10.0"
   }
 }
