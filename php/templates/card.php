@@ -1,7 +1,7 @@
 <?php $variant = isset($variant) ? $variant : ''; $showExcerpt = !empty($showExcerpt); ?>
 <article class="card <?= e($variant) ?>">
   <a href="<?= article_url($a) ?>" class="card-img">
-    <?php if ($a['image']): ?><img src="<?= e(media($a['image'])) ?>" alt="<?= e($a['title']) ?>" loading="lazy"><?php else: ?><span class="noimg"><?= e($settings['site_name']) ?></span><?php endif; ?>
+    <?php if ($a['image']): ?><img src="<?= e(thumb_url($a['image'])) ?>" alt="<?= e($a['title']) ?>" loading="lazy"><?php else: ?><span class="noimg"><?= e($settings['site_name']) ?></span><?php endif; ?>
   </a>
   <div class="card-body">
     <?php if ($a['category_name']): ?><a href="<?= url('/category/' . $a['category_slug']) ?>" class="tag"><?= e($a['category_name']) ?></a><?php endif; ?>

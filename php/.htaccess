@@ -2,6 +2,11 @@
 Options -Indexes
 DirectoryIndex index.php
 
+# Тохиргоо, өгөгдлийн сангийн файлуудыг вэбээс нээхгүй
+<FilesMatch "(^\.user\.ini|\.sql|^config\.sample\.php)$">
+  Require all denied
+</FilesMatch>
+
 <IfModule mod_rewrite.c>
   RewriteEngine On
   RewriteRule ^(inc|templates)(/|$) - [F,L]

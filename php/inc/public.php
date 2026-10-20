@@ -4,22 +4,35 @@ define('PAGE_SIZE', 12);
 function public_dispatch($path)
 {
     if ($path === '/') {
+        track_view();
         return page_home();
+    }
+    if (preg_match('#^/news/(\d+)/comment$#', $path, $m) && $_SERVER['REQUEST_METHOD'] === 'POST') {
+        return post_comment((int) $m[1]);
     }
     if (preg_match('#^/news/(\d+)(?:/([^/]*))?$#', $path, $m)) {
         return page_article((int) $m[1], isset($m[2]) ? $m[2] : '');
     }
     if (preg_match('#^/category/([a-z0-9-]+)$#', $path, $m)) {
+        track_view();
         return page_category($m[1]);
     }
     if ($path === '/latest') {
+        track_view();
         return page_list('Шинэ мэдээ', '', []);
     }
     if ($path === '/search') {
+        track_view();
         return page_search();
     }
     if ($path === '/rss.xml') {
         return page_rss();
+    }
+    if ($path === '/sitemap.xml') {
+        return page_sitemap();
+    }
+    if ($path === '/robots.txt') {
+        return page_robots();
     }
     not_found();
 }
@@ -53,8 +66,10 @@ function page_article($id, $slug)
     if ($slug !== $article['slug']) {
         redirect(article_path($article), 301);
     }
-    q('UPDATE articles SET views = views + 1 WHERE id = ?', [$id]);
-    $article['views']++;
+    if (track_view($id)) {
+        q('UPDATE articles SET views = views + 1 WHERE id = ?', [$id]);
+        $article['views']++;
+    }
     $related = $article['category_id']
         ? list_articles('a.category_id = ? AND a.id != ?', [$article['category_id'], $id], 4)
         : [];
@@ -66,7 +81,25 @@ function page_article($id, $slug)
         'type' => 'article',
         'published' => date('c', strtotime($article['published_at'])),
     ];
-    render('article', public_context(compact('article', 'related', 'meta')));
+    $meta['jsonld'] = [
+        '@context' => 'https://schema.org',
+        '@type' => 'NewsArticle',
+        'headline' => mb_substr($article['title'], 0, 110),
+        'description' => $article['excerpt'],
+        'image' => $meta['image'] ? [$meta['image']] : [],
+        'datePublished' => date('c', strtotime($article['published_at'])),
+        'dateModified' => date('c', strtotime($article['updated_at'])),
+        'mainEntityOfPage' => $meta['url'],
+        'author' => ['@type' => 'Person', 'name' => $article['author_name'] ?: setting('site_name')],
+        'publisher' => ['@type' => 'Organization', 'name' => setting('site_name'), 'url' => absolute_url('/')],
+    ];
+    $comments = [];
+    if (setting('comments_enabled') === '1') {
+        $comments = rows("SELECT name, body, created_at FROM comments WHERE article_id = ? AND status = 'approved'
+            ORDER BY created_at DESC LIMIT 200", [$id]);
+    }
+    $commentNotice = get('c');
+    render('article', public_context(compact('article', 'related', 'meta', 'comments', 'commentNotice')));
 }
 
 function page_list($heading, $where, array $params, array $extra = [])
@@ -115,4 +148,74 @@ function page_rss()
         echo '<description>' . $x($a['excerpt']) . '</description></item>';
     }
     echo '</channel></rss>';
+}
+
+function post_comment($id)
+{
+    $article = row('SELECT id, slug FROM articles a WHERE ' . published_where() . ' AND a.id = ?', [now(), $id]);
+    if (!$article || setting('comments_enabled') !== '1') {
+        not_found();
+    }
+    $back = function ($code) use ($article) {
+        redirect(article_path($article) . '?c=' . $code . '#comments');
+    };
+
+    // Honeypot field is hidden from people; bots fill it in.
+    if (post('website') !== '' || !comment_token_valid($id, post('token'))) {
+        $back('spam');
+    }
+    $name = mb_substr(preg_replace('/\s+/u', ' ', post('name')), 0, 60);
+    $body = trim(preg_replace("/\n{3,}/", "\n\n", str_replace("\r", '', isset($_POST['body']) ? (string) $_POST['body'] : '')));
+    if (mb_strlen($body) < 2) {
+        $back('empty');
+    }
+    if (mb_strlen($body) > 2000) {
+        $back('long');
+    }
+    $ip = client_ip_hash();
+    $recent = (int) q('SELECT COUNT(*) FROM comments WHERE ip_hash = ? AND created_at > ?',
+        [$ip, date('Y-m-d H:i:s', time() - 30)])->fetchColumn();
+    if ($recent > 0) {
+        $back('wait');
+    }
+    // Comments with several links usually are spam, so they wait for a moderator.
+    $links = preg_match_all('#https?://|www\.#i', $body);
+    $status = setting('comments_moderation') === '1' || $links > 1 ? 'pending' : 'approved';
+    q('INSERT INTO comments (article_id, name, body, status, ip_hash, created_at) VALUES (?, ?, ?, ?, ?, ?)',
+        [$id, $name !== '' ? $name : 'Зочин', $body, $status, $ip, now()]);
+    $back($status === 'pending' ? 'pending' : 'ok');
+}
+
+function page_sitemap()
+{
+    $x = function ($v) { return htmlspecialchars((string) $v, ENT_XML1 | ENT_QUOTES, 'UTF-8'); };
+    header('Content-Type: application/xml; charset=utf-8');
+    echo '<?xml version="1.0" encoding="UTF-8"?>' . "\n";
+    echo '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9" xmlns:news="http://www.google.com/schemas/sitemap-news/0.9">' . "\n";
+    echo '<url><loc>' . $x(absolute_url('/')) . '</loc><changefreq>hourly</changefreq><priority>1.0</priority></url>' . "\n";
+    foreach (all_categories() as $c) {
+        echo '<url><loc>' . $x(absolute_url('/category/' . $c['slug'])) . '</loc><changefreq>hourly</changefreq><priority>0.7</priority></url>' . "\n";
+    }
+    $newsCutoff = time() - 2 * 86400;
+    foreach (list_articles('', [], 5000) as $a) {
+        $ts = strtotime($a['updated_at'] > $a['published_at'] ? $a['updated_at'] : $a['published_at']);
+        echo '<url><loc>' . $x(absolute_url(article_path($a))) . '</loc><lastmod>' . date('c', $ts) . '</lastmod>';
+        // Google News only reads articles from the last two days.
+        if (strtotime($a['published_at']) >= $newsCutoff) {
+            echo '<news:news><news:publication><news:name>' . $x(setting('site_name')) . '</news:name><news:language>mn</news:language></news:publication>'
+                . '<news:publication_date>' . date('c', strtotime($a['published_at'])) . '</news:publication_date>'
+                . '<news:title>' . $x($a['title']) . '</news:title></news:news>';
+        }
+        echo "</url>\n";
+    }
+    echo '</urlset>';
+}
+
+function page_robots()
+{
+    header('Content-Type: text/plain; charset=utf-8');
+    echo "User-agent: *\n";
+    echo 'Disallow: ' . url('/admin') . "\n";
+    echo 'Disallow: ' . url('/search') . "\n\n";
+    echo 'Sitemap: ' . absolute_url('/sitemap.xml') . "\n";
 }

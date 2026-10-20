@@ -34,6 +34,54 @@
       </ol>
     </details>
   </div>
+  <div class="panel narrow-panel">
+    <h2>Сэтгэгдэл</h2>
+    <label class="check"><input type="checkbox" name="comments_enabled" value="1" <?= $settings['comments_enabled'] === '1' ? 'checked' : '' ?>> Уншигчид мэдээн доор сэтгэгдэл бичих боломжтой</label>
+    <label class="check"><input type="checkbox" name="comments_moderation" value="1" <?= $settings['comments_moderation'] === '1' ? 'checked' : '' ?>> Сэтгэгдлийг админ зөвшөөрсний дараа нийтлэх</label>
+    <small class="muted">Унтраалттай үед сэтгэгдэл шууд гарна. 2-оос дээш холбоостой сэтгэгдэл ямагт хүлээлгэнд орно.</small>
+  </div>
+
+  <div class="panel narrow-panel">
+    <h2>Ханш, цаг агаар</h2>
+    <label>Валютын ханш (дээд мөрөнд)
+      <select name="rates_mode">
+        <option value="auto" <?= $settings['rates_mode'] === 'auto' ? 'selected' : '' ?>>Автоматаар (6 цаг тутам шинэчлэгдэнэ, олон улсын зах зээлийн ханш)</option>
+        <option value="manual" <?= $settings['rates_mode'] === 'manual' ? 'selected' : '' ?>>Гараар оруулах (ж: Монголбанкны албан ханш)</option>
+        <option value="off" <?= $settings['rates_mode'] === 'off' ? 'selected' : '' ?>>Харуулахгүй</option>
+      </select></label>
+    <div class="inline-form rate-inputs">
+      <label>USD (₮)<input name="rate_usd" value="<?= e($settings['rate_usd']) ?>" placeholder="3450"></label>
+      <label>CNY (₮)<input name="rate_cny" value="<?= e($settings['rate_cny']) ?>" placeholder="475"></label>
+      <label>RUB (₮)<input name="rate_rub" value="<?= e($settings['rate_rub']) ?>" placeholder="38.5"></label>
+    </div>
+    <small class="muted">Гараар оруулах горимд л эдгээр утгыг ашиглана.</small>
+    <label class="check" style="margin-top:14px"><input type="checkbox" name="weather_enabled" value="1" <?= $settings['weather_enabled'] !== '0' ? 'checked' : '' ?>> Улаанбаатарын цаг агаар харуулах (30 минут тутам шинэчлэгдэнэ)</label>
+  </div>
+
+  <div class="panel narrow-panel">
+    <h2>Google (SEO)</h2>
+    <label>Google Analytics хэмжилтийн ID <small>ж: G-XXXXXXXXXX — analytics.google.com → Admin → Data streams</small>
+      <input name="ga_id" value="<?= e($settings['ga_id']) ?>" placeholder="G-XXXXXXXXXX"></label>
+    <label>Google Search Console баталгаажуулах код <small>"HTML tag" аргын content="..." доторх утга</small>
+      <input name="google_verification" value="<?= e($settings['google_verification']) ?>"></label>
+    <p class="muted">Sitemap хаяг: <code><?= e(rtrim($settings['site_url'], '/')) ?>/sitemap.xml</code> — Search Console → Sitemaps хэсэгт нэмнэ.</p>
+  </div>
+
   <div><button class="btn btn-primary">Хадгалах</button></div>
 </form>
+<div class="panel narrow-panel">
+  <h2>Зураг</h2>
+  <?php if (!$imageStats['gd']): ?>
+    <p class="error-text">Сервер дээр PHP GD өргөтгөл идэвхгүй тул зургийг жижигрүүлэх боломжгүй. cPanel → Select PHP Version хэсгээс <code>gd</code>-г идэвхжүүлнэ үү.</p>
+  <?php else: ?>
+    <p>Шинээр хуулсан зураг автоматаар жижигрүүлэгдэнэ: том талаараа хамгийн ихдээ 1600px, мэдээний картанд 480px хувилбар.</p>
+    <p class="muted">Нүүр зурагтай мэдээ: <?= (int) $imageStats['total'] ?> · Жижиг хувилбаргүй: <?= (int) $imageStats['missing'] ?></p>
+    <?php if ($imageStats['missing']): ?>
+    <form method="post" action="<?= url('/admin/images/optimize') ?>">
+      <?= csrf_field() ?>
+      <button class="btn">Хуучин зургуудыг жижигрүүлэх</button>
+    </form>
+    <?php endif; ?>
+  <?php endif; ?>
+</div>
 <?php include __DIR__ . '/footer.php'; ?>

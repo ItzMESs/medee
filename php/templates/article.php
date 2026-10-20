@@ -7,6 +7,7 @@
       <span><?= e(format_date($article['published_at'])) ?></span>
       <?php if ($article['author_name']): ?><span><?= e($article['author_name']) ?></span><?php endif; ?>
       <span><?= (int) $article['views'] ?> үзсэн</span>
+      <?php if ($settings['comments_enabled'] === '1'): ?><a href="#comments"><?= count($comments) ?> сэтгэгдэл</a><?php endif; ?>
     </div>
     <?php include __DIR__ . '/share.php'; ?>
     <?php if ($article['image']): ?><figure class="article-cover"><img src="<?= e(media($article['image'])) ?>" alt="<?= e($article['title']) ?>"></figure><?php endif; ?>
@@ -14,10 +15,12 @@
     <div class="article-body"><?= $article['content'] ?></div>
     <?php include __DIR__ . '/share.php'; ?>
 
+    <?php if ($settings['comments_enabled'] === '1') { include __DIR__ . '/comments.php'; } ?>
+
     <?php if ($settings['fb_comments'] === '1'): ?>
       <div id="fb-root"></div>
       <script async defer crossorigin="anonymous" src="https://connect.facebook.net/mn_MN/sdk.js#xfbml=1&version=v21.0<?= $settings['fb_app_id'] ? '&appId=' . rawurlencode($settings['fb_app_id']) : '' ?>"></script>
-      <h2 class="section-title">Сэтгэгдэл</h2>
+      <h2 class="section-title">Facebook сэтгэгдэл</h2>
       <div class="fb-comments" data-href="<?= e($meta['url']) ?>" data-width="100%" data-numposts="10"></div>
     <?php endif; ?>
 

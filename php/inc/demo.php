@@ -75,5 +75,10 @@ function demo_image($n, array $c)
     $file = $dir . '/demo-' . $n . '.jpg';
     $ok = imagejpeg($img, $file, 80);
     imagedestroy($img);
-    return $ok ? '/uploads/demo/demo-' . $n . '.jpg' : null;
+    if (!$ok) {
+        return null;
+    }
+    require_once __DIR__ . '/images.php';
+    optimize_image('/uploads/demo/demo-' . $n . '.jpg', true);
+    return '/uploads/demo/demo-' . $n . '.jpg';
 }

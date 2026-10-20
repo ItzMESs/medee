@@ -21,6 +21,7 @@ $navLink = function ($href, $label, $active, $extra = '') use ($path) {
       <?= $navLink('/admin/articles/new', '+ Мэдээ нэмэх', $path === '/admin/articles/new') ?>
       <?= $navLink('/admin/articles', 'Бүх мэдээ', $path === '/admin/articles') ?>
       <?= $navLink('/admin/categories', 'Ангилал', $path === '/admin/categories') ?>
+      <?= $navLink('/admin/comments', 'Сэтгэгдэл' . ($pendingComments ? ' <span class="nav-badge">' . (int) $pendingComments . '</span>' : ''), $path === '/admin/comments') ?>
       <?php if ($user['role'] === 'admin'): ?>
         <?= $navLink('/admin/users', 'Хэрэглэгчид', $path === '/admin/users') ?>
         <?= $navLink('/admin/settings', 'Тохиргоо / Facebook', $path === '/admin/settings') ?>

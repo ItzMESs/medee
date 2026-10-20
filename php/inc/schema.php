@@ -1,4 +1,7 @@
 <?php
+// Bump when tables are added; bootstrap re-runs create_schema() on older databases.
+define('SCHEMA_VERSION', 3);
+
 // Creates the tables (safe to run more than once) and default rows.
 function create_schema(PDO $pdo)
 {
@@ -40,6 +43,31 @@ function create_schema(PDO $pdo)
         CONSTRAINT fk_art_cat FOREIGN KEY (category_id) REFERENCES categories(id) ON DELETE SET NULL,
         CONSTRAINT fk_art_user FOREIGN KEY (author_id) REFERENCES users(id) ON DELETE SET NULL
     ) $opts");
+    $pdo->exec("CREATE TABLE IF NOT EXISTS stats_daily (
+        day DATE NOT NULL PRIMARY KEY,
+        page_views INT UNSIGNED NOT NULL DEFAULT 0,
+        article_views INT UNSIGNED NOT NULL DEFAULT 0
+    ) $opts");
+    $pdo->exec("CREATE TABLE IF NOT EXISTS article_views_daily (
+        article_id INT UNSIGNED NOT NULL,
+        day DATE NOT NULL,
+        views INT UNSIGNED NOT NULL DEFAULT 0,
+        PRIMARY KEY (article_id, day),
+        INDEX idx_day (day),
+        CONSTRAINT fk_avd_art FOREIGN KEY (article_id) REFERENCES articles(id) ON DELETE CASCADE
+    ) $opts");
+    $pdo->exec("CREATE TABLE IF NOT EXISTS comments (
+        id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+        article_id INT UNSIGNED NOT NULL,
+        name VARCHAR(80) NOT NULL,
+        body TEXT NOT NULL,
+        status VARCHAR(16) NOT NULL DEFAULT 'approved',
+        ip_hash CHAR(64) NOT NULL DEFAULT '',
+        created_at DATETIME NOT NULL,
+        INDEX idx_art (article_id, status, created_at),
+        INDEX idx_status (status, created_at),
+        CONSTRAINT fk_com_art FOREIGN KEY (article_id) REFERENCES articles(id) ON DELETE CASCADE
+    ) $opts");
     $pdo->exec("CREATE TABLE IF NOT EXISTS settings (
         name VARCHAR(64) NOT NULL PRIMARY KEY,
         `value` TEXT NOT NULL
@@ -55,4 +83,7 @@ function create_schema(PDO $pdo)
             $st->execute([$c[0], $c[1], $i]);
         }
     }
+
+    $pdo->prepare('INSERT INTO settings (name, `value`) VALUES (?, ?) ON DUPLICATE KEY UPDATE `value` = VALUES(`value`)')
+        ->execute(['schema_version', (string) SCHEMA_VERSION]);
 }

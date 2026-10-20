@@ -44,6 +44,15 @@ function default_settings()
         'fb_page_token' => '',
         'fb_auto_post' => '1',
         'fb_comments' => '0',
+        'rates_mode' => 'auto',
+        'rate_usd' => '',
+        'rate_cny' => '',
+        'rate_rub' => '',
+        'weather_enabled' => '1',
+        'comments_enabled' => '1',
+        'comments_moderation' => '0',
+        'ga_id' => '',
+        'google_verification' => '',
     ];
 }
 
@@ -289,14 +298,18 @@ function get($key, $default = '')
 // ---------- Uploads ----------
 
 // Saves an uploaded image and returns its public path (e.g. /uploads/2026/10/abc.jpg), or throws.
-function save_upload($field)
+function save_upload($field, $withThumb = true)
 {
     if (empty($_FILES[$field]) || $_FILES[$field]['error'] === UPLOAD_ERR_NO_FILE) {
         return null;
     }
     $f = $_FILES[$field];
-    if ($f['error'] === UPLOAD_ERR_INI_SIZE || $f['error'] === UPLOAD_ERR_FORM_SIZE || $f['size'] > 8 * 1024 * 1024) {
-        throw new RuntimeException('Зураг хэт том байна (8MB хүртэл).');
+    if ($f['error'] === UPLOAD_ERR_INI_SIZE || $f['error'] === UPLOAD_ERR_FORM_SIZE) {
+        throw new RuntimeException('Зураг серверийн хязгаараас (' . ini_get('upload_max_filesize') . ') том байна. '
+            . 'cPanel → MultiPHP INI Editor хэсэгт upload_max_filesize-г нэмэгдүүлнэ үү.');
+    }
+    if ($f['size'] > 10 * 1024 * 1024) {
+        throw new RuntimeException('Зураг хэт том байна (10MB хүртэл).');
     }
     if ($f['error'] !== UPLOAD_ERR_OK || !is_uploaded_file($f['tmp_name'])) {
         throw new RuntimeException('Зураг хуулахад алдаа гарлаа.');
@@ -318,13 +331,20 @@ function save_upload($field)
     if (!move_uploaded_file($f['tmp_name'], $dir . '/' . $name)) {
         throw new RuntimeException('Зураг хадгалж чадсангүй.');
     }
-    return '/uploads/' . $sub . '/' . $name;
+    $path = '/uploads/' . $sub . '/' . $name;
+    if (function_exists('optimize_image')) {
+        optimize_image($path, $withThumb);
+    }
+    return $path;
 }
 
 function remove_upload($path)
 {
-    if ($path && strpos($path, '/uploads/') === 0) {
-        $file = realpath(ROOT . $path);
+    if (!$path || strpos($path, '/uploads/') !== 0) {
+        return;
+    }
+    foreach ([$path, thumb_path($path)] as $p) {
+        $file = realpath(ROOT . $p);
         if ($file && strpos($file, realpath(UPLOAD_DIR)) === 0 && is_file($file)) {
             @unlink($file);
         }
@@ -381,4 +401,71 @@ function public_context(array $vars = [])
         'meta' => [],
         'query' => '',
     ], $vars);
+}
+
+// ---------- Statistics ----------
+
+function is_bot()
+{
+    $ua = isset($_SERVER['HTTP_USER_AGENT']) ? $_SERVER['HTTP_USER_AGENT'] : '';
+    return $ua === '' || (bool) preg_match('/bot|crawl|spider|slurp|facebookexternalhit|facebot|preview|monitor|curl|wget|python|headless/i', $ua);
+}
+
+// Counts one page view for today (and for the article, when given). Bots are skipped.
+function track_view($articleId = null)
+{
+    if (is_bot()) {
+        return false;
+    }
+    $day = date('Y-m-d');
+    q('INSERT INTO stats_daily (day, page_views, article_views) VALUES (?, 1, ?)
+        ON DUPLICATE KEY UPDATE page_views = page_views + 1, article_views = article_views + VALUES(article_views)',
+        [$day, $articleId ? 1 : 0]);
+    if ($articleId) {
+        q('INSERT INTO article_views_daily (article_id, day, views) VALUES (?, ?, 1)
+            ON DUPLICATE KEY UPDATE views = views + 1', [$articleId, $day]);
+    }
+    return true;
+}
+
+// ---------- Comments ----------
+
+function app_secret()
+{
+    $secret = setting('app_secret');
+    if ($secret === '') {
+        $secret = bin2hex(random_bytes(32));
+        save_setting('app_secret', $secret);
+        settings(true);
+    }
+    return $secret;
+}
+
+function client_ip_hash()
+{
+    $ip = isset($_SERVER['REMOTE_ADDR']) ? $_SERVER['REMOTE_ADDR'] : '';
+    return hash_hmac('sha256', $ip, app_secret());
+}
+
+// Signed render time for the public comment form (bots that post instantly or replay old forms fail).
+function comment_form_token($articleId)
+{
+    $t = time();
+    return $t . '.' . hash_hmac('sha256', $articleId . '|' . $t, app_secret());
+}
+
+function comment_token_valid($articleId, $token)
+{
+    $parts = explode('.', (string) $token, 2);
+    if (count($parts) !== 2 || !ctype_digit($parts[0])) {
+        return false;
+    }
+    $age = time() - (int) $parts[0];
+    return $age >= 3 && $age <= 86400
+        && hash_equals(hash_hmac('sha256', $articleId . '|' . $parts[0], app_secret()), $parts[1]);
+}
+
+function pending_comment_count()
+{
+    return (int) q("SELECT COUNT(*) FROM comments WHERE status = 'pending'")->fetchColumn();
 }

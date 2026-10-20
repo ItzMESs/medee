@@ -143,3 +143,38 @@ main.container { padding-top: 24px; padding-bottom: 40px; }
   .footer-inner { grid-template-columns: 1fr; }
   .topbar-inner { font-size: 12px; }
 }
+
+/* Top bar: date, weather, currency rates */
+.topbar-inner { align-items: center; gap: 12px; }
+.topbar-info { display: flex; align-items: center; flex-wrap: wrap; gap: 4px 18px; }
+.topbar-info b { color: #fff; font-weight: 500; }
+.rates { display: inline-flex; gap: 14px; }
+.weather { white-space: nowrap; }
+@media (max-width: 640px) {
+  .topbar-info { gap: 2px 12px; }
+  .topbar-info .today { display: none; }
+  .rates { gap: 10px; }
+}
+
+/* Comments */
+.comments .count { background: var(--brand); color: #fff; font-family: 'Roboto', sans-serif; font-size: 13px; padding: 1px 8px; border-radius: 10px; vertical-align: middle; }
+.comment-form { display: flex; flex-direction: column; gap: 8px; background: var(--bg); padding: 14px; border-radius: 6px; }
+.comment-form input, .comment-form textarea { font: inherit; padding: 9px 12px; border: 1px solid var(--line); border-radius: 4px; background: #fff; width: 100%; }
+.comment-form textarea { resize: vertical; min-height: 80px; }
+.comment-form input { max-width: 280px; }
+.comment-actions { display: flex; justify-content: space-between; align-items: center; gap: 10px; }
+.comment-actions small { color: var(--muted); }
+.comment-actions button { background: var(--brand); color: #fff; border: 0; padding: 9px 20px; border-radius: 4px; font: inherit; font-weight: 500; cursor: pointer; }
+.comment-actions button:hover { background: var(--brand-dark); }
+.hp { position: absolute; left: -9999px; width: 1px; height: 1px; overflow: hidden; }
+.comment-list { list-style: none; padding: 0; margin: 18px 0 0; }
+.comment-list li { display: flex; gap: 12px; padding: 14px 0; border-bottom: 1px solid var(--line); }
+.comment-list li.empty { color: var(--muted); display: block; }
+.comment-list p { margin: 4px 0 0; white-space: normal; overflow-wrap: anywhere; }
+.avatar { flex: 0 0 38px; height: 38px; border-radius: 50%; background: #e5e7eb; color: #555; display: flex; align-items: center; justify-content: center; font-weight: 700; }
+.comment-head b { font-weight: 600; }
+.notice { padding: 10px 14px; border-radius: 4px; margin-bottom: 12px; font-size: 14px; }
+.notice-success { background: #dcfce7; color: #166534; }
+.notice-info { background: #dbeafe; color: #1e3a8a; }
+.notice-error { background: #fee2e2; color: #991b1b; }
+.article-meta a { color: var(--brand); }

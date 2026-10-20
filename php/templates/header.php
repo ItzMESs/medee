@@ -17,6 +17,12 @@ $desc = !empty($meta['description']) ? $meta['description'] : $settings['site_ta
   <?php if (!empty($meta['image'])): ?><meta property="og:image" content="<?= e($meta['image']) ?>"><meta name="twitter:card" content="summary_large_image"><?php endif; ?>
   <?php if (!empty($meta['published'])): ?><meta property="article:published_time" content="<?= e($meta['published']) ?>"><?php endif; ?>
   <?php if ($settings['fb_app_id']): ?><meta property="fb:app_id" content="<?= e($settings['fb_app_id']) ?>"><?php endif; ?>
+  <?php if ($settings['google_verification'] !== ''): ?><meta name="google-site-verification" content="<?= e($settings['google_verification']) ?>"><?php endif; ?>
+  <?php if (!empty($meta['jsonld'])): ?><script type="application/ld+json"><?= json_encode($meta['jsonld'], JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES | JSON_HEX_TAG | JSON_HEX_AMP) ?></script><?php endif; ?>
+  <?php if (preg_match('/^G-[A-Z0-9]{4,20}$/', $settings['ga_id'])): ?>
+  <script async src="https://www.googletagmanager.com/gtag/js?id=<?= e($settings['ga_id']) ?>"></script>
+  <script>window.dataLayer = window.dataLayer || []; function gtag(){dataLayer.push(arguments);} gtag('js', new Date()); gtag('config', '<?= e($settings['ga_id']) ?>');</script>
+  <?php endif; ?>
   <link rel="alternate" type="application/rss+xml" title="<?= e($settings['site_name']) ?>" href="<?= url('/rss.xml') ?>">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&family=Roboto+Slab:wght@600;700&display=swap" rel="stylesheet">
@@ -26,7 +32,17 @@ $desc = !empty($meta['description']) ? $meta['description'] : $settings['site_ta
 <header class="site-header">
   <div class="topbar">
     <div class="container topbar-inner">
-      <span><?= e(mongolian_date()) ?></span>
+      <div class="topbar-info">
+        <span class="today"><?= e(mongolian_date()) ?></span>
+        <?php $weather = ub_weather(); if ($weather): list($wIcon, $wText) = weather_label($weather['code'], $weather['is_day']); ?>
+          <span class="weather" title="Улаанбаатар: <?= e($wText) ?>"><?= $wIcon ?> Улаанбаатар <b><?= $weather['temp'] > 0 ? '+' : '' ?><?= $weather['temp'] ?>°C</b></span>
+        <?php endif; ?>
+        <?php $rates = currency_rates(); if ($rates): ?>
+          <span class="rates" title="Ханш (₮)">
+            <?php foreach ($rates as $cur => $val): ?><span class="rate"><?= e($cur) ?> <b><?= format_rate($val) ?>₮</b></span><?php endforeach; ?>
+          </span>
+        <?php endif; ?>
+      </div>
       <div class="topbar-links">
         <?php if ($settings['fb_page_url']): ?><a href="<?= e($settings['fb_page_url']) ?>" target="_blank" rel="noopener">Facebook</a><?php endif; ?>
         <a href="<?= url('/rss.xml') ?>">RSS</a>

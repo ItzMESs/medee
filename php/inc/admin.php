@@ -55,10 +55,16 @@ function admin_dispatch($path, $method)
     if (preg_match('#^/categories/(\d+)(/delete)?$#', $path, $m) && $isPost) {
         return empty($m[2]) ? admin_category_update((int) $m[1]) : admin_category_delete((int) $m[1]);
     }
+    if ($path === '/comments') {
+        return admin_comments();
+    }
+    if (preg_match('#^/comments/(\d+)/(approve|delete)$#', $path, $m) && $isPost) {
+        return admin_comment_action((int) $m[1], $m[2]);
+    }
     if ($path === '/profile') {
         return $isPost ? admin_profile_post() : admin_render('profile');
     }
-    if ($path === '/users' || strpos($path, '/users/') === 0 || $path === '/settings') {
+    if ($path === '/users' || strpos($path, '/users/') === 0 || $path === '/settings' || $path === '/images/optimize') {
         if (!is_admin()) {
             http_response_code(403);
             exit('Зөвхөн админ хандах эрхтэй.');
@@ -70,7 +76,10 @@ function admin_dispatch($path, $method)
             return admin_user_delete((int) $m[1]);
         }
         if ($path === '/settings') {
-            return $isPost ? admin_settings_post() : admin_render('settings');
+            return $isPost ? admin_settings_post() : admin_render('settings', ['imageStats' => image_stats()]);
+        }
+        if ($path === '/images/optimize' && $isPost) {
+            return admin_optimize_images();
         }
     }
     http_response_code(404);
@@ -80,6 +89,7 @@ function admin_dispatch($path, $method)
 function admin_render($template, array $vars = [])
 {
     render('admin/' . $template, array_merge([
+        'pendingComments' => pending_comment_count(),
         'user' => current_user(),
         'settings' => settings(),
         'flash' => take_flash(),
@@ -120,9 +130,45 @@ function admin_dashboard()
         COALESCE(SUM(views), 0) AS views,
         COALESCE(SUM(fb_post_id IS NOT NULL), 0) AS fb
         FROM articles");
+    $stats['comments_today'] = (int) q('SELECT COUNT(*) FROM comments WHERE created_at >= ?', [date('Y-m-d 00:00:00')])->fetchColumn();
     $recent = rows('SELECT a.*, c.name AS category_name FROM articles a
         LEFT JOIN categories c ON c.id = a.category_id ORDER BY a.updated_at DESC LIMIT 8');
-    admin_render('dashboard', ['stats' => $stats, 'recent' => $recent, 'fbReady' => fb_configured()]);
+
+    $range = get('range') === '7' ? 7 : 30;
+    $from = date('Y-m-d', strtotime('-' . ($range - 1) . ' days'));
+    $byDay = [];
+    foreach (rows('SELECT day, page_views, article_views FROM stats_daily WHERE day >= ?', [$from]) as $r) {
+        $byDay[$r['day']] = $r;
+    }
+    $daily = [];
+    for ($i = $range - 1; $i >= 0; $i--) {
+        $d = date('Y-m-d', strtotime("-$i days"));
+        $daily[] = [
+            'day' => $d,
+            'page_views' => isset($byDay[$d]) ? (int) $byDay[$d]['page_views'] : 0,
+            'article_views' => isset($byDay[$d]) ? (int) $byDay[$d]['article_views'] : 0,
+        ];
+    }
+    $today = end($daily);
+    $yesterday = count($daily) > 1 ? $daily[count($daily) - 2] : ['page_views' => 0];
+    $totals = [
+        'today' => $today['page_views'],
+        'yesterday' => $yesterday['page_views'],
+        'range' => array_sum(array_column($daily, 'page_views')),
+    ];
+    $top = rows("SELECT a.id, a.title, a.slug, a.status, c.name AS category_name, SUM(v.views) AS period_views, a.views AS total_views
+        FROM article_views_daily v JOIN articles a ON a.id = v.article_id
+        LEFT JOIN categories c ON c.id = a.category_id
+        WHERE v.day >= ? GROUP BY a.id, a.title, a.slug, a.status, c.name, a.views
+        ORDER BY period_views DESC LIMIT 10", [$from]);
+    $allTime = rows("SELECT a.id, a.title, a.slug, a.status, c.name AS category_name, a.views AS total_views
+        FROM articles a LEFT JOIN categories c ON c.id = a.category_id
+        WHERE a.status = 'published' ORDER BY a.views DESC LIMIT 10");
+
+    admin_render('dashboard', [
+        'stats' => $stats, 'recent' => $recent, 'fbReady' => fb_configured(),
+        'range' => $range, 'daily' => $daily, 'totals' => $totals, 'top' => $top, 'allTime' => $allTime,
+    ]);
 }
 
 // ---------- Articles ----------
@@ -302,7 +348,7 @@ function admin_upload()
 {
     header('Content-Type: application/json; charset=utf-8');
     try {
-        $path = save_upload('image');
+        $path = save_upload('image', false);
         if (!$path) {
             throw new RuntimeException('Зураг сонгоно уу.');
         }
@@ -418,18 +464,102 @@ function admin_profile_post()
 
 function admin_settings_post()
 {
-    foreach (['site_name', 'site_tagline', 'site_url', 'fb_page_url', 'fb_app_id', 'fb_page_id', 'fb_page_token'] as $key) {
+    foreach (['site_name', 'site_tagline', 'site_url', 'fb_page_url', 'fb_app_id', 'fb_page_id', 'fb_page_token',
+        'rate_usd', 'rate_cny', 'rate_rub', 'ga_id', 'google_verification'] as $key) {
         // An empty token field keeps the stored token so it never has to be shown in the page.
         if ($key === 'fb_page_token' && post($key) === '') {
             continue;
         }
-        save_setting($key, $key === 'site_url' ? rtrim(post($key), '/') : post($key));
+        $value = post($key);
+        if ($key === 'site_url') {
+            $value = rtrim($value, '/');
+        } elseif ($key === 'ga_id') {
+            $value = strtoupper($value);
+            if ($value !== '' && !preg_match('/^G-[A-Z0-9]{4,20}$/', $value)) {
+                flash('error', 'Google Analytics ID буруу байна. G-XXXXXXXXXX хэлбэртэй байх ёстой.');
+                redirect('/admin/settings');
+            }
+        } elseif ($key === 'google_verification' && preg_match('/content="([^"]+)"/', $value, $m)) {
+            // Accept the whole <meta> tag pasted from Search Console.
+            $value = $m[1];
+        }
+        save_setting($key, $value);
     }
     save_setting('fb_auto_post', post('fb_auto_post') ? '1' : '0');
     save_setting('fb_comments', post('fb_comments') ? '1' : '0');
+    save_setting('rates_mode', in_array(post('rates_mode'), ['auto', 'manual', 'off'], true) ? post('rates_mode') : 'auto');
+    save_setting('weather_enabled', post('weather_enabled') ? '1' : '0');
+    save_setting('comments_enabled', post('comments_enabled') ? '1' : '0');
+    save_setting('comments_moderation', post('comments_moderation') ? '1' : '0');
     if (post('clear_token')) {
         save_setting('fb_page_token', '');
     }
     flash('success', 'Тохиргоо хадгалагдлаа.');
     redirect('/admin/settings');
+}
+
+// ---------- Images ----------
+
+function image_stats()
+{
+    $total = 0;
+    $missing = 0;
+    foreach (rows("SELECT image FROM articles WHERE image IS NOT NULL AND image != ''") as $r) {
+        $total++;
+        if (!is_file(ROOT . thumb_path($r['image']))) {
+            $missing++;
+        }
+    }
+    return ['total' => $total, 'missing' => $missing, 'gd' => gd_available()];
+}
+
+// Creates small copies for cover images uploaded before resizing existed. Works in batches
+// so a slow shared host never hits the PHP time limit.
+function admin_optimize_images()
+{
+    @set_time_limit(60);
+    $start = microtime(true);
+    $done = 0;
+    foreach (rows("SELECT image FROM articles WHERE image IS NOT NULL AND image != '' ORDER BY id DESC") as $r) {
+        if (is_file(ROOT . thumb_path($r['image']))) {
+            continue;
+        }
+        if (optimize_image($r['image'], true)) {
+            $done++;
+        }
+        if (microtime(true) - $start > 20) {
+            break;
+        }
+    }
+    $left = image_stats()['missing'];
+    flash('success', $done . ' зураг жижигрүүллээ.' . ($left ? ' ' . $left . ' зураг үлдсэн — товчийг дахин дарна уу.' : ''));
+    redirect('/admin/settings');
+}
+
+// ---------- Comments ----------
+
+function admin_comments()
+{
+    $status = in_array(get('status'), ['pending', 'approved'], true) ? get('status') : '';
+    $page = max(1, (int) get('page', '1'));
+    $size = 30;
+    $w = $status ? 'WHERE c.status = ?' : '';
+    $params = $status ? [$status] : [];
+    $total = (int) q("SELECT COUNT(*) FROM comments c $w", $params)->fetchColumn();
+    $comments = rows("SELECT c.*, a.title AS article_title, a.slug AS article_slug, a.id AS aid FROM comments c
+        JOIN articles a ON a.id = c.article_id $w ORDER BY c.created_at DESC LIMIT $size OFFSET " . (($page - 1) * $size), $params);
+    admin_render('comments', ['comments' => $comments, 'status' => $status, 'page' => $page, 'pages' => (int) ceil($total / $size)]);
+}
+
+function admin_comment_action($id, $action)
+{
+    if ($action === 'approve') {
+        q("UPDATE comments SET status = 'approved' WHERE id = ?", [$id]);
+        flash('success', 'Сэтгэгдэл нийтлэгдлээ.');
+    } else {
+        q('DELETE FROM comments WHERE id = ?', [$id]);
+        flash('success', 'Сэтгэгдэл устгагдлаа.');
+    }
+    $back = get('status') !== '' ? '/admin/comments?status=' . rawurlencode(get('status')) : '/admin/comments';
+    redirect($back);
 }

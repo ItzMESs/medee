@@ -21,6 +21,8 @@ if (!empty($config['debug'])) {
 require __DIR__ . '/functions.php';
 require __DIR__ . '/sanitize.php';
 require __DIR__ . '/facebook.php';
+require __DIR__ . '/widgets.php';
+require_once __DIR__ . '/images.php';
 
 try {
     $pdo = new PDO(
@@ -42,6 +44,14 @@ try {
     $hasAdmin = (int) $pdo->query('SELECT COUNT(*) FROM users')->fetchColumn() > 0;
 } catch (PDOException $ex) {
     $hasAdmin = false;
+}
+if ($hasAdmin) {
+    // Older installs (or medee.sql imports) get new tables automatically.
+    require __DIR__ . '/schema.php';
+    $ver = $pdo->query("SELECT `value` FROM settings WHERE name = 'schema_version'")->fetchColumn();
+    if ((int) $ver < SCHEMA_VERSION) {
+        create_schema($pdo);
+    }
 }
 if (!$hasAdmin) {
     header('Location: ' . rtrim(str_replace('\\', '/', dirname($_SERVER['SCRIPT_NAME'])), '/') . '/install.php');
