@@ -51,6 +51,7 @@ function default_settings()
         'weather_enabled' => '1',
         'brand_color' => '#0a5cff',
         'logo' => '',
+        'ornaments' => '1',
         'footer_about' => '',
         'contact_address' => '',
         'contact_phone' => '',

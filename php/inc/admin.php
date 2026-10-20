@@ -512,6 +512,7 @@ function admin_settings_post()
     save_setting('rates_mode', in_array(post('rates_mode'), ['auto', 'manual', 'off'], true) ? post('rates_mode') : 'auto');
     save_setting('weather_enabled', post('weather_enabled') ? '1' : '0');
     save_setting('comments_enabled', post('comments_enabled') ? '1' : '0');
+    save_setting('ornaments', post('ornaments') ? '1' : '0');
     save_setting('comments_moderation', post('comments_moderation') ? '1' : '0');
     if (post('clear_token')) {
         save_setting('fb_page_token', '');

@@ -38,3 +38,25 @@ function weather_icon_name($code)
     if (($c >= 71 && $c <= 77) || $c === 85 || $c === 86) return 'snow';
     return 'cloud';
 }
+
+// Mongolian ornaments (өлзий, эвэр угалз) drawn in currentColor.
+function ornament($name, $class = '')
+{
+    $svg = [
+        'ulzii' => '<svg class="orn ' . $class . '" viewBox="0 0 48 48" aria-hidden="true"><g fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" transform="rotate(45 24 24)">'
+            . '<path d="M13 17V13H17M31 13H35V17M35 31V35H31M17 35H13V31"/>'
+            . '<path d="M17 13V35M24 13V35M31 13V35M13 17H35M13 24H35M13 31H35"/>'
+            . '<path d="M13 17A5.6 5.6 0 1 1 17 13M31 13A5.6 5.6 0 1 1 35 17M35 31A5.6 5.6 0 1 1 31 35M17 35A5.6 5.6 0 1 1 13 31"/></g></svg>',
+        'ugalz' => '<svg class="orn ' . $class . '" viewBox="0 0 200 100" aria-hidden="true"><g fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round">'
+            . '<path d="M100 92C100 62 84 40 62 40C42 40 32 56 40 68C47 78 62 72 60 62C58 55 50 56 50 61"/>'
+            . '<path d="M100 92C100 62 116 40 138 40C158 40 168 56 160 68C153 78 138 72 140 62C142 55 150 56 150 61"/>'
+            . '<path d="M100 78C96 50 74 22 46 26C24 30 14 50 22 62"/><path d="M100 78C104 50 126 22 154 26C176 30 186 50 178 62"/>'
+            . '<path d="M100 92V60M100 60C100 44 92 36 100 26C108 36 100 44 100 60"/></g></svg>',
+    ];
+    return isset($svg[$name]) ? $svg[$name] : '';
+}
+
+function ornaments_enabled()
+{
+    return setting('ornaments') !== '0';
+}

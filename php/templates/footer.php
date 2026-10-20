@@ -1,5 +1,6 @@
 </main>
 <footer class="site-footer">
+  <?php if (ornaments_enabled()): ?><?= ornament('ugalz', 'footer-ugalz') ?><?php endif; ?>
   <div class="container footer-grid">
     <div class="footer-brand">
       <a href="<?= url('/') ?>" class="logo"><?php if ($settings['logo']): ?><img src="<?= e(media($settings['logo'])) ?>" alt="<?= e($settings['site_name']) ?>"><?php else: ?><?= e($settings['site_name']) ?><?php endif; ?></a>

@@ -9,7 +9,7 @@ $notices = [
 ];
 ?>
 <section class="comments" id="comments">
-  <h2 class="section-title">Сэтгэгдэл <span class="count"><?= count($comments) ?></span></h2>
+  <h2 class="section-title"><span>Сэтгэгдэл</span> <span class="count"><?= count($comments) ?></span></h2>
   <?php if (isset($notices[$commentNotice])): ?>
     <div class="notice notice-<?= $notices[$commentNotice][0] ?>"><?= e($notices[$commentNotice][1]) ?></div>
   <?php endif; ?>

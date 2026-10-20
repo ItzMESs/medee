@@ -41,7 +41,7 @@ $socials = array_filter([
   <link rel="stylesheet" href="<?= asset('css/style.css') ?>">
   <style>:root { --brand: <?= $brand ?>; --brand-dark: <?= shade_color($brand, -0.18) ?>; --brand-soft: <?= shade_color($brand, 0.92) ?>; }</style>
 </head>
-<body class="<?= !empty($isArticle) ? 'is-article' : '' ?>">
+<body class="<?= !empty($isArticle) ? 'is-article' : '' ?><?= ornaments_enabled() ? ' has-ornaments' : '' ?>">
 <header class="site-header">
   <div class="header-bar">
     <div class="container header-inner">

@@ -286,7 +286,49 @@ body.drawer-open .drawer-overlay { opacity: 1; pointer-events: auto; }
 .rank-list li:hover .rank { color: var(--brand); }
 .rank { transition: color .2s; }
 .site-footer { position: relative; }
-.site-footer::before { content: ''; position: absolute; left: 0; right: 0; top: 0; height: 4px; background: linear-gradient(90deg, var(--brand), var(--brand-dark)); }
+.site-footer::before { content: ''; position: absolute; left: 0; right: 0; top: 0; height: 4px; background: linear-gradient(90deg, var(--brand), var(--brand-dark)); z-index: 1; }
+
+/* ---------- Mongolian ornaments (алхан хээ, өлзий, эвэр угалз) ---------- */
+:root {
+  --orn-alkhan: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 10 10'%3E%3Cpath d='M0 1H10M0 9H10M2.5 1V6.2M0.6 6.2H4.4M7.5 9V3.8M5.6 3.8H9.4' fill='none' stroke='%23000' stroke-width='1.15' stroke-linecap='square'/%3E%3C/svg%3E");
+  --orn-ulzii: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 48 48'%3E%3Cg fill='none' stroke='%23000' stroke-width='3.2' stroke-linecap='round' transform='rotate(45 24 24)'%3E%3Cpath d='M13 17V13H17M31 13H35V17M35 31V35H31M17 35H13V31M17 13V35M24 13V35M31 13V35M13 17H35M13 24H35M13 31H35M13 17A5.6 5.6 0 1 1 17 13M31 13A5.6 5.6 0 1 1 35 17M35 31A5.6 5.6 0 1 1 31 35M17 35A5.6 5.6 0 1 1 13 31'/%3E%3C/g%3E%3C/svg%3E");
+}
+.orn { display: block; }
+/* Hammer (алхан) band along the bottom of the blue header and the drawer head */
+.has-ornaments .header-bar::after, .has-ornaments .drawer-head::after {
+  content: ''; display: block; height: 20px; background: rgba(255, 255, 255, .5);
+  -webkit-mask: var(--orn-alkhan) repeat-x left center / 20px 20px; mask: var(--orn-alkhan) repeat-x left center / 20px 20px;
+}
+.has-ornaments .drawer-head { flex-wrap: wrap; padding-bottom: 0; }
+.has-ornaments .drawer-head::after { flex-basis: calc(100% + 48px); margin: 18px -24px 0; }
+/* Footer: band in the brand colour on navy, faint horn scroll in the corner */
+.has-ornaments .site-footer::before {
+  height: 18px; background: var(--brand);
+  -webkit-mask: var(--orn-alkhan) repeat-x left center / 18px 18px; mask: var(--orn-alkhan) repeat-x left center / 18px 18px;
+}
+.site-footer { overflow: hidden; }
+.footer-ugalz { position: absolute; right: -40px; bottom: -30px; width: 520px; color: #fff; opacity: .05; pointer-events: none; }
+.site-footer .container { position: relative; }
+/* Өлзий before section headings */
+.has-ornaments .section-title > :first-child::before {
+  content: ''; display: inline-block; width: 24px; height: 24px; margin-right: 12px; vertical-align: -3px; background: var(--brand);
+  -webkit-mask: var(--orn-ulzii) center / contain no-repeat; mask: var(--orn-ulzii) center / contain no-repeat;
+}
+.title-ulzii { display: inline-block; width: 26px; height: 26px; margin-right: 12px; vertical-align: -3px; color: var(--brand); }
+/* Divider at the end of an article */
+.orn-divider { display: flex; align-items: center; gap: 18px; margin: 44px 0 0; color: var(--brand); }
+.orn-divider::before, .orn-divider::after { content: ''; flex: 1; height: 1px; background: linear-gradient(90deg, transparent, var(--line) 30%, var(--line) 70%, transparent); }
+.orn-divider .orn { width: 34px; height: 34px; }
+.orn-divider + .article-foot { margin-top: 20px; border-top: 0; }
+/* Horn scroll above static page titles and the 404 */
+.page-ugalz { width: 120px; color: var(--brand); opacity: .85; margin: 0 0 10px; }
+.notfound .page-ugalz { margin: 0 auto 8px; width: 150px; }
+/* Tiny alkhan line under the sidebar tabs */
+.has-ornaments .tab-buttons { position: relative; }
+.has-ornaments .rank-box::after {
+  content: ''; display: block; height: 10px; margin-top: 18px; background: var(--brand); opacity: .35;
+  -webkit-mask: var(--orn-alkhan) repeat-x left center / 10px 10px; mask: var(--orn-alkhan) repeat-x left center / 10px 10px;
+}
 
 /* ---------- Responsive ---------- */
 @media (max-width: 1280px) {
@@ -307,6 +349,8 @@ body.drawer-open .drawer-overlay { opacity: 1; pointer-events: auto; }
 }
 @media (max-width: 760px) {
   :root { --gutter: 16px; }
+  .has-ornaments .header-bar::after { height: 14px; -webkit-mask-size: 14px 14px; mask-size: 14px 14px; }
+  .footer-ugalz { width: 320px; }
   .cat-bar a { padding: 12px 10px; font-size: 13px; }
   .card-lead .card-title { font-size: 22px; }
   .card-mini { grid-template-columns: 110px minmax(0, 1fr); gap: 14px; }

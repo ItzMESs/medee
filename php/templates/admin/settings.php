@@ -18,6 +18,7 @@
       <?php if ($settings['logo']): ?><span class="logo-preview" style="background: <?= e(brand_color()) ?>"><img src="<?= e(media($settings['logo'])) ?>" alt=""></span><?php endif; ?>
       <input type="file" name="logo_file" accept="image/png,image/jpeg,image/webp"></label>
     <?php if ($settings['logo']): ?><label class="check"><input type="checkbox" name="remove_logo" value="1"> Логог устгах</label><?php endif; ?>
+    <label class="check"><input type="checkbox" name="ornaments" value="1" <?= $settings['ornaments'] !== '0' ? 'checked' : '' ?>> Монгол хээ угалз харуулах (алхан хээ, өлзий, эвэр угалз)</label>
   </div>
 
   <div class="panel narrow-panel">
