@@ -50,6 +50,15 @@ function demo_slug($title)
 
 function demo_image($n, array $c)
 {
+    // Illustrated covers ship in uploads/demo; only draw a plain one when they are missing.
+    $shipped = '/uploads/demo/demo-' . $n . '.jpg';
+    if (is_file(ROOT . $shipped)) {
+        require_once __DIR__ . '/images.php';
+        if (!is_file(ROOT . thumb_path($shipped))) {
+            optimize_image($shipped, true);
+        }
+        return $shipped;
+    }
     if (!function_exists('imagecreatetruecolor') || !is_writable(UPLOAD_DIR)) {
         return null;
     }

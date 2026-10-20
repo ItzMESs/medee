@@ -33,6 +33,7 @@ $socials = array_filter([
   <script async src="https://www.googletagmanager.com/gtag/js?id=<?= e($settings['ga_id']) ?>"></script>
   <script>window.dataLayer = window.dataLayer || []; function gtag(){dataLayer.push(arguments);} gtag('js', new Date()); gtag('config', '<?= e($settings['ga_id']) ?>');</script>
   <?php endif; ?>
+  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<?= rawurlencode('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64"><rect width="64" height="64" rx="12" fill="' . $brand . '"/><text x="32" y="46" font-family="Georgia,serif" font-size="40" font-weight="700" fill="#fff" text-anchor="middle">' . htmlspecialchars(mb_strtoupper(mb_substr($settings['site_name'], 0, 1)), ENT_XML1) . '</text></svg>') ?>">
   <link rel="alternate" type="application/rss+xml" title="<?= e($settings['site_name']) ?>" href="<?= url('/rss.xml') ?>">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -40,7 +41,7 @@ $socials = array_filter([
   <link rel="stylesheet" href="<?= asset('css/style.css') ?>">
   <style>:root { --brand: <?= $brand ?>; --brand-dark: <?= shade_color($brand, -0.18) ?>; --brand-soft: <?= shade_color($brand, 0.92) ?>; }</style>
 </head>
-<body>
+<body class="<?= !empty($isArticle) ? 'is-article' : '' ?>">
 <header class="site-header">
   <div class="header-bar">
     <div class="container header-inner">
@@ -68,10 +69,20 @@ $socials = array_filter([
       </div>
     </div>
   </div>
+  <nav class="cat-bar" aria-label="Ангилал">
+    <div class="container cat-bar-inner">
+      <a href="<?= url('/') ?>" class="<?= $currentPath === '/' ? 'active' : '' ?>">Нүүр</a>
+      <a href="<?= url('/latest') ?>" class="<?= $currentPath === '/latest' ? 'active' : '' ?>">Шинэ</a>
+      <?php foreach ($categories as $c): ?>
+        <a href="<?= url('/category/' . $c['slug']) ?>" class="<?= $currentPath === '/category/' . $c['slug'] ? 'active' : '' ?>"><?= e($c['name']) ?></a>
+      <?php endforeach; ?>
+    </div>
+  </nav>
+  <?php if (!empty($isArticle)): ?><div class="read-progress" aria-hidden="true"><span></span></div><?php endif; ?>
   <?php if ($breaking): ?>
   <div class="breaking">
     <div class="container breaking-inner">
-      <span class="breaking-label">Шуурхай</span>
+      <span class="breaking-label"><i class="pulse"></i>Шуурхай</span>
       <div class="ticker"><div class="ticker-track">
         <?php foreach (array_merge($breaking, $breaking) as $a): ?><a href="<?= article_url($a) ?>"><?= e($a['title']) ?></a><?php endforeach; ?>
       </div></div>

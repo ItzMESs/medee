@@ -58,8 +58,9 @@ function page_home()
     $latest = list_articles($ids ? 'a.id NOT IN (' . implode(',', $ids) . ')' : '', [], 8);
     $sections = [];
     foreach (all_categories() as $c) {
-        $list = list_articles('a.category_id = ?', [$c['id']], 4);
-        if ($list) {
+        $list = list_articles('a.category_id = ?', [$c['id']], 5);
+        // Thin categories are already covered by "Шинэ мэдээ"; a 1-2 story section looks empty.
+        if (count($list) >= 3) {
             $sections[] = ['category' => $c, 'articles' => $list];
         }
     }
@@ -80,7 +81,7 @@ function page_article($id, $slug)
         $article['views']++;
     }
     $related = $article['category_id']
-        ? list_articles('a.category_id = ? AND a.id != ?', [$article['category_id'], $id], 4)
+        ? list_articles('a.category_id = ? AND a.id != ?', [$article['category_id'], $id], 3)
         : [];
     $meta = [
         'title' => $article['title'],
@@ -108,7 +109,11 @@ function page_article($id, $slug)
             ORDER BY created_at DESC LIMIT 200", [$id]);
     }
     $commentNotice = get('c');
-    render('article', public_context(compact('article', 'related', 'meta', 'comments', 'commentNotice')));
+    // ~200 words a minute; Mongolian words are long, so this errs on the generous side.
+    $words = count(preg_split('/\s+/u', strip_html($article['content']), -1, PREG_SPLIT_NO_EMPTY));
+    $readMinutes = max(1, (int) ceil($words / 200));
+    $isArticle = true;
+    render('article', public_context(compact('article', 'related', 'meta', 'comments', 'commentNotice', 'readMinutes', 'isArticle')));
 }
 
 function page_list($heading, $where, array $params, array $extra = [])

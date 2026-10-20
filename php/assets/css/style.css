@@ -226,6 +226,68 @@ body.drawer-open .drawer-overlay { opacity: 1; pointer-events: auto; }
 .footer-links { list-style: none; padding: 0; margin: 0; display: flex; flex-direction: column; gap: 24px; font-size: 17px; font-weight: 500; text-transform: uppercase; letter-spacing: .2px; }
 .footer-bottom { display: flex; justify-content: space-between; gap: 20px; flex-wrap: wrap; font-size: 14px; padding-top: 28px; padding-bottom: 40px; border-top: 1px solid rgba(255, 255, 255, .45); }
 
+/* ---------- Polish ---------- */
+/* Category strip under the blue header */
+.cat-bar { background: var(--page); border-bottom: 1px solid var(--line); }
+.cat-bar-inner { display: flex; gap: 4px; overflow-x: auto; scrollbar-width: none; }
+.cat-bar-inner::-webkit-scrollbar { display: none; }
+.cat-bar a { position: relative; flex-shrink: 0; padding: 15px 14px; font-size: 14px; font-weight: 600; text-transform: uppercase; letter-spacing: .4px; color: var(--ink); }
+.cat-bar a::after { content: ''; position: absolute; left: 14px; right: 14px; bottom: -1px; height: 3px; background: var(--brand); transform: scaleX(0); transition: transform .2s; }
+.cat-bar a:hover { color: var(--brand); }
+.cat-bar a:hover::after, .cat-bar a.active::after { transform: scaleX(1); }
+.cat-bar a.active { color: var(--brand); }
+
+/* Reading progress (article pages) */
+.read-progress { height: 3px; background: transparent; }
+.read-progress span { display: block; height: 100%; width: 0; background: var(--brand); transition: width .1s linear; }
+.is-article .breaking { display: none; }
+
+/* Pulsing dot in the breaking label */
+.breaking-label { display: inline-flex; align-items: center; gap: 7px; }
+.pulse { width: 8px; height: 8px; border-radius: 50%; background: #ff4d4f; box-shadow: 0 0 0 0 rgba(255, 77, 79, .7); animation: pulse 1.6s infinite; }
+@keyframes pulse { 70% { box-shadow: 0 0 0 7px rgba(255, 77, 79, 0); } 100% { box-shadow: 0 0 0 0 rgba(255, 77, 79, 0); } }
+
+/* Images fade in once loaded; placeholder for articles without a picture */
+.card-img img { opacity: 0; transition: opacity .35s ease, transform .4s ease; }
+.card-img img.loaded, .no-js .card-img img { opacity: 1; }
+.noimg { background: linear-gradient(135deg, var(--brand-soft), #fff); }
+.noimg span { font: 500 22px var(--serif); color: var(--brand); opacity: .55; }
+.card-img::after { content: ''; position: absolute; inset: 0; background: linear-gradient(to top, rgba(1, 11, 36, .18), transparent 45%); opacity: 0; transition: opacity .3s; pointer-events: none; }
+.card:hover .card-img::after { opacity: 1; }
+.card-chip { position: absolute; left: 12px; top: 12px; background: rgba(255, 255, 255, .94); color: var(--brand); font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: .4px; padding: 5px 9px; z-index: 1; }
+
+/* Category sections: one lead story + compact list, alternating sides */
+.mosaic { display: grid; grid-template-columns: minmax(0, 1.25fr) minmax(0, 1fr); gap: 40px; align-items: start; }
+.mosaic-flip .card-lead { order: 2; }
+.card-lead .card-img { aspect-ratio: 16 / 10; }
+.card-lead .card-title { font-size: 28px; line-height: 1.3; margin-bottom: 14px; }
+.mosaic-list { display: flex; flex-direction: column; }
+.card-mini { display: grid; grid-template-columns: 150px minmax(0, 1fr); gap: 18px; padding: 18px 0; border-bottom: 1px solid var(--line); }
+.card-mini:first-child { padding-top: 0; }
+.card-mini:last-child { border-bottom: 0; }
+.card-mini .card-img { aspect-ratio: 4 / 3; }
+.card-mini .card-body { padding-top: 0; }
+.card-mini .card-title { font-size: 18px; line-height: 1.35; margin-bottom: 8px; display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; }
+
+/* Article extras */
+.article-kicker { display: inline-block; color: var(--brand); font-size: 14px; font-weight: 700; text-transform: uppercase; letter-spacing: .6px; margin-bottom: 14px; padding-left: 12px; border-left: 3px solid var(--brand); }
+.article-cover img { box-shadow: 0 20px 40px -24px rgba(1, 11, 36, .45); }
+.article-foot { display: flex; justify-content: space-between; align-items: center; gap: 20px; flex-wrap: wrap; margin: 40px 0 48px; padding: 24px 0; border-top: 1px solid var(--line); border-bottom: 1px solid var(--line); }
+.article-foot .share { margin: 0; }
+.author-box { display: flex; align-items: center; gap: 14px; }
+.author-box small { display: block; font-size: 12px; color: var(--muted); text-transform: uppercase; letter-spacing: .5px; }
+.author-box b { display: block; font: 600 18px var(--serif); color: var(--ink); }
+.author-box span:not(.avatar) { font-size: 13px; color: var(--muted); }
+.avatar-lg { flex: 0 0 56px; height: 56px; font-size: 22px; }
+
+/* Section heading polish */
+.section-title a:first-child { position: relative; }
+.rank-list li { transition: background .2s; }
+.rank-list li:hover .rank { color: var(--brand); }
+.rank { transition: color .2s; }
+.site-footer { position: relative; }
+.site-footer::before { content: ''; position: absolute; left: 0; right: 0; top: 0; height: 4px; background: linear-gradient(90deg, var(--brand), var(--brand-dark)); }
+
 /* ---------- Responsive ---------- */
 @media (max-width: 1280px) {
   .header-info .info-item:nth-child(3) { display: none; }
@@ -234,6 +296,8 @@ body.drawer-open .drawer-overlay { opacity: 1; pointer-events: auto; }
 }
 @media (max-width: 1080px) {
   :root { --gap: 32px; }
+  .mosaic { grid-template-columns: 1fr; gap: 28px; }
+  .mosaic-flip .card-lead { order: 0; }
   .header-info { display: none; }
   .home-top, .layout { grid-template-columns: 1fr; gap: 48px; }
   .home-top .rank-list { max-height: none; }
@@ -243,6 +307,11 @@ body.drawer-open .drawer-overlay { opacity: 1; pointer-events: auto; }
 }
 @media (max-width: 760px) {
   :root { --gutter: 16px; }
+  .cat-bar a { padding: 12px 10px; font-size: 13px; }
+  .card-lead .card-title { font-size: 22px; }
+  .card-mini { grid-template-columns: 110px minmax(0, 1fr); gap: 14px; }
+  .card-mini .card-title { font-size: 16px; }
+  .article-foot { flex-direction: column; align-items: flex-start; }
   .header-inner { min-height: 68px; grid-template-columns: auto 1fr auto; gap: 8px; }
   .header-left { gap: 0; }
   .logo { font-size: 28px; text-align: center; }

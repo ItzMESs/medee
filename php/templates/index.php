@@ -12,17 +12,26 @@
   <section class="section">
     <h2 class="section-title"><a href="<?= url('/latest') ?>">Шинэ мэдээ</a></h2>
     <div class="grid grid-4">
-      <?php foreach ($latest as $a) { $variant = ''; $showExcerpt = false; include __DIR__ . '/card.php'; } ?>
+      <?php foreach ($latest as $a) { $variant = ''; $showExcerpt = false; $chip = true; include __DIR__ . '/card.php'; } ?>
     </div>
   </section>
   <?php endif; ?>
 
-  <?php foreach ($sections as $s): ?>
+  <?php foreach ($sections as $i => $s): $lead = $s['articles'][0]; $rest = array_slice($s['articles'], 1); ?>
   <section class="section">
     <h2 class="section-title"><a href="<?= url('/category/' . $s['category']['slug']) ?>"><?= e($s['category']['name']) ?></a><a class="more" href="<?= url('/category/' . $s['category']['slug']) ?>">Бүгдийг үзэх <?= icon('chev', 16) ?></a></h2>
-    <div class="grid grid-4">
-      <?php foreach ($s['articles'] as $a) { $variant = ''; $showExcerpt = false; include __DIR__ . '/card.php'; } ?>
+    <?php if (count($s['articles']) >= 4): // enough stories for the lead + list layout ?>
+    <div class="mosaic <?= $i % 2 ? 'mosaic-flip' : '' ?>">
+      <?php $a = $lead; $variant = 'card-lead'; $showExcerpt = true; $chip = false; include __DIR__ . '/card.php'; ?>
+      <div class="mosaic-list">
+        <?php foreach ($rest as $a) { $variant = 'card-mini'; $showExcerpt = false; $chip = false; include __DIR__ . '/card.php'; } ?>
+      </div>
     </div>
+    <?php else: ?>
+    <div class="grid grid-3">
+      <?php foreach ($s['articles'] as $a) { $variant = ''; $showExcerpt = false; $chip = false; include __DIR__ . '/card.php'; } ?>
+    </div>
+    <?php endif; ?>
   </section>
   <?php endforeach; ?>
 </div>

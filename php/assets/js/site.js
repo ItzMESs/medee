@@ -37,6 +37,21 @@
     update();
   });
 
+  // Reading progress bar on article pages
+  var bar = document.querySelector('.read-progress span');
+  var body = document.querySelector('.article-body');
+  if (bar && body) {
+    var progress = function () {
+      var rect = body.getBoundingClientRect();
+      var total = rect.height - window.innerHeight * 0.6;
+      var done = Math.min(1, Math.max(0, -rect.top / Math.max(1, total)));
+      bar.style.width = (done * 100).toFixed(1) + '%';
+    };
+    window.addEventListener('scroll', progress, { passive: true });
+    window.addEventListener('resize', progress);
+    progress();
+  }
+
   // Header shadow once the page scrolls
   var header = document.querySelector('.site-header');
   if (header) {

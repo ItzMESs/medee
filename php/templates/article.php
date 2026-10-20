@@ -1,15 +1,26 @@
 <?php include __DIR__ . '/header.php'; $a = $article; ?>
 <div class="container layout">
   <article class="content article">
+    <?php if ($article['category_name']): ?><a href="<?= url('/category/' . $article['category_slug']) ?>" class="article-kicker"><?= e($article['category_name']) ?></a><?php endif; ?>
     <h1 class="article-title"><?= e($article['title']) ?></h1>
     <div class="article-meta">
       <?php $withDate = true; include __DIR__ . '/meta.php'; ?>
-      <span class="views"><?= (int) $article['views'] ?> үзсэн<?php if ($settings['comments_enabled'] === '1'): ?> · <a href="#comments"><?= count($comments) ?> сэтгэгдэл</a><?php endif; ?></span>
+      <span class="views"><?= $readMinutes ?> минут унших · <?= (int) $article['views'] ?> үзсэн<?php if ($settings['comments_enabled'] === '1'): ?> · <a href="#comments"><?= count($comments) ?> сэтгэгдэл</a><?php endif; ?></span>
     </div>
     <?php if ($article['image']): ?><figure class="article-cover"><img src="<?= e(media($article['image'])) ?>" alt="<?= e($article['title']) ?>"></figure><?php endif; ?>
     <?php if ($article['excerpt']): ?><p class="lead"><?= e($article['excerpt']) ?></p><?php endif; ?>
     <div class="article-body"><?= $article['content'] ?></div>
-    <?php include __DIR__ . '/share.php'; ?>
+    <div class="article-foot">
+      <div class="author-box">
+        <span class="avatar avatar-lg"><?= e(mb_strtoupper(mb_substr($article['author_name'] ?: $settings['site_name'], 0, 1))) ?></span>
+        <div>
+          <small>Нийтэлсэн</small>
+          <b><?= e($article['author_name'] ?: $settings['site_name']) ?></b>
+          <span><?= e($settings['site_name']) ?> · <?= e(format_date($article['published_at'])) ?></span>
+        </div>
+      </div>
+      <?php include __DIR__ . '/share.php'; ?>
+    </div>
 
     <?php if ($settings['comments_enabled'] === '1') { include __DIR__ . '/comments.php'; } ?>
 
