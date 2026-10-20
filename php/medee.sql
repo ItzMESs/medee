@@ -1,4 +1,4 @@
--- Medee.mn мэдээллийн сайтын өгөгдлийн сан (MySQL 5.7 / 8.0)
+-- Nationalrbc.com мэдээллийн сайтын өгөгдлийн сан (MySQL 5.7 / 8.0)
 -- phpMyAdmin → өгөгдлийн сангаа сонгох → Import → энэ файл → Go
 -- Анхны админ: admin / admin123  (нэвтэрсний дараа "Нууц үг солих" хэсгээс заавал солино уу)
 -- АНХААР: эдгээр хүснэгт өмнө нь байвал устгаад шинээр үүсгэнэ.
@@ -148,6 +148,6 @@ INSERT INTO `pages` (`id`, `title`, `slug`, `content`, `in_footer`, `position`, 
 -- Тохиргоо
 INSERT INTO `settings` (`name`, `value`) VALUES
 ('schema_version', 4),
-('site_name', 'Medee.mn');
+('site_name', 'Nationalrbc.com');
 
 SET FOREIGN_KEY_CHECKS = 1;

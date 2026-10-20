@@ -12,7 +12,7 @@ function http_get_json($url, $timeout = 4)
         CURLOPT_RETURNTRANSFER => true,
         CURLOPT_TIMEOUT => $timeout,
         CURLOPT_CONNECTTIMEOUT => 3,
-        CURLOPT_USERAGENT => 'Medee.mn/1.0',
+        CURLOPT_USERAGENT => 'Nationalrbc.com/1.0',
     ]);
     $body = curl_exec($ch);
     $status = (int) curl_getinfo($ch, CURLINFO_HTTP_CODE);
@@ -95,6 +95,21 @@ function weather_label($code, $isDay = true)
     if (($c >= 71 && $c <= 77) || $c === 85 || $c === 86) return ['🌨️', 'Цастай'];
     if ($c >= 95) return ['⛈️', 'Аадар бороо'];
     return ['🌡️', ''];
+}
+
+// One-word description for the narrow header slot.
+function weather_short($code)
+{
+    $c = (int) $code;
+    if ($c === 0) return 'Цэлмэг';
+    if ($c <= 2) return 'Үүлтэй';
+    if ($c === 3) return 'Үүлэрхэг';
+    if ($c === 45 || $c === 48) return 'Манан';
+    if ($c >= 51 && $c <= 57) return 'Шиврээ';
+    if (($c >= 61 && $c <= 67) || ($c >= 80 && $c <= 82)) return 'Бороо';
+    if (($c >= 71 && $c <= 77) || $c === 85 || $c === 86) return 'Цас';
+    if ($c >= 95) return 'Аадар';
+    return '';
 }
 
 function parse_weather(array $json)

@@ -35,7 +35,7 @@ function now()
 function default_settings()
 {
     return [
-        'site_name' => 'Medee.mn',
+        'site_name' => 'Nationalrbc.com',
         'site_tagline' => 'Шуурхай, бодит мэдээ',
         'site_url' => detect_site_url(),
         'fb_page_url' => '',

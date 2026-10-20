@@ -50,7 +50,7 @@ $socials = array_filter([
         <div class="header-info">
           <div class="info-item"><?= icon('calendar', 26) ?><div><small>Өнөөдөр</small><b><?= date('Y.m.d') ?></b></div></div>
           <?php if ($weather): list(, $wText) = weather_label($weather['code'], $weather['is_day']); ?>
-            <div class="info-item"><?= icon(weather_icon_name($weather['code']), 26) ?><div><small>Улаанбаатар</small><b><?= $weather['temp'] > 0 ? '+' : '' ?><?= $weather['temp'] ?>°C <?= e($wText) ?></b></div></div>
+            <div class="info-item" title="Улаанбаатар: <?= e($wText) ?>"><?= icon(weather_icon_name($weather['code']), 26) ?><div><small>Улаанбаатар</small><b><?= $weather['temp'] > 0 ? '+' : '' ?><?= $weather['temp'] ?>°C <?= e(weather_short($weather['code'])) ?></b></div></div>
           <?php endif; ?>
           <?php if ($rates): $first = key($rates); ?>
             <div class="info-item" title="<?php foreach ($rates as $c => $v) { echo e($c . ': ' . format_rate($v) . '₮  '); } ?>"><?= icon('coins', 26) ?><div><small>Валютын ханш</small><b><?= e($first) ?>: <?= format_rate($rates[$first]) ?>₮</b></div></div>
