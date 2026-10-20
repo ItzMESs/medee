@@ -39,7 +39,8 @@ $socials = array_filter([
   <?php endif; ?>
   <link rel="manifest" href="<?= url('/manifest.webmanifest') ?>">
   <?php if (is_file(ROOT . '/assets/img/icon-192.png')): ?><link rel="apple-touch-icon" href="<?= asset('img/icon-192.png') ?>"><?php endif; ?>
-  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<?= rawurlencode('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64"><rect width="64" height="64" rx="12" fill="' . $brand . '"/><text x="32" y="46" font-family="Georgia,serif" font-size="40" font-weight="700" fill="#fff" text-anchor="middle">' . htmlspecialchars(mb_strtoupper(mb_substr($settings['site_name'], 0, 1)), ENT_XML1) . '</text></svg>') ?>">
+  <?php if (is_file(ROOT . '/assets/img/icon-192.png')): ?><link rel="icon" type="image/png" href="<?= asset('img/icon-192.png') ?>"><?php else: ?>
+  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<?= rawurlencode('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64"><rect width="64" height="64" rx="12" fill="' . $brand . '"/><text x="32" y="46" font-family="Georgia,serif" font-size="40" font-weight="700" fill="#fff" text-anchor="middle">' . htmlspecialchars(mb_strtoupper(mb_substr($settings['site_name'], 0, 1)), ENT_XML1) . '</text></svg>') ?>"><?php endif; ?>
   <link rel="alternate" type="application/rss+xml" title="<?= e($settings['site_name']) ?>" href="<?= url('/rss.xml') ?>">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>

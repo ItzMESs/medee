@@ -169,8 +169,8 @@ body.drawer-open .drawer-overlay { opacity: 1; pointer-events: auto; }
 .article-meta .views a { color: var(--brand); }
 .article-cover { margin: 0 0 28px; }
 .article-cover img { width: 100%; }
-.lead { font-size: 19px; font-weight: 600; line-height: 1.75; color: var(--ink); margin: 0 0 22px; }
-.article-body { font-size: 18px; line-height: 1.95; color: var(--text); text-align: justify; hyphens: auto; overflow-wrap: break-word; }
+.lead { margin: 0 0 1.2em; }
+.article-body, .lead { font-size: 18px; line-height: 1.95; color: var(--text); text-align: justify; hyphens: auto; overflow-wrap: break-word; }
 .article-body p { margin: 0 0 1.2em; }
 .article-body h2, .article-body h3, .article-body h4 { font: 700 19px/1.6 var(--sans); text-transform: uppercase; letter-spacing: .2px; color: var(--ink); text-align: left; margin: 1.6em 0 .7em; }
 .article-body a { color: var(--brand); text-decoration: underline; }
@@ -426,7 +426,7 @@ body.drawer-open .drawer-overlay { opacity: 1; pointer-events: auto; }
   .card-row .excerpt { display: none; }
   .card-row .card-img { aspect-ratio: 4 / 3; }
   .article-title { font-size: 28px; }
-  .article-body { font-size: 17px; line-height: 1.85; text-align: left; }
+  .article-body, .lead { font-size: 17px; line-height: 1.85; }
   .comment-form { padding: 20px; }
   .comment-note { flex-direction: column; gap: 4px; }
   .section { margin-top: 44px; }

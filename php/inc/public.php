@@ -88,7 +88,8 @@ function page_article($id, $slug)
     if (!$article) {
         not_found();
     }
-    if ($slug !== $article['slug']) {
+    // Links are just /news/{id}; older links that still carry the slug are redirected.
+    if ($slug !== '') {
         redirect(article_path($article), 301);
     }
     if (track_view($id)) {

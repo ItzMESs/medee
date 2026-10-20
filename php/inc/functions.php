@@ -125,7 +125,7 @@ function absolute_url($path)
 
 function article_path(array $a)
 {
-    return '/news/' . $a['id'] . '/' . $a['slug'];
+    return '/news/' . $a['id'];
 }
 
 function article_url(array $a)

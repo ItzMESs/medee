@@ -19,7 +19,7 @@
         </div>
         <p><?= nl2br(e($c['body'])) ?></p>
         <div class="ac-foot">
-          <a href="<?= url('/news/' . $c['aid'] . '/' . $c['article_slug']) ?>#comments" target="_blank" class="muted">↳ <?= e($c['article_title']) ?></a>
+          <a href="<?= url('/news/' . $c['aid']) ?>#comments" target="_blank" class="muted">↳ <?= e($c['article_title']) ?></a>
           <div class="ac-actions">
             <?php if ($c['status'] === 'pending'): ?>
             <form method="post" action="<?= url('/admin/comments/' . $c['id'] . '/approve' . $q) ?>"><?= csrf_field() ?><button class="btn btn-sm btn-primary">Зөвшөөрөх</button></form>
