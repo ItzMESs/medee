@@ -1,15 +1,11 @@
-<?php include __DIR__ . '/header.php'; ?>
-<div class="layout">
+<?php include __DIR__ . '/header.php'; $a = $article; ?>
+<div class="container layout">
   <article class="content article">
-    <?php if ($article['category_name']): ?><a href="<?= url('/category/' . $article['category_slug']) ?>" class="tag"><?= e($article['category_name']) ?></a><?php endif; ?>
     <h1 class="article-title"><?= e($article['title']) ?></h1>
     <div class="article-meta">
-      <span><?= e(format_date($article['published_at'])) ?></span>
-      <?php if ($article['author_name']): ?><span><?= e($article['author_name']) ?></span><?php endif; ?>
-      <span><?= (int) $article['views'] ?> үзсэн</span>
-      <?php if ($settings['comments_enabled'] === '1'): ?><a href="#comments"><?= count($comments) ?> сэтгэгдэл</a><?php endif; ?>
+      <?php $withDate = true; include __DIR__ . '/meta.php'; ?>
+      <span class="views"><?= (int) $article['views'] ?> үзсэн<?php if ($settings['comments_enabled'] === '1'): ?> · <a href="#comments"><?= count($comments) ?> сэтгэгдэл</a><?php endif; ?></span>
     </div>
-    <?php include __DIR__ . '/share.php'; ?>
     <?php if ($article['image']): ?><figure class="article-cover"><img src="<?= e(media($article['image'])) ?>" alt="<?= e($article['title']) ?>"></figure><?php endif; ?>
     <?php if ($article['excerpt']): ?><p class="lead"><?= e($article['excerpt']) ?></p><?php endif; ?>
     <div class="article-body"><?= $article['content'] ?></div>
@@ -25,10 +21,12 @@
     <?php endif; ?>
 
     <?php if ($related): ?>
-      <h2 class="section-title">Холбоотой мэдээ</h2>
-      <div class="grid">
-        <?php foreach ($related as $a) { $variant = ''; $showExcerpt = false; include __DIR__ . '/card.php'; } ?>
-      </div>
+      <section class="section">
+        <h2 class="section-title">Холбоотой мэдээ</h2>
+        <div class="grid grid-3">
+          <?php foreach ($related as $a) { $variant = ''; $showExcerpt = false; include __DIR__ . '/card.php'; } ?>
+        </div>
+      </section>
     <?php endif; ?>
   </article>
   <?php include __DIR__ . '/sidebar.php'; ?>

@@ -1,6 +1,6 @@
 <?php
 // Bump when tables are added; bootstrap re-runs create_schema() on older databases.
-define('SCHEMA_VERSION', 3);
+define('SCHEMA_VERSION', 4);
 
 // Creates the tables (safe to run more than once) and default rows.
 function create_schema(PDO $pdo)
@@ -68,6 +68,15 @@ function create_schema(PDO $pdo)
         INDEX idx_status (status, created_at),
         CONSTRAINT fk_com_art FOREIGN KEY (article_id) REFERENCES articles(id) ON DELETE CASCADE
     ) $opts");
+    $pdo->exec("CREATE TABLE IF NOT EXISTS pages (
+        id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+        title VARCHAR(255) NOT NULL,
+        slug VARCHAR(128) NOT NULL UNIQUE,
+        content MEDIUMTEXT NOT NULL,
+        in_footer TINYINT(1) NOT NULL DEFAULT 1,
+        position INT NOT NULL DEFAULT 0,
+        updated_at DATETIME NOT NULL
+    ) $opts");
     $pdo->exec("CREATE TABLE IF NOT EXISTS settings (
         name VARCHAR(64) NOT NULL PRIMARY KEY,
         `value` TEXT NOT NULL
@@ -84,6 +93,18 @@ function create_schema(PDO $pdo)
         }
     }
 
+    if ((int) $pdo->query('SELECT COUNT(*) FROM pages')->fetchColumn() === 0) {
+        $pages = [
+            ['Бидний тухай', 'bidnii-tukhai', '<p>Манай сайт нь Монгол болон дэлхийн өнцөг булан бүрээс шуурхай, бодит мэдээллийг уншигчдадаа хүргэдэг мэдээллийн хэрэгсэл юм.</p><p>Энэ хуудсыг админ панелын <b>Хуудсууд</b> хэсгээс засна уу.</p>'],
+            ['Сурталчилгаа байршуулах', 'surtalchilgaa', '<p>Манай сайтад сурталчилгаа байршуулах талаар доорх хаягаар холбогдоно уу.</p><p>Энэ хуудсыг админ панелын <b>Хуудсууд</b> хэсгээс засна уу.</p>'],
+            ['Холбоо барих', 'kholboo-barikh', '<p>Мэдээ, санал хүсэлтээ бидэнд илгээнэ үү.</p><p>Энэ хуудсыг админ панелын <b>Хуудсууд</b> хэсгээс засна уу.</p>'],
+            ['Нууцлалын бодлого', 'privacy', '<p>Бид уншигчдынхаа хувийн мэдээллийг хүндэтгэж, хадгална.</p><p>Энэ хуудсыг админ панелын <b>Хуудсууд</b> хэсгээс засна уу.</p>'],
+        ];
+        $st = $pdo->prepare('INSERT INTO pages (title, slug, content, in_footer, position, updated_at) VALUES (?, ?, ?, ?, ?, ?)');
+        foreach ($pages as $i => $pg) {
+            $st->execute([$pg[0], $pg[1], $pg[2], $pg[1] === 'privacy' ? 0 : 1, $i, date('Y-m-d H:i:s')]);
+        }
+    }
     $pdo->prepare('INSERT INTO settings (name, `value`) VALUES (?, ?) ON DUPLICATE KEY UPDATE `value` = VALUES(`value`)')
         ->execute(['schema_version', (string) SCHEMA_VERSION]);
 }

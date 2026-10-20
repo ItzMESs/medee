@@ -70,7 +70,8 @@
 
   const imageInput = document.getElementById('image-input');
   const preview = document.getElementById('image-preview');
-  const saveButton = form.querySelector('.form-side button[type=submit]');
+  const saveButton = form.querySelector('button[type=submit]');
+  if (!imageInput) return;
   imageInput.addEventListener('change', async () => {
     const original = imageInput.files[0];
     if (!original) return;

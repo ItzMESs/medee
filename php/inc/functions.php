@@ -49,6 +49,15 @@ function default_settings()
         'rate_cny' => '',
         'rate_rub' => '',
         'weather_enabled' => '1',
+        'brand_color' => '#0a5cff',
+        'logo' => '',
+        'footer_about' => '',
+        'contact_address' => '',
+        'contact_phone' => '',
+        'contact_email' => '',
+        'social_youtube' => '',
+        'social_x' => '',
+        'social_instagram' => '',
         'comments_enabled' => '1',
         'comments_moderation' => '0',
         'ga_id' => '',
@@ -206,7 +215,8 @@ function time_ago($value)
         return floor($s / 60) . ' минутын өмнө';
     }
     if ($s < 86400) {
-        return floor($s / 3600) . ' цагийн өмнө';
+        $m = floor(($s % 3600) / 60);
+        return floor($s / 3600) . ' цаг' . ($m ? ' ' . $m . ' минутын' : 'ийн') . ' өмнө';
     }
     if ($s < 7 * 86400) {
         return floor($s / 86400) . ' өдрийн өмнө';
@@ -395,7 +405,8 @@ function public_context(array $vars = [])
         'settings' => settings(),
         'categories' => all_categories(),
         'popular' => rows(article_select() . ' WHERE ' . published_where() . ' AND a.published_at >= ?
-            ORDER BY a.views DESC, a.published_at DESC LIMIT 6', [now(), $weekAgo]),
+            ORDER BY a.views DESC, a.published_at DESC LIMIT 10', [now(), $weekAgo]),
+        'latestList' => list_articles('', [], 10),
         'breaking' => list_articles('a.is_breaking = 1', [], 5),
         'currentPath' => isset($GLOBALS['route_path']) ? $GLOBALS['route_path'] : '/',
         'meta' => [],
@@ -468,4 +479,39 @@ function comment_token_valid($articleId, $token)
 function pending_comment_count()
 {
     return (int) q("SELECT COUNT(*) FROM comments WHERE status = 'pending'")->fetchColumn();
+}
+
+// ---------- Design ----------
+
+function brand_color()
+{
+    $c = setting('brand_color');
+    return preg_match('/^#[0-9a-fA-F]{6}$/', $c) ? strtolower($c) : '#0a5cff';
+}
+
+// Darkens (negative $amount) or lightens a #rrggbb colour.
+function shade_color($hex, $amount)
+{
+    $out = '#';
+    foreach (str_split(ltrim($hex, '#'), 2) as $part) {
+        $v = hexdec($part);
+        $v = $amount < 0 ? $v * (1 + $amount) : $v + (255 - $v) * $amount;
+        $out .= str_pad(dechex((int) round(max(0, min(255, $v)))), 2, '0', STR_PAD_LEFT);
+    }
+    return $out;
+}
+
+function footer_pages()
+{
+    static $pages = null;
+    if ($pages === null) {
+        $pages = rows('SELECT title, slug, in_footer FROM pages ORDER BY position, id');
+    }
+    return $pages;
+}
+
+function safe_url($url)
+{
+    $url = trim((string) $url);
+    return preg_match('#^https?://#i', $url) ? $url : '';
 }

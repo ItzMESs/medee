@@ -55,6 +55,22 @@ function admin_dispatch($path, $method)
     if (preg_match('#^/categories/(\d+)(/delete)?$#', $path, $m) && $isPost) {
         return empty($m[2]) ? admin_category_update((int) $m[1]) : admin_category_delete((int) $m[1]);
     }
+    if ($path === '/pages') {
+        return admin_pages();
+    }
+    if ($path === '/pages/new') {
+        return admin_page_form(['id' => null, 'title' => '', 'slug' => '', 'content' => '', 'in_footer' => 1, 'position' => 0]);
+    }
+    if (preg_match('#^/pages/(\d+)(/delete)?$#', $path, $m)) {
+        if (!$isPost) {
+            $pg = row('SELECT * FROM pages WHERE id = ?', [(int) $m[1]]);
+            return $pg ? admin_page_form($pg) : redirect('/admin/pages');
+        }
+        return empty($m[2]) ? admin_page_save((int) $m[1]) : admin_page_delete((int) $m[1]);
+    }
+    if ($path === '/pages/save' && $isPost) {
+        return admin_page_save(null);
+    }
     if ($path === '/comments') {
         return admin_comments();
     }
@@ -465,7 +481,9 @@ function admin_profile_post()
 function admin_settings_post()
 {
     foreach (['site_name', 'site_tagline', 'site_url', 'fb_page_url', 'fb_app_id', 'fb_page_id', 'fb_page_token',
-        'rate_usd', 'rate_cny', 'rate_rub', 'ga_id', 'google_verification'] as $key) {
+        'rate_usd', 'rate_cny', 'rate_rub', 'ga_id', 'google_verification',
+        'brand_color', 'footer_about', 'contact_address', 'contact_phone', 'contact_email',
+        'social_youtube', 'social_x', 'social_instagram'] as $key) {
         // An empty token field keeps the stored token so it never has to be shown in the page.
         if ($key === 'fb_page_token' && post($key) === '') {
             continue;
@@ -479,6 +497,10 @@ function admin_settings_post()
                 flash('error', 'Google Analytics ID буруу байна. G-XXXXXXXXXX хэлбэртэй байх ёстой.');
                 redirect('/admin/settings');
             }
+        } elseif ($key === 'brand_color' && !preg_match('/^#[0-9a-fA-F]{6}$/', $value)) {
+            $value = '#0a5cff';
+        } elseif (in_array($key, ['fb_page_url', 'social_youtube', 'social_x', 'social_instagram'], true) && $value !== '' && !safe_url($value)) {
+            $value = 'https://' . ltrim($value, '/');
         } elseif ($key === 'google_verification' && preg_match('/content="([^"]+)"/', $value, $m)) {
             // Accept the whole <meta> tag pasted from Search Console.
             $value = $m[1];
@@ -493,6 +515,20 @@ function admin_settings_post()
     save_setting('comments_moderation', post('comments_moderation') ? '1' : '0');
     if (post('clear_token')) {
         save_setting('fb_page_token', '');
+    }
+    try {
+        $logo = save_upload('logo_file', false);
+        if ($logo) {
+            remove_upload(setting('logo'));
+            save_setting('logo', $logo);
+        }
+    } catch (RuntimeException $ex) {
+        flash('error', 'Лого: ' . $ex->getMessage());
+        redirect('/admin/settings');
+    }
+    if (post('remove_logo')) {
+        remove_upload(setting('logo'));
+        save_setting('logo', '');
     }
     flash('success', 'Тохиргоо хадгалагдлаа.');
     redirect('/admin/settings');
@@ -562,4 +598,51 @@ function admin_comment_action($id, $action)
     }
     $back = get('status') !== '' ? '/admin/comments?status=' . rawurlencode(get('status')) : '/admin/comments';
     redirect($back);
+}
+
+// ---------- Pages (Бидний тухай, Холбоо барих ...) ----------
+
+function admin_pages()
+{
+    admin_render('pages', ['pages' => rows('SELECT * FROM pages ORDER BY position, id')]);
+}
+
+function admin_page_form(array $page, $error = null)
+{
+    admin_render('page-form', ['page' => $page, 'error' => $error]);
+}
+
+function admin_page_save($id)
+{
+    $data = [
+        'title' => mb_substr(post('title'), 0, 250),
+        'slug' => slugify(post('slug') ?: post('title')),
+        'content' => clean_html(isset($_POST['content']) ? (string) $_POST['content'] : ''),
+        'in_footer' => post('in_footer') ? 1 : 0,
+        'position' => (int) post('position'),
+    ];
+    if ($data['title'] === '') {
+        return admin_page_form(array_merge(['id' => $id], $data), 'Гарчиг заавал оруулна уу.');
+    }
+    try {
+        if ($id) {
+            q('UPDATE pages SET title = ?, slug = ?, content = ?, in_footer = ?, position = ?, updated_at = ? WHERE id = ?',
+                [$data['title'], $data['slug'], $data['content'], $data['in_footer'], $data['position'], now(), $id]);
+        } else {
+            q('INSERT INTO pages (title, slug, content, in_footer, position, updated_at) VALUES (?, ?, ?, ?, ?, ?)',
+                [$data['title'], $data['slug'], $data['content'], $data['in_footer'], $data['position'], now()]);
+            $id = (int) db()->lastInsertId();
+        }
+    } catch (PDOException $ex) {
+        return admin_page_form(array_merge(['id' => $id], $data), 'Ийм холбоостой (slug) хуудас аль хэдийн байна.');
+    }
+    flash('success', 'Хуудас хадгалагдлаа.');
+    redirect('/admin/pages/' . $id);
+}
+
+function admin_page_delete($id)
+{
+    q('DELETE FROM pages WHERE id = ?', [$id]);
+    flash('success', 'Хуудас устгагдлаа.');
+    redirect('/admin/pages');
 }

@@ -3,7 +3,7 @@ $notices = [
     'ok' => ['success', 'Сэтгэгдэл нэмэгдлээ. Баярлалаа!'],
     'pending' => ['info', 'Сэтгэгдэл хүлээн авлаа. Админ шалгасны дараа нийтлэгдэнэ.'],
     'empty' => ['error', 'Сэтгэгдлээ бичнэ үү.'],
-    'long' => ['error', 'Сэтгэгдэл хэт урт байна (2000 тэмдэгт хүртэл).'],
+    'long' => ['error', 'Сэтгэгдэл хэт урт байна (1000 тэмдэгт хүртэл).'],
     'wait' => ['error', 'Түр хүлээгээд дахин бичнэ үү (30 секунд).'],
     'spam' => ['error', 'Сэтгэгдэл илгээж чадсангүй. Хуудсаа сэргээгээд дахин оролдоно уу.'],
 ];
@@ -16,12 +16,13 @@ $notices = [
   <form method="post" action="<?= url('/news/' . (int) $article['id'] . '/comment') ?>" class="comment-form">
     <input type="hidden" name="token" value="<?= e(comment_form_token($article['id'])) ?>">
     <div class="hp" aria-hidden="true"><label>Вэбсайт<input name="website" tabindex="-1" autocomplete="off"></label></div>
-    <input name="name" maxlength="60" placeholder="Нэр (заавал биш)" autocomplete="nickname">
-    <textarea name="body" rows="3" maxlength="2000" required placeholder="Сэтгэгдлээ бичнэ үү..."></textarea>
-    <div class="comment-actions">
-      <small>Бусдыг хүндэлсэн, ёс зүйтэй сэтгэгдэл бичнэ үү.</small>
-      <button type="submit">Илгээх</button>
+    <input name="name" maxlength="60" placeholder="Таны нэр" autocomplete="nickname">
+    <textarea name="body" rows="6" maxlength="1000" required placeholder="Сэтгэгдлээ энд бичнэ үү..." data-counter="comment-count"></textarea>
+    <div class="comment-note">
+      <small>Та сэтгэгдэл бичихдээ хууль зүйн болон ёс суртахууны хэм хэмжээг баримтална уу. Ёс бус сэтгэгдлийг админ устгах эрхтэй.</small>
+      <small class="counter"><span id="comment-count">0</span>/1000</small>
     </div>
+    <button type="submit" class="btn-block">Сэтгэгдэл үлдээх</button>
   </form>
   <ul class="comment-list">
     <?php foreach ($comments as $c): ?>

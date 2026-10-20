@@ -28,6 +28,9 @@ function public_dispatch($path)
     if ($path === '/rss.xml') {
         return page_rss();
     }
+    if (preg_match('#^/p/([a-z0-9-]+)$#', $path, $m)) {
+        return page_static($m[1]);
+    }
     if ($path === '/sitemap.xml') {
         return page_sitemap();
     }
@@ -44,9 +47,15 @@ function current_page()
 
 function page_home()
 {
-    $featured = list_articles('a.is_featured = 1', [], 5);
+    // Two big "Онцлох мэдээ" cards; topped up with the newest articles when fewer are featured.
+    $featured = list_articles('a.is_featured = 1', [], 2);
+    if (count($featured) < 2) {
+        $have = array_map(function ($a) { return (int) $a['id']; }, $featured);
+        $fill = list_articles($have ? 'a.id NOT IN (' . implode(',', $have) . ')' : '', [], 2 - count($featured));
+        $featured = array_merge($featured, $fill);
+    }
     $ids = array_map(function ($a) { return (int) $a['id']; }, $featured);
-    $latest = list_articles($ids ? 'a.id NOT IN (' . implode(',', $ids) . ')' : '', [], 12);
+    $latest = list_articles($ids ? 'a.id NOT IN (' . implode(',', $ids) . ')' : '', [], 8);
     $sections = [];
     foreach (all_categories() as $c) {
         $list = list_articles('a.category_id = ?', [$c['id']], 4);
@@ -169,7 +178,7 @@ function post_comment($id)
     if (mb_strlen($body) < 2) {
         $back('empty');
     }
-    if (mb_strlen($body) > 2000) {
+    if (mb_strlen($body) > 1000) {
         $back('long');
     }
     $ip = client_ip_hash();
@@ -218,4 +227,15 @@ function page_robots()
     echo 'Disallow: ' . url('/admin') . "\n";
     echo 'Disallow: ' . url('/search') . "\n\n";
     echo 'Sitemap: ' . absolute_url('/sitemap.xml') . "\n";
+}
+
+function page_static($slug)
+{
+    $page = row('SELECT * FROM pages WHERE slug = ?', [$slug]);
+    if (!$page) {
+        not_found();
+    }
+    track_view();
+    $meta = ['title' => $page['title'], 'description' => excerpt_from($page['content'], 160), 'url' => absolute_url('/p/' . $page['slug'])];
+    render('page', public_context(compact('page', 'meta')));
 }

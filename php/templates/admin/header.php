@@ -10,6 +10,7 @@ $navLink = function ($href, $label, $active, $extra = '') use ($path) {
   <meta name="csrf-token" content="<?= e(csrf_token()) ?>">
   <title>Админ — <?= e($settings['site_name']) ?></title>
   <link rel="stylesheet" href="<?= asset('css/admin.css') ?>">
+  <style>:root { --brand: <?= brand_color() ?>; }</style>
   <?php if (!empty($editor)): ?><link rel="stylesheet" href="<?= asset('vendor/quill/quill.snow.css') ?>"><?php endif; ?>
 </head>
 <body>
@@ -21,6 +22,7 @@ $navLink = function ($href, $label, $active, $extra = '') use ($path) {
       <?= $navLink('/admin/articles/new', '+ Мэдээ нэмэх', $path === '/admin/articles/new') ?>
       <?= $navLink('/admin/articles', 'Бүх мэдээ', $path === '/admin/articles') ?>
       <?= $navLink('/admin/categories', 'Ангилал', $path === '/admin/categories') ?>
+      <?= $navLink('/admin/pages', 'Хуудсууд', strpos($path, '/admin/pages') === 0) ?>
       <?= $navLink('/admin/comments', 'Сэтгэгдэл' . ($pendingComments ? ' <span class="nav-badge">' . (int) $pendingComments . '</span>' : ''), $path === '/admin/comments') ?>
       <?php if ($user['role'] === 'admin'): ?>
         <?= $navLink('/admin/users', 'Хэрэглэгчид', $path === '/admin/users') ?>

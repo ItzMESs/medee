@@ -5,6 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Нэвтрэх — <?= e($settings['site_name']) ?></title>
   <link rel="stylesheet" href="<?= asset('css/admin.css') ?>">
+  <style>:root { --brand: <?= brand_color() ?>; }</style>
 </head>
 <body class="login-page">
   <form method="post" action="<?= url('/admin/login') ?>" class="login-box">

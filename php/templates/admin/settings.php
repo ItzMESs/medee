@@ -1,6 +1,6 @@
 <?php include __DIR__ . '/header.php'; ?>
 <h1>Тохиргоо</h1>
-<form method="post" action="<?= url('/admin/settings') ?>" class="stack">
+<form method="post" action="<?= url('/admin/settings') ?>" class="stack" enctype="multipart/form-data">
   <?= csrf_field() ?>
   <div class="panel narrow-panel">
     <h2>Сайт</h2>
@@ -8,6 +8,28 @@
     <label>Уриа<input name="site_tagline" value="<?= e($settings['site_tagline']) ?>"></label>
     <label>Сайтын хаяг (домэйн) <small>ж: https://medee.mn — Facebook пост дээрх холбоос энэ хаягаар үүснэ</small>
       <input name="site_url" value="<?= e($settings['site_url']) ?>" required></label>
+  </div>
+
+  <div class="panel narrow-panel">
+    <h2>Дизайн</h2>
+    <label>Үндсэн өнгө <small>толгой хэсэг, товч, холбоосын өнгө</small>
+      <span class="color-row"><input type="color" name="brand_color" value="<?= e(brand_color()) ?>"><code><?= e(brand_color()) ?></code></span></label>
+    <label>Лого <small>PNG (тунгалаг дэвсгэртэй), өндөр нь 80-120px байхад тохиромжтой. Байхгүй бол сайтын нэр бичигдэнэ.</small>
+      <?php if ($settings['logo']): ?><span class="logo-preview" style="background: <?= e(brand_color()) ?>"><img src="<?= e(media($settings['logo'])) ?>" alt=""></span><?php endif; ?>
+      <input type="file" name="logo_file" accept="image/png,image/jpeg,image/webp"></label>
+    <?php if ($settings['logo']): ?><label class="check"><input type="checkbox" name="remove_logo" value="1"> Логог устгах</label><?php endif; ?>
+  </div>
+
+  <div class="panel narrow-panel">
+    <h2>Footer ба холбоо барих</h2>
+    <label>Сайтын тухай товч <small>footer-т логоны доор гарна</small><textarea name="footer_about" rows="3"><?= e($settings['footer_about']) ?></textarea></label>
+    <label>Хаяг<input name="contact_address" value="<?= e($settings['contact_address']) ?>" placeholder="Сүхбаатар дүүрэг, ... Улаанбаатар"></label>
+    <label>Утас<input name="contact_phone" value="<?= e($settings['contact_phone']) ?>" placeholder="7700 0000"></label>
+    <label>Цахим шуудан<input name="contact_email" value="<?= e($settings['contact_email']) ?>" placeholder="info@domain.mn"></label>
+    <label>YouTube<input name="social_youtube" value="<?= e($settings['social_youtube']) ?>" placeholder="https://youtube.com/@..."></label>
+    <label>X (Twitter)<input name="social_x" value="<?= e($settings['social_x']) ?>" placeholder="https://x.com/..."></label>
+    <label>Instagram<input name="social_instagram" value="<?= e($settings['social_instagram']) ?>" placeholder="https://instagram.com/..."></label>
+    <small class="muted">Facebook холбоосыг доорх "Facebook пэйжийн хаяг" талбараас авна. Footer-ийн холбоосуудыг <a href="<?= url('/admin/pages') ?>">Хуудсууд</a> хэсгээс удирдана.</small>
   </div>
 
   <div class="panel narrow-panel">
