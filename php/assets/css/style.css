@@ -296,21 +296,20 @@ body.drawer-open .drawer-overlay { opacity: 1; pointer-events: auto; }
 /* ---------- Mongolian ornaments (алхан хээ, өлзий, эвэр угалз) ---------- */
 :root {
   --orn-alkhan: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 10 10'%3E%3Cpath d='M0 1H10M0 9H10M2.5 1V6.2M0.6 6.2H4.4M7.5 9V3.8M5.6 3.8H9.4' fill='none' stroke='%23000' stroke-width='1.15' stroke-linecap='square'/%3E%3C/svg%3E");
-  --orn-alkhan2: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 20'%3E%3Cpath d='M0 1H20M0 10H20M0 19H20M5 1V6.5M2.5 6.5H7.5M15 10V4.5M12.5 4.5H17.5M15 10V15.5M12.5 15.5H17.5M5 19V13.5M2.5 13.5H7.5' fill='none' stroke='%23000' stroke-width='1.6' stroke-linecap='square'/%3E%3C/svg%3E");
   --orn-ulzii: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 48 48'%3E%3Cg fill='none' stroke='%23000' stroke-width='3.2' stroke-linecap='round' transform='rotate(45 24 24)'%3E%3Cpath d='M13 17V13H17M31 13H35V17M35 31V35H31M17 35H13V31M17 13V35M24 13V35M31 13V35M13 17H35M13 24H35M13 31H35M13 17A5.6 5.6 0 1 1 17 13M31 13A5.6 5.6 0 1 1 35 17M35 31A5.6 5.6 0 1 1 31 35M17 35A5.6 5.6 0 1 1 13 31'/%3E%3C/g%3E%3C/svg%3E");
 }
 .orn { display: block; }
 /* Hammer (алхан) band along the bottom of the blue header and the drawer head */
 .has-ornaments .header-bar::after, .has-ornaments .drawer-head::after {
-  content: ''; display: block; height: 24px; background: rgba(255, 255, 255, .5);
-  -webkit-mask: var(--orn-alkhan2) repeat-x left center / 24px 24px; mask: var(--orn-alkhan2) repeat-x left center / 24px 24px;
+  content: ''; display: block; height: 10px; background: rgba(255, 255, 255, .55);
+  -webkit-mask: var(--orn-alkhan) repeat-x left center / 10px 10px; mask: var(--orn-alkhan) repeat-x left center / 10px 10px;
 }
 .has-ornaments .drawer-head { flex-wrap: wrap; padding-bottom: 0; }
 .has-ornaments .drawer-head::after { flex-basis: calc(100% + 48px); margin: 18px -24px 0; }
 /* Footer: band in the brand colour on navy, faint horn scroll in the corner */
 .has-ornaments .site-footer::before {
-  height: 26px; background: var(--brand);
-  -webkit-mask: var(--orn-alkhan2) repeat-x left center / 26px 26px; mask: var(--orn-alkhan2) repeat-x left center / 26px 26px;
+  height: 14px; background: var(--brand);
+  -webkit-mask: var(--orn-alkhan) repeat-x left center / 14px 14px; mask: var(--orn-alkhan) repeat-x left center / 14px 14px;
 }
 .site-footer { overflow: hidden; }
 .footer-ugalz { position: absolute; right: -40px; bottom: -30px; width: 520px; color: #fff; opacity: .05; pointer-events: none; }
@@ -398,7 +397,7 @@ body.drawer-open .drawer-overlay { opacity: 1; pointer-events: auto; }
   .reactions { padding: 20px 12px; }
   .reaction { min-width: 0; flex: 1 1 calc(33% - 10px); }
   .reaction .emoji { font-size: 28px; }
-  .has-ornaments .header-bar::after { height: 18px; -webkit-mask-size: 18px 18px; mask-size: 18px 18px; }
+  .has-ornaments .header-bar::after { height: 8px; -webkit-mask-size: 8px 8px; mask-size: 8px 8px; }
   .footer-ugalz { width: 320px; }
   .card-lead .card-title { font-size: 22px; }
   .card-mini { grid-template-columns: 110px minmax(0, 1fr); gap: 14px; }
