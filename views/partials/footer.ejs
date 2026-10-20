@@ -1,0 +1,18 @@
+</main>
+<footer class="site-footer">
+  <div class="container footer-inner">
+    <div>
+      <div class="logo logo-sm"><%= settings.site_name %></div>
+      <p><%= settings.site_tagline %></p>
+    </div>
+    <ul class="footer-cats">
+      <% categories.forEach(c => { %><li><a href="/category/<%= c.slug %>"><%= c.name %></a></li><% }) %>
+    </ul>
+    <p class="copy">© <%= new Date().getFullYear() %> <%= settings.site_name %>. Бүх эрх хуулиар хамгаалагдсан.</p>
+  </div>
+</footer>
+<script>
+  document.getElementById('today').textContent = new Date().toLocaleDateString('mn-MN', { year: 'numeric', month: 'long', day: 'numeric', weekday: 'long', timeZone: 'Asia/Ulaanbaatar' });
+</script>
+</body>
+</html>

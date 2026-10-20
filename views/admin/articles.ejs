@@ -1,0 +1,24 @@
+<%- include('_header') %>
+<div class="panel-head"><h1>Бүх мэдээ</h1><a href="/admin/articles/new" class="btn btn-primary">+ Мэдээ нэмэх</a></div>
+<form class="filters" method="get">
+  <input name="q" value="<%= q %>" placeholder="Гарчгаар хайх">
+  <select name="status">
+    <option value="">Бүх төлөв</option>
+    <option value="published" <%= status === 'published' ? 'selected' : '' %>>Нийтлэгдсэн</option>
+    <option value="draft" <%= status === 'draft' ? 'selected' : '' %>>Ноорог</option>
+  </select>
+  <select name="category">
+    <option value="">Бүх ангилал</option>
+    <% categories.forEach(c => { %><option value="<%= c.id %>" <%= category === c.id ? 'selected' : '' %>><%= c.name %></option><% }) %>
+  </select>
+  <button class="btn">Шүүх</button>
+</form>
+<div class="panel"><%- include('_table', { articles }) %></div>
+<% if (pages > 1) { %>
+  <nav class="pager">
+    <% for (let p = 1; p <= pages; p++) { %>
+      <a href="?q=<%= encodeURIComponent(q) %>&status=<%= status %>&category=<%= category || '' %>&page=<%= p %>" class="<%= p === page ? 'active' : '' %>"><%= p %></a>
+    <% } %>
+  </nav>
+<% } %>
+<%- include('_footer') %>

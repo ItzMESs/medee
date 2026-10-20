@@ -1,0 +1,42 @@
+<%- include('_header') %>
+<h1>Ангилал</h1>
+<div class="panel">
+  <h2>Шинэ ангилал</h2>
+  <form method="post" action="/admin/categories" class="inline-form">
+    <input type="hidden" name="_csrf" value="<%= csrf %>">
+    <input name="name" placeholder="Нэр (ж: Эрүүл мэнд)" required>
+    <input name="slug" placeholder="Холбоос (заавал биш)">
+    <input name="position" type="number" placeholder="Дараалал" value="<%= categories.length %>" class="narrow">
+    <button class="btn btn-primary">Нэмэх</button>
+  </form>
+</div>
+<div class="panel">
+  <div class="table-wrap">
+  <table class="table">
+    <thead><tr><th>Нэр</th><th>Холбоос</th><th>Дараалал</th><th>Мэдээ</th><th></th></tr></thead>
+    <tbody>
+    <% categories.forEach(c => { %>
+      <tr>
+        <td colspan="3">
+          <form method="post" action="/admin/categories/<%= c.id %>" class="inline-form">
+            <input type="hidden" name="_csrf" value="<%= csrf %>">
+            <input name="name" value="<%= c.name %>" required>
+            <input name="slug" value="<%= c.slug %>">
+            <input name="position" type="number" value="<%= c.position %>" class="narrow">
+            <button class="btn">Хадгалах</button>
+          </form>
+        </td>
+        <td><%= c.count %></td>
+        <td>
+          <form method="post" action="/admin/categories/<%= c.id %>/delete" onsubmit="return confirm('«<%= c.name %>» ангиллыг устгах уу?')">
+            <input type="hidden" name="_csrf" value="<%= csrf %>">
+            <button class="btn btn-danger btn-sm">Устгах</button>
+          </form>
+        </td>
+      </tr>
+    <% }) %>
+    </tbody>
+  </table>
+  </div>
+</div>
+<%- include('_footer') %>

@@ -1,0 +1,11 @@
+<article class="card <%= typeof variant !== 'undefined' ? variant : '' %>">
+  <a href="<%= articleUrl(a) %>" class="card-img">
+    <% if (a.image) { %><img src="<%= a.image %>" alt="<%= a.title %>" loading="lazy"><% } else { %><span class="noimg"><%= settings.site_name %></span><% } %>
+  </a>
+  <div class="card-body">
+    <% if (a.category_name) { %><a href="/category/<%= a.category_slug %>" class="tag"><%= a.category_name %></a><% } %>
+    <h3><a href="<%= articleUrl(a) %>"><%= a.title %></a></h3>
+    <% if (typeof showExcerpt !== 'undefined' && showExcerpt && a.excerpt) { %><p class="excerpt"><%= a.excerpt %></p><% } %>
+    <div class="meta"><%= timeAgo(a.published_at) %> · <%= a.views %> үзсэн</div>
+  </div>
+</article>

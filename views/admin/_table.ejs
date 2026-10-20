@@ -1,0 +1,29 @@
+<div class="table-wrap">
+<table class="table">
+  <thead><tr><th>Гарчиг</th><th>Ангилал</th><th>Төлөв</th><th>Огноо</th><th>Үзэлт</th><th>Facebook</th><th></th></tr></thead>
+  <tbody>
+  <% articles.forEach(a => { %>
+    <tr>
+      <td><a href="/admin/articles/<%= a.id %>/edit" class="title-link"><%= a.title %></a>
+        <% if (a.is_featured) { %><span class="badge badge-gold">Онцлох</span><% } %>
+        <% if (a.is_breaking) { %><span class="badge badge-red">Шуурхай</span><% } %>
+      </td>
+      <td><%= a.category_name || '—' %></td>
+      <td><span class="badge <%= a.status === 'published' ? 'badge-green' : 'badge-gray' %>"><%= a.status === 'published' ? 'Нийтлэгдсэн' : 'Ноорог' %></span></td>
+      <td class="nowrap"><%= formatDate(a.published_at || a.created_at) %></td>
+      <td><%= a.views %></td>
+      <td>
+        <% if (a.fb_post_id) { %><a href="https://www.facebook.com/<%= a.fb_post_id %>" target="_blank" rel="noopener" class="badge badge-blue">Нийтэлсэн ↗</a>
+        <% } else if (a.fb_error) { %><span class="badge badge-red" title="<%= a.fb_error %>">Алдаа</span>
+        <% } else { %>—<% } %>
+      </td>
+      <td class="nowrap actions">
+        <a href="/admin/articles/<%= a.id %>/edit">Засах</a>
+        <% if (a.status === 'published') { %><a href="<%= articleUrl(a) %>" target="_blank">Үзэх</a><% } %>
+      </td>
+    </tr>
+  <% }) %>
+  <% if (!articles.length) { %><tr><td colspan="7" class="empty">Мэдээ алга.</td></tr><% } %>
+  </tbody>
+</table>
+</div>

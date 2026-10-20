@@ -1,0 +1,12 @@
+<%- include('_header') %>
+<h1>Нууц үг солих</h1>
+<div class="panel narrow-panel">
+  <form method="post" action="/admin/profile" class="stack">
+    <input type="hidden" name="_csrf" value="<%= csrf %>">
+    <label>Одоогийн нууц үг<input type="password" name="current" required autocomplete="current-password"></label>
+    <label>Шинэ нууц үг<input type="password" name="password" required minlength="6" autocomplete="new-password"></label>
+    <label>Шинэ нууц үг давтах<input type="password" name="confirm" required minlength="6" autocomplete="new-password"></label>
+    <button class="btn btn-primary">Солих</button>
+  </form>
+</div>
+<%- include('_footer') %>

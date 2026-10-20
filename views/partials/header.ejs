@@ -1,0 +1,64 @@
+<!doctype html>
+<html lang="mn">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <% const pageTitle = meta.title ? meta.title + ' | ' + settings.site_name : settings.site_name + ' — ' + settings.site_tagline; %>
+  <title><%= pageTitle %></title>
+  <meta name="description" content="<%= meta.description || settings.site_tagline %>">
+  <meta property="og:site_name" content="<%= settings.site_name %>">
+  <meta property="og:title" content="<%= meta.title || settings.site_name %>">
+  <meta property="og:description" content="<%= meta.description || settings.site_tagline %>">
+  <meta property="og:type" content="<%= meta.type || 'website' %>">
+  <meta property="og:locale" content="mn_MN">
+  <% if (meta.url) { %><meta property="og:url" content="<%= meta.url %>"><link rel="canonical" href="<%= meta.url %>"><% } %>
+  <% if (meta.image) { %><meta property="og:image" content="<%= meta.image %>"><meta name="twitter:card" content="summary_large_image"><% } %>
+  <% if (meta.published) { %><meta property="article:published_time" content="<%= meta.published.replace(' ', 'T') %>Z"><% } %>
+  <% if (settings.fb_app_id) { %><meta property="fb:app_id" content="<%= settings.fb_app_id %>"><% } %>
+  <link rel="alternate" type="application/rss+xml" title="<%= settings.site_name %>" href="/rss.xml">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&family=Roboto+Slab:wght@600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/static/css/style.css">
+</head>
+<body>
+<header class="site-header">
+  <div class="topbar">
+    <div class="container topbar-inner">
+      <span id="today"></span>
+      <div class="topbar-links">
+        <% if (settings.fb_page_url) { %><a href="<%= settings.fb_page_url %>" target="_blank" rel="noopener">Facebook</a><% } %>
+        <a href="/rss.xml">RSS</a>
+      </div>
+    </div>
+  </div>
+  <div class="container brand-row">
+    <a href="/" class="logo"><%= settings.site_name %></a>
+    <form action="/search" method="get" class="search">
+      <input type="search" name="q" placeholder="Мэдээ хайх..." value="<%= typeof query !== 'undefined' ? query : '' %>" aria-label="Хайх">
+      <button type="submit">Хайх</button>
+    </form>
+  </div>
+  <nav class="main-nav">
+    <div class="container nav-inner">
+      <button class="nav-toggle" aria-label="Цэс" onclick="document.body.classList.toggle('nav-open')">☰</button>
+      <ul>
+        <li><a href="/" class="<%= currentPath === '/' ? 'active' : '' %>">Нүүр</a></li>
+        <li><a href="/latest" class="<%= currentPath === '/latest' ? 'active' : '' %>">Шинэ</a></li>
+        <% categories.forEach(c => { %>
+          <li><a href="/category/<%= c.slug %>" class="<%= currentPath === '/category/' + c.slug ? 'active' : '' %>"><%= c.name %></a></li>
+        <% }) %>
+      </ul>
+    </div>
+  </nav>
+  <% if (breaking.length) { %>
+  <div class="breaking">
+    <div class="container breaking-inner">
+      <span class="breaking-label">ШУУРХАЙ</span>
+      <div class="ticker"><div class="ticker-track">
+        <% breaking.concat(breaking).forEach(a => { %><a href="<%= articleUrl(a) %>"><%= a.title %></a><% }) %>
+      </div></div>
+    </div>
+  </div>
+  <% } %>
+</header>
+<main class="container">

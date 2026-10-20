@@ -1,0 +1,38 @@
+<%- include('partials/header') %>
+<% if (featured.length) { const [hero, ...rest] = featured; %>
+<section class="hero">
+  <a href="<%= articleUrl(hero) %>" class="hero-main">
+    <% if (hero.image) { %><img src="<%= hero.image %>" alt="<%= hero.title %>"><% } %>
+    <div class="hero-overlay">
+      <% if (hero.category_name) { %><span class="tag tag-solid"><%= hero.category_name %></span><% } %>
+      <h1><%= hero.title %></h1>
+      <p><%= hero.excerpt %></p>
+      <span class="meta"><%= timeAgo(hero.published_at) %></span>
+    </div>
+  </a>
+  <div class="hero-side">
+    <% rest.forEach(a => { %><%- include('partials/card', { a, variant: 'card-row' }) %><% }) %>
+  </div>
+</section>
+<% } %>
+
+<div class="layout">
+  <div class="content">
+    <h2 class="section-title"><a href="/latest">Шинэ мэдээ</a></h2>
+    <div class="grid">
+      <% latest.forEach(a => { %><%- include('partials/card', { a }) %><% }) %>
+    </div>
+    <% if (!latest.length && !featured.length) { %>
+      <p class="empty">Одоогоор нийтлэгдсэн мэдээ алга. <a href="/admin">Админ панелаас</a> мэдээ нэмнэ үү.</p>
+    <% } %>
+
+    <% sections.forEach(s => { %>
+      <h2 class="section-title"><a href="/category/<%= s.category.slug %>"><%= s.category.name %></a></h2>
+      <div class="grid">
+        <% s.articles.forEach(a => { %><%- include('partials/card', { a }) %><% }) %>
+      </div>
+    <% }) %>
+  </div>
+  <%- include('partials/sidebar') %>
+</div>
+<%- include('partials/footer') %>

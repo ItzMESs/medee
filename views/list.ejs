@@ -1,0 +1,19 @@
+<%- include('partials/header') %>
+<div class="layout">
+  <div class="content">
+    <h1 class="section-title"><%= heading %></h1>
+    <div class="list">
+      <% articles.forEach(a => { %><%- include('partials/card', { a, variant: 'card-row card-wide', showExcerpt: true }) %><% }) %>
+    </div>
+    <% if (!articles.length) { %><p class="empty"><%= query ? 'Хайлтад тохирох мэдээ олдсонгүй.' : 'Мэдээ алга.' %></p><% } %>
+    <% if (pages > 1) { %>
+      <nav class="pager">
+        <% for (let p = 1; p <= pages; p++) { %>
+          <a href="?<%= query ? 'q=' + encodeURIComponent(query) + '&' : '' %>page=<%= p %>" class="<%= p === page ? 'active' : '' %>"><%= p %></a>
+        <% } %>
+      </nav>
+    <% } %>
+  </div>
+  <%- include('partials/sidebar') %>
+</div>
+<%- include('partials/footer') %>

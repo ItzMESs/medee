@@ -1,0 +1,31 @@
+{
+  "name": "medee",
+  "version": "1.0.0",
+  "description": "Мэдээллийн сайт + админ панел + Facebook пэйж рүү автоматаар нийтлэх",
+  "main": "server.js",
+  "scripts": {
+    "start": "node --disable-warning=ExperimentalWarning server.js",
+    "dev": "node --watch --disable-warning=ExperimentalWarning server.js",
+    "seed": "node --disable-warning=ExperimentalWarning scripts/seed.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/ItzMESs/medee.git"
+  },
+  "bugs": {
+    "url": "https://github.com/ItzMESs/medee/issues"
+  },
+  "homepage": "https://github.com/ItzMESs/medee#readme",
+  "dependencies": {
+    "ejs": "^7.0.2",
+    "express": "^5.3.0",
+    "express-session": "^1.19.0",
+    "multer": "^2.4.0",
+    "quill": "^2.0.2",
+    "sanitize-html": "^2.18.1"
+  },
+  "private": true,
+  "engines": {
+    "node": ">=22.13"
+  }
+}

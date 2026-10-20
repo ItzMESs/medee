@@ -1,0 +1,34 @@
+<!doctype html>
+<html lang="mn">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="csrf-token" content="<%= csrf %>">
+  <title>Админ — <%= settings.site_name %></title>
+  <link rel="stylesheet" href="/static/css/admin.css">
+  <% if (typeof editor !== 'undefined') { %><link href="/vendor/quill/quill.snow.css" rel="stylesheet"><% } %>
+</head>
+<body>
+<div class="admin">
+  <aside class="admin-nav">
+    <a href="/admin" class="admin-logo"><%= settings.site_name %><small>Админ</small></a>
+    <nav>
+      <a href="/admin" class="<%= path === '/' ? 'active' : '' %>">Хянах самбар</a>
+      <a href="/admin/articles/new" class="<%= path === '/articles/new' ? 'active' : '' %>">+ Мэдээ нэмэх</a>
+      <a href="/admin/articles" class="<%= path === '/articles' ? 'active' : '' %>">Бүх мэдээ</a>
+      <a href="/admin/categories" class="<%= path === '/categories' ? 'active' : '' %>">Ангилал</a>
+      <% if (user.role === 'admin') { %>
+        <a href="/admin/users" class="<%= path === '/users' ? 'active' : '' %>">Хэрэглэгчид</a>
+        <a href="/admin/settings" class="<%= path === '/settings' ? 'active' : '' %>">Тохиргоо / Facebook</a>
+      <% } %>
+      <a href="/admin/profile" class="<%= path === '/profile' ? 'active' : '' %>">Нууц үг солих</a>
+      <a href="/" target="_blank">Сайт үзэх ↗</a>
+    </nav>
+    <form method="post" action="/admin/logout" class="logout">
+      <input type="hidden" name="_csrf" value="<%= csrf %>">
+      <span><%= user.name %> (<%= user.role === 'admin' ? 'Админ' : 'Редактор' %>)</span>
+      <button type="submit">Гарах</button>
+    </form>
+  </aside>
+  <main class="admin-main">
+    <% if (flash) { %><div class="flash flash-<%= flash.type %>"><%= flash.text %></div><% } %>

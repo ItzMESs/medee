@@ -1,0 +1,33 @@
+<%- include('partials/header') %>
+<div class="layout">
+  <article class="content article">
+    <% if (article.category_name) { %><a href="/category/<%= article.category_slug %>" class="tag"><%= article.category_name %></a><% } %>
+    <h1 class="article-title"><%= article.title %></h1>
+    <div class="article-meta">
+      <span><%= formatDate(article.published_at) %></span>
+      <% if (article.author_name) { %><span><%= article.author_name %></span><% } %>
+      <span><%= article.views %> үзсэн</span>
+    </div>
+    <%- include('partials/share', { url: meta.url }) %>
+    <% if (article.image) { %><figure class="article-cover"><img src="<%= article.image %>" alt="<%= article.title %>"></figure><% } %>
+    <% if (article.excerpt) { %><p class="lead"><%= article.excerpt %></p><% } %>
+    <div class="article-body"><%- article.content %></div>
+    <%- include('partials/share', { url: meta.url }) %>
+
+    <% if (settings.fb_comments === '1') { %>
+      <div id="fb-root"></div>
+      <script async defer crossorigin="anonymous" src="https://connect.facebook.net/mn_MN/sdk.js#xfbml=1&version=v21.0<%= settings.fb_app_id ? '&appId=' + settings.fb_app_id : '' %>"></script>
+      <h2 class="section-title">Сэтгэгдэл</h2>
+      <div class="fb-comments" data-href="<%= meta.url %>" data-width="100%" data-numposts="10"></div>
+    <% } %>
+
+    <% if (related.length) { %>
+      <h2 class="section-title">Холбоотой мэдээ</h2>
+      <div class="grid">
+        <% related.forEach(a => { %><%- include('partials/card', { a }) %><% }) %>
+      </div>
+    <% } %>
+  </article>
+  <%- include('partials/sidebar') %>
+</div>
+<%- include('partials/footer') %>

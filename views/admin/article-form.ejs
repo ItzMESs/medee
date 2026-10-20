@@ -1,0 +1,81 @@
+<%- include('_header', { editor: true }) %>
+<div class="panel-head">
+  <h1><%= article.id ? 'Мэдээ засах' : 'Шинэ мэдээ' %></h1>
+  <% if (article.id && article.status === 'published') { %><a href="<%= articleUrl(article) %>" target="_blank" class="btn">Сайт дээр үзэх ↗</a><% } %>
+</div>
+<% if (error) { %><div class="flash flash-error"><%= error %></div><% } %>
+
+<form method="post" action="/admin/articles<%= article.id ? '/' + article.id : '' %>" enctype="multipart/form-data" id="article-form" class="article-form">
+  <input type="hidden" name="_csrf" value="<%= csrf %>">
+  <div class="form-main">
+    <label>Гарчиг<input name="title" value="<%= article.title %>" required maxlength="250" class="input-title"></label>
+    <label>Товч агуулга <small>(хоосон үлдээвэл агуулгаас автоматаар үүснэ; Facebook пост дээр харагдана)</small>
+      <textarea name="excerpt" rows="3" maxlength="400"><%= article.excerpt %></textarea></label>
+    <div class="label">Агуулга</div>
+    <div id="editor"><%- article.content %></div>
+    <input type="hidden" name="content" id="content">
+  </div>
+
+  <div class="form-side">
+    <div class="panel">
+      <h3>Нийтлэх</h3>
+      <label>Төлөв
+        <select name="status">
+          <option value="draft" <%= article.status !== 'published' ? 'selected' : '' %>>Ноорог</option>
+          <option value="published" <%= article.status === 'published' ? 'selected' : '' %>>Нийтлэх</option>
+        </select>
+      </label>
+      <label>Нийтлэх огноо <small>(ирээдүйн огноо сонговол тэр үед гарна)</small>
+        <input type="datetime-local" name="published_at" value="<%= publishedLocal %>"></label>
+      <label class="check"><input type="checkbox" name="is_featured" value="1" <%= article.is_featured ? 'checked' : '' %>> Онцлох мэдээ (нүүрний том хэсэгт)</label>
+      <label class="check"><input type="checkbox" name="is_breaking" value="1" <%= article.is_breaking ? 'checked' : '' %>> Шуурхай мэдээ (гүйдэг мөрөнд)</label>
+
+      <div class="fb-box">
+        <% if (article.fb_post_id) { %>
+          <p>✓ Facebook-д нийтлэгдсэн. <a href="https://www.facebook.com/<%= article.fb_post_id %>" target="_blank" rel="noopener">Пост үзэх ↗</a></p>
+        <% } else if (fbReady) { %>
+          <label class="check"><input type="checkbox" name="post_to_facebook" value="1" <%= settings.fb_auto_post === '1' ? 'checked' : '' %>> Нийтлэхэд Facebook пэйж дээр автоматаар тавих</label>
+          <% if (article.fb_error) { %><p class="error-text">Өмнөх алдаа: <%= article.fb_error %></p><% } %>
+        <% } else { %>
+          <p class="muted">Facebook пэйж холбогдоогүй. <% if (user.role === 'admin') { %><a href="/admin/settings">Тохируулах</a><% } %></p>
+        <% } %>
+      </div>
+      <button type="submit" class="btn btn-primary btn-block">Хадгалах</button>
+    </div>
+
+    <div class="panel">
+      <h3>Ангилал</h3>
+      <select name="category_id">
+        <option value="">— Ангилалгүй —</option>
+        <% categories.forEach(c => { %><option value="<%= c.id %>" <%= article.category_id === c.id ? 'selected' : '' %>><%= c.name %></option><% }) %>
+      </select>
+    </div>
+
+    <div class="panel">
+      <h3>Нүүр зураг</h3>
+      <img id="image-preview" src="<%= article.image || '' %>" alt="" class="<%= article.image ? '' : 'hidden' %>">
+      <input type="file" name="image" accept="image/jpeg,image/png,image/webp,image/gif" id="image-input">
+      <% if (article.image) { %><label class="check"><input type="checkbox" name="remove_image" value="1"> Зургийг устгах</label><% } %>
+      <small class="muted">Facebook-д 1200×630 хэмжээтэй зураг хамгийн сайн харагдана.</small>
+    </div>
+  </div>
+</form>
+
+<% if (article.id) { %>
+<div class="danger-row">
+  <% if (article.status === 'published' && fbReady) { %>
+  <form method="post" action="/admin/articles/<%= article.id %>/facebook" onsubmit="return confirm('Энэ мэдээг Facebook пэйж дээр <%= article.fb_post_id ? 'дахин ' : '' %>нийтлэх үү?')">
+    <input type="hidden" name="_csrf" value="<%= csrf %>">
+    <button class="btn btn-fb"><%= article.fb_post_id ? 'Facebook-д дахин нийтлэх' : 'Facebook-д одоо нийтлэх' %></button>
+  </form>
+  <% } %>
+  <form method="post" action="/admin/articles/<%= article.id %>/delete" onsubmit="return confirm('Энэ мэдээг бүр мөсөн устгах уу?')">
+    <input type="hidden" name="_csrf" value="<%= csrf %>">
+    <button class="btn btn-danger">Мэдээ устгах</button>
+  </form>
+</div>
+<% } %>
+
+<script src="/vendor/quill/quill.js"></script>
+<script src="/static/js/admin.js"></script>
+<%- include('_footer') %>

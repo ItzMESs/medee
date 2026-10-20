@@ -1,0 +1,67 @@
+# Medee.mn — Мэдээллийн сайт + Админ панел + Facebook
+
+news.mn, record.mn, zarig.mn маягийн мэдээллийн сайт. Мэдээгээ админ панелаас оруулна, нийтлэх үед Facebook пэйж дээр автоматаар тавигдана.
+
+## Боломжууд
+
+**Сайт (уншигчдад)**
+- Нүүр хуудас: онцлох мэдээ (том зураг), шинэ мэдээ, ангилал бүрийн хэсэг
+- "Шуурхай" мэдээний гүйдэг мөр, "Их уншсан" (7 хоногийн) жагсаалт
+- Ангилал, хайлт, хуудаслалт, RSS (`/rss.xml`)
+- Мэдээний хуудас: үзэлтийн тоо, холбоотой мэдээ, Facebook / Messenger / X хуваалцах товч
+- Facebook Open Graph тагууд — линк хуваалцахад зураг, гарчиг гоё харагдана
+- Facebook пэйжийн цонх, Facebook сэтгэгдэл (сонголтоор)
+- Утсанд тохирсон (responsive)
+
+**Админ панел (`/admin`)**
+- Мэдээ нэмэх / засах / устгах, текст засварлагч (зураг, видео, холбоос оруулна)
+- Нүүр зураг хуулах, ноорог / нийтлэх, ирээдүйн огноонд товлон нийтлэх
+- Онцлох, шуурхай мэдээ тэмдэглэх
+- Ангилал удирдах, хэрэглэгч (админ / редактор) нэмэх, нууц үг солих
+- **Facebook:** нийтлэхэд пэйж дээр автоматаар пост тавих, эсвэл "Facebook-д одоо нийтлэх" товч
+
+## Зураг
+
+| Нүүр хуудас | Мэдээ | Утас |
+|---|---|---|
+| ![](screenshots/1-nuur-huudas.png) | ![](screenshots/2-medee.png) | ![](screenshots/3-utas.png) |
+
+| Хянах самбар | Мэдээ нэмэх | Facebook тохиргоо |
+|---|---|---|
+| ![](screenshots/5-admin-dashboard.png) | ![](screenshots/6-admin-medee-nemeh.png) | ![](screenshots/8-admin-facebook-tohirgoo.png) |
+
+## Ажиллуулах
+
+Node.js 22.13 буюу түүнээс шинэ хувилбар хэрэгтэй (өгөгдлийн сан нь Node-д суурилагдсан SQLite).
+
+```bash
+npm install
+npm run seed      # (заавал биш) жишээ мэдээ нэмэх
+npm start
+```
+
+- Сайт: http://localhost:3000
+- Админ: http://localhost:3000/admin — анхны нэвтрэх нэр `admin`, нууц үг `admin123` (**заавал солино уу**)
+
+Тохиргоог `.env.example` файлаас харна уу (`SESSION_SECRET`, `ADMIN_USER`, `ADMIN_PASSWORD`, `PORT`, `SITE_URL`). Өгөгдөл `data/`, хуулсан зургууд `uploads/` хавтаст хадгалагдана — серверээ шилжүүлэхдээ эдгээрийг нөөцөлнө үү.
+
+## Facebook-тэй холбох
+
+1. https://developers.facebook.com/apps дээр App үүсгэнэ.
+2. Graph API Explorer дээр `pages_manage_posts`, `pages_read_engagement`, `pages_show_list` эрхтэй token авч, Access Token Debugger дээр урт хугацааны болгоно.
+3. Explorer дээр `me/accounts` гэж хүсэлт явуулж, пэйжийнхээ `id` болон `access_token`-г авна.
+4. Админ > **Тохиргоо / Facebook** хэсэгт Page ID, Page Access Token, сайтын хаягаа (жишээ нь `https://medee.mn`) оруулна.
+
+Үүний дараа мэдээ нийтлэх бүрд Facebook пэйж дээр гарчиг, товч агуулга, линктэй пост автоматаар гарна. Facebook нь зураг, гарчгийг сайтаас уншдаг тул сайт интернэтэд нээлттэй, домэйнтэй байх ёстой.
+
+## Бүтэц
+
+```
+server.js            Express сервер
+src/db.js            SQLite хүснэгтүүд, анхны өгөгдөл
+src/routes/public.js Уншигчийн хуудсууд
+src/routes/admin.js  Админ панел
+src/facebook.js      Facebook пэйж рүү нийтлэх (Graph API)
+views/               EJS загварууд
+public/              CSS, JS
+```
