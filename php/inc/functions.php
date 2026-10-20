@@ -120,7 +120,13 @@ function url($path = '/')
 
 function absolute_url($path)
 {
-    return rtrim(setting('site_url'), '/') . $path;
+    $base = rtrim(setting('site_url'), '/');
+    // Sites installed before SSL was switched on keep an http:// site_url; Facebook and
+    // Messenger often drop preview images served over plain http, so upgrade it when possible.
+    if (strpos($base, 'http://') === 0 && strpos(detect_site_url(), 'https://') === 0) {
+        $base = 'https://' . substr($base, 7);
+    }
+    return $base . $path;
 }
 
 function article_path(array $a)
@@ -538,6 +544,22 @@ function site_logo_url()
 }
 
 // Share image for pages without their own picture.
+// Width, height and type of a local image for og:image:* tags. Facebook only shows the
+// preview image on the very first share when these are present.
+function og_image_info($url)
+{
+    $path = parse_url($url, PHP_URL_PATH);
+    $base = base_path();
+    if ($base !== '' && strpos($path, $base) === 0) {
+        $path = substr($path, strlen($base));
+    }
+    $file = ROOT . $path;
+    if (strpos($path, '..') !== false || !is_file($file) || !($size = @getimagesize($file))) {
+        return null;
+    }
+    return ['width' => $size[0], 'height' => $size[1], 'type' => $size['mime']];
+}
+
 function default_og_image()
 {
     return is_file(ROOT . '/assets/img/og-default.jpg') ? absolute_url('/assets/img/og-default.jpg') : '';

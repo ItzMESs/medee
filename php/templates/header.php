@@ -28,7 +28,13 @@ $socials = array_filter([
   <meta property="og:type" content="<?= e(!empty($meta['type']) ? $meta['type'] : 'website') ?>">
   <meta property="og:locale" content="mn_MN">
   <?php if (!empty($meta['url'])): ?><meta property="og:url" content="<?= e($meta['url']) ?>"><link rel="canonical" href="<?= e($meta['url']) ?>"><?php endif; ?>
-  <?php if (!empty($meta['image'])): ?><meta property="og:image" content="<?= e($meta['image']) ?>"><meta name="twitter:card" content="summary_large_image"><?php endif; ?>
+  <?php if (!empty($meta['image'])): $ogInfo = og_image_info($meta['image']); ?>
+  <meta property="og:image" content="<?= e($meta['image']) ?>">
+  <?php if (strpos($meta['image'], 'https://') === 0): ?><meta property="og:image:secure_url" content="<?= e($meta['image']) ?>"><?php endif; ?>
+  <?php if ($ogInfo): ?><meta property="og:image:type" content="<?= e($ogInfo['type']) ?>"><meta property="og:image:width" content="<?= (int) $ogInfo['width'] ?>"><meta property="og:image:height" content="<?= (int) $ogInfo['height'] ?>"><?php endif; ?>
+  <meta property="og:image:alt" content="<?= e(!empty($meta['title']) ? $meta['title'] : $settings['site_name']) ?>">
+  <meta name="twitter:card" content="summary_large_image"><meta name="twitter:image" content="<?= e($meta['image']) ?>">
+  <?php endif; ?>
   <?php if (!empty($meta['published'])): ?><meta property="article:published_time" content="<?= e($meta['published']) ?>"><?php endif; ?>
   <?php if ($settings['fb_app_id']): ?><meta property="fb:app_id" content="<?= e($settings['fb_app_id']) ?>"><?php endif; ?>
   <?php if ($settings['google_verification'] !== ''): ?><meta name="google-site-verification" content="<?= e($settings['google_verification']) ?>"><?php endif; ?>
