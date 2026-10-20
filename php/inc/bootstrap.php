@@ -22,10 +22,28 @@ require __DIR__ . '/functions.php';
 require __DIR__ . '/sanitize.php';
 require __DIR__ . '/facebook.php';
 
-$pdo = new PDO(
-    'mysql:host=' . $config['db_host'] . ';dbname=' . $config['db_name'] . ';charset=utf8mb4',
-    $config['db_user'],
-    $config['db_pass'],
-    [PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION, PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC]
-);
+try {
+    $pdo = new PDO(
+        'mysql:host=' . $config['db_host'] . ';dbname=' . $config['db_name'] . ';charset=utf8mb4',
+        $config['db_user'],
+        $config['db_pass'],
+        [PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION, PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC]
+    );
+} catch (PDOException $ex) {
+    http_response_code(500);
+    header('Content-Type: text/html; charset=utf-8');
+    exit('<h1>Өгөгдлийн санд холбогдож чадсангүй</h1><p>config.php доторх db_name, db_user, db_pass зөв эсэхийг шалгана уу.</p>'
+        . (!empty($config['debug']) ? '<pre>' . htmlspecialchars($ex->getMessage()) . '</pre>' : ''));
+}
 $pdo->exec("SET time_zone = '+08:00'");
+
+// config.php exists but the tables or admin were never created (e.g. config made by hand).
+try {
+    $hasAdmin = (int) $pdo->query('SELECT COUNT(*) FROM users')->fetchColumn() > 0;
+} catch (PDOException $ex) {
+    $hasAdmin = false;
+}
+if (!$hasAdmin) {
+    header('Location: ' . rtrim(str_replace('\\', '/', dirname($_SERVER['SCRIPT_NAME'])), '/') . '/install.php');
+    exit;
+}
