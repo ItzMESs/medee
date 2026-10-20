@@ -4,8 +4,16 @@
   <?php if ($article['id'] && $article['status'] === 'published'): ?><a href="<?= article_url($article) ?>" target="_blank" class="btn">Сайт дээр үзэх ↗</a><?php endif; ?>
 </div>
 <?php if ($error): ?><div class="flash flash-error"><?= e($error) ?></div><?php endif; ?>
+<?php if ($autosave): ?>
+<div class="flash flash-info autosave-offer">
+  Энэ мэдээнд хадгалагдаагүй ноорог байна (<?= e(format_date($autosave['saved_at'])) ?>).
+  <button type="button" class="btn btn-sm btn-primary" data-autosave-restore>Сэргээх</button>
+  <button type="button" class="btn btn-sm" data-autosave-discard>Устгах</button>
+  <script type="application/json" id="autosave-data"><?= json_encode(json_decode($autosave['data'], true), JSON_UNESCAPED_UNICODE | JSON_HEX_TAG | JSON_HEX_AMP) ?></script>
+</div>
+<?php endif; ?>
 
-<form method="post" action="<?= url('/admin/articles' . ($article['id'] ? '/' . $article['id'] : '')) ?>" enctype="multipart/form-data" id="article-form" class="article-form">
+<form method="post" action="<?= url('/admin/articles' . ($article['id'] ? '/' . $article['id'] : '')) ?>" enctype="multipart/form-data" id="article-form" class="article-form" data-article-id="<?= (int) $article['id'] ?>" data-autosave-url="<?= url('/admin/articles/autosave') ?>">
   <?= csrf_field() ?>
   <div class="form-main">
     <label>Гарчиг<input name="title" value="<?= e($article['title']) ?>" required maxlength="250" class="input-title"></label>
@@ -40,7 +48,17 @@
           <p class="muted">Facebook пэйж холбогдоогүй. <?php if ($user['role'] === 'admin'): ?><a href="<?= url('/admin/settings') ?>">Тохируулах</a><?php endif; ?></p>
         <?php endif; ?>
       </div>
+      <div class="fb-box push-box">
+        <?php if ($pushLog): ?>
+          <p>🔔 Push мэдэгдэл <?= (int) $pushLog['sent'] ?> уншигчид илгээгдсэн (<?= e(format_date($pushLog['sent_at'])) ?>).</p>
+        <?php elseif ($pushReady): ?>
+          <label class="check"><input type="checkbox" name="send_push" value="1" <?= $settings['push_auto'] === '1' ? 'checked' : '' ?>> Нийтлэхэд push мэдэгдэл илгээх (<?= (int) $pushSubscribers ?> захиалагч)</label>
+        <?php else: ?>
+          <p class="muted">Push мэдэгдэл идэвхгүй.</p>
+        <?php endif; ?>
+      </div>
       <button type="submit" class="btn btn-primary btn-block">Хадгалах</button>
+      <small class="autosave-status muted" aria-live="polite"></small>
     </div>
 
     <div class="panel">

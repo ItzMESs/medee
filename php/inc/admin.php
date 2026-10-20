@@ -27,6 +27,12 @@ function admin_dispatch($path, $method)
     if ($path === '/articles') {
         return $isPost ? admin_article_save(null) : admin_articles();
     }
+    if ($path === '/articles/autosave' && $isPost) {
+        return admin_autosave();
+    }
+    if ($path === '/articles/autosave/discard' && $isPost) {
+        return admin_autosave_discard();
+    }
     if ($path === '/articles/new') {
         return admin_article_form(blank_article());
     }
@@ -81,7 +87,7 @@ function admin_dispatch($path, $method)
         return $isPost ? admin_profile_post() : admin_render('profile');
     }
     if ($path === '/users' || strpos($path, '/users/') === 0 || $path === '/settings' || strpos($path, '/images/') === 0
-        || $path === '/ads' || strpos($path, '/ads/') === 0) {
+        || $path === '/ads' || strpos($path, '/ads/') === 0 || $path === '/push/test') {
         if (!is_admin()) {
             http_response_code(403);
             exit('Зөвхөн админ хандах эрхтэй.');
@@ -100,6 +106,9 @@ function admin_dispatch($path, $method)
         }
         if ($path === '/images/watermark' && $isPost) {
             return admin_watermark_images();
+        }
+        if ($path === '/push/test' && $isPost) {
+            return admin_push_test();
         }
         if ($path === '/ads') {
             return admin_ads();
@@ -255,7 +264,16 @@ function blank_article()
 
 function admin_article_form(array $article, $error = null)
 {
+    $pushLog = !empty($article['id']) ? row('SELECT * FROM push_log WHERE article_id = ?', [$article['id']]) : null;
+    // Offer an unsaved draft only when it is newer than what is stored (and not after a failed save).
+    $autosave = row('SELECT data, saved_at FROM autosaves WHERE user_id = ? AND article_key = ?',
+        [current_user()['id'], autosave_key(isset($article['id']) ? $article['id'] : null)]);
+    if ($autosave && ($error || (!empty($article['updated_at']) && $autosave['saved_at'] <= $article['updated_at']))) {
+        $autosave = null;
+    }
     admin_render('article-form', [
+        'pushReady' => push_enabled(), 'pushLog' => $pushLog, 'autosave' => $autosave,
+        'pushSubscribers' => (int) q('SELECT COUNT(*) FROM push_subscriptions')->fetchColumn(),
         'article' => $article, 'categories' => all_categories(), 'error' => $error, 'fbReady' => fb_configured(),
         'publishedLocal' => $article['published_at'] ? date('Y-m-d\TH:i', strtotime($article['published_at'])) : '',
     ]);
@@ -332,6 +350,7 @@ function admin_article_save($id)
         $id = (int) db()->lastInsertId();
     }
 
+    q('DELETE FROM autosaves WHERE user_id = ? AND article_key IN (?, ?)', [current_user()['id'], autosave_key($id), autosave_key(null)]);
     $article = row('SELECT * FROM articles WHERE id = ?', [$id]);
     $type = 'success';
     $message = 'Мэдээ хадгалагдлаа.';
@@ -344,6 +363,13 @@ function admin_article_save($id)
             $type = 'error';
             $message .= ' Гэхдээ Facebook-д нийтлэхэд алдаа гарлаа: ' . $ex->getMessage();
         }
+    }
+    // Push once per article, the first time it goes live (scheduled posts are skipped until then).
+    $alreadyPushed = row('SELECT article_id FROM push_log WHERE article_id = ?', [$id]);
+    if (post('send_push') && push_enabled() && $article['status'] === 'published' && !$alreadyPushed
+        && strtotime($article['published_at']) <= time()) {
+        list($ok, $bad) = push_article($article);
+        $message .= ' Push мэдэгдэл ' . $ok . ' уншигчид илгээгдлээ' . ($bad ? ' (' . $bad . ' амжилтгүй)' : '') . '.';
     }
     flash($type, $message);
     redirect('/admin/articles/' . $id . '/edit');
@@ -534,6 +560,8 @@ function admin_settings_post()
     save_setting('weather_enabled', post('weather_enabled') ? '1' : '0');
     save_setting('comments_enabled', post('comments_enabled') ? '1' : '0');
     save_setting('ornaments', post('ornaments') ? '1' : '0');
+    save_setting('push_enabled', post('push_enabled') ? '1' : '0');
+    save_setting('push_auto', post('push_auto') ? '1' : '0');
     save_setting('watermark_enabled', post('watermark_enabled') ? '1' : '0');
     save_setting('watermark_position', in_array(post('watermark_position'), ['br', 'bl', 'tr', 'tl'], true) ? post('watermark_position') : 'br');
     save_setting('watermark_size', (string) max(8, min(40, (int) post('watermark_size'))));
@@ -794,4 +822,57 @@ function admin_ad_delete($id)
         flash('success', 'Сурталчилгаа устгагдлаа.');
     }
     redirect('/admin/ads');
+}
+
+// ---------- Push ----------
+
+function admin_push_test()
+{
+    if (!push_enabled()) {
+        flash('error', 'Push мэдэгдэл идэвхгүй байна.');
+        redirect('/admin/settings#push');
+    }
+    list($ok, $bad) = push_broadcast([
+        'title' => setting('site_name'),
+        'body' => 'Туршилтын мэдэгдэл — мэдэгдэл зөв ажиллаж байна.',
+        'url' => absolute_url('/'),
+        'tag' => 'test',
+    ]);
+    flash($bad && !$ok ? 'error' : 'success', 'Туршилтын мэдэгдэл: ' . $ok . ' илгээгдсэн, ' . $bad . ' амжилтгүй.');
+    redirect('/admin/settings#push');
+}
+
+// ---------- Autosave ----------
+
+function autosave_key($articleId)
+{
+    return $articleId ? 'article-' . (int) $articleId : 'new';
+}
+
+// Stores the editor's current fields for this user; the article itself is not touched.
+function admin_autosave()
+{
+    header('Content-Type: application/json; charset=utf-8');
+    $id = (int) post('article_id');
+    $data = [];
+    foreach (['title', 'excerpt', 'category_id', 'status', 'published_at', 'is_featured', 'is_breaking'] as $k) {
+        $data[$k] = post($k);
+    }
+    $data['content'] = isset($_POST['content']) ? (string) $_POST['content'] : '';
+    if ($data['title'] === '' && strip_html($data['content']) === '') {
+        echo json_encode(['ok' => false, 'reason' => 'empty']);
+        return;
+    }
+    q('INSERT INTO autosaves (user_id, article_key, data, saved_at) VALUES (?, ?, ?, ?)
+        ON DUPLICATE KEY UPDATE data = VALUES(data), saved_at = VALUES(saved_at)',
+        [current_user()['id'], autosave_key($id ?: null), json_encode($data, JSON_UNESCAPED_UNICODE), now()]);
+    echo json_encode(['ok' => true, 'saved_at' => date('H:i:s')]);
+}
+
+function admin_autosave_discard()
+{
+    header('Content-Type: application/json; charset=utf-8');
+    $id = (int) post('article_id');
+    q('DELETE FROM autosaves WHERE user_id = ? AND article_key = ?', [current_user()['id'], autosave_key($id ?: null)]);
+    echo json_encode(['ok' => true]);
 }

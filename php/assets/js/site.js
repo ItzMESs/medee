@@ -52,6 +52,99 @@
     progress();
   }
 
+  // Emoji reactions
+  var box = document.querySelector('.reactions');
+  if (box && window.fetch) {
+    box.addEventListener('click', function (e) {
+      var btn = e.target.closest('.reaction');
+      if (!btn || box.classList.contains('busy')) return;
+      box.classList.add('busy');
+      var body = new URLSearchParams({ type: btn.getAttribute('data-type') });
+      fetch(box.getAttribute('data-react-url'), { method: 'POST', body: body, credentials: 'same-origin' })
+        .then(function (r) { return r.json(); })
+        .then(function (data) {
+          if (!data.counts) return;
+          box.querySelectorAll('.reaction').forEach(function (b) {
+            var t = b.getAttribute('data-type');
+            b.querySelector('.count').textContent = data.counts[t];
+            b.classList.toggle('active', data.mine === t);
+            b.setAttribute('aria-pressed', data.mine === t ? 'true' : 'false');
+          });
+          if (data.mine) { btn.classList.remove('pop'); void btn.offsetWidth; btn.classList.add('pop'); }
+        })
+        .catch(function () {})
+        .then(function () { box.classList.remove('busy'); });
+    });
+  }
+
+  // Web Push: bell in the header plus a one-time invitation card
+  var bell = document.querySelector('.push-btn');
+  if (bell && 'serviceWorker' in navigator && 'PushManager' in window && 'Notification' in window) {
+    var base = bell.getAttribute('data-push-base');
+    var key = bell.getAttribute('data-push-key');
+    var toast = function (text) {
+      var t = document.createElement('div');
+      t.className = 'toast';
+      t.textContent = text;
+      document.body.appendChild(t);
+      setTimeout(function () { t.classList.add('show'); }, 10);
+      setTimeout(function () { t.classList.remove('show'); setTimeout(function () { t.remove(); }, 300); }, 3500);
+    };
+    var keyBytes = function (b64) {
+      var pad = '='.repeat((4 - b64.length % 4) % 4);
+      var raw = atob((b64 + pad).replace(/-/g, '+').replace(/_/g, '/'));
+      var out = new Uint8Array(raw.length);
+      for (var i = 0; i < raw.length; i++) out[i] = raw.charCodeAt(i);
+      return out;
+    };
+    var post = function (path, sub) {
+      return fetch(base + path, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(sub), credentials: 'same-origin' });
+    };
+    var setState = function (on) {
+      bell.classList.toggle('subscribed', on);
+      bell.title = on ? 'Мэдэгдэл идэвхтэй (дарж зогсооно)' : 'Шинэ мэдээний мэдэгдэл авах';
+    };
+    var subscribe = function () {
+      return Notification.requestPermission().then(function (perm) {
+        if (perm !== 'granted') { toast('Мэдэгдлийг хөтчийн тохиргооноос зөвшөөрнө үү.'); return; }
+        return navigator.serviceWorker.ready.then(function (reg) {
+          return reg.pushManager.subscribe({ userVisibleOnly: true, applicationServerKey: keyBytes(key) });
+        }).then(function (sub) {
+          return post('push/subscribe', sub.toJSON()).then(function () { setState(true); toast('Баярлалаа! Шинэ мэдээг танд мэдэгдэнэ.'); });
+        });
+      }).catch(function () { toast('Мэдэгдэл тохируулж чадсангүй.'); });
+    };
+    navigator.serviceWorker.register(base + 'sw.js', { scope: base }).then(function (reg) {
+      bell.hidden = false;
+      return reg.pushManager.getSubscription();
+    }).then(function (sub) {
+      setState(!!sub);
+      var seen = false;
+      try { seen = localStorage.getItem('push-invite') === '1'; } catch (e) {}
+      if (!sub && !seen && Notification.permission === 'default') {
+        setTimeout(function () {
+          var card = document.createElement('div');
+          card.className = 'push-invite';
+          card.innerHTML = '<div class="push-invite-icon">🔔</div><div><b>Шинэ мэдээг түрүүлж аваарай</b><p>Чухал мэдээ гармагц танд мэдэгдэнэ.</p>'
+            + '<div class="push-invite-actions"><button type="button" class="yes">Зөвшөөрөх</button><button type="button" class="no">Дараа</button></div></div>';
+          document.body.appendChild(card);
+          setTimeout(function () { card.classList.add('show'); }, 10);
+          var close = function () { card.classList.remove('show'); setTimeout(function () { card.remove(); }, 300); try { localStorage.setItem('push-invite', '1'); } catch (e) {} };
+          card.querySelector('.yes').addEventListener('click', function () { close(); subscribe(); });
+          card.querySelector('.no').addEventListener('click', close);
+        }, 25000);
+      }
+    }).catch(function () {});
+    bell.addEventListener('click', function () {
+      navigator.serviceWorker.ready.then(function (reg) { return reg.pushManager.getSubscription(); }).then(function (sub) {
+        if (!sub) return subscribe();
+        if (!confirm('Шинэ мэдээний мэдэгдлийг зогсоох уу?')) return;
+        return post('push/unsubscribe', { endpoint: sub.endpoint }).then(function () { return sub.unsubscribe(); })
+          .then(function () { setState(false); toast('Мэдэгдлийг зогсоолоо.'); });
+      });
+    });
+  }
+
   // Header shadow once the page scrolls
   var header = document.querySelector('.site-header');
   if (header) {

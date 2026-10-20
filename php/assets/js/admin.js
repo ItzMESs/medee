@@ -64,9 +64,65 @@
     input.click();
   }
 
+  const editorHtml = () => (quill.getText().trim() || quill.root.querySelector('img,iframe') ? quill.root.innerHTML : '');
+  let dirty = false;
   form.addEventListener('submit', () => {
-    document.getElementById('content').value = quill.getText().trim() || quill.root.querySelector('img,iframe') ? quill.root.innerHTML : '';
+    document.getElementById('content').value = editorHtml();
+    dirty = false;
   });
+
+  // Autosave: every 15 seconds the editor's fields are stored on the server (not published).
+  const autosaveUrl = form.dataset.autosaveUrl;
+  if (autosaveUrl) {
+    const status = form.querySelector('.autosave-status');
+    const fields = ['title', 'excerpt', 'category_id', 'status', 'published_at'];
+    const checks = ['is_featured', 'is_breaking'];
+    quill.on('text-change', (delta, old, source) => { if (source === 'user') dirty = true; });
+    form.addEventListener('input', () => { dirty = true; });
+    form.addEventListener('change', () => { dirty = true; });
+
+    const save = async () => {
+      if (!dirty) return;
+      dirty = false;
+      const body = new FormData();
+      body.append('article_id', form.dataset.articleId || '');
+      fields.forEach((f) => { const el = form.elements[f]; if (el) body.append(f, el.value); });
+      checks.forEach((f) => { const el = form.elements[f]; if (el && el.checked) body.append(f, '1'); });
+      body.append('content', editorHtml());
+      try {
+        const res = await fetch(autosaveUrl, { method: 'POST', body, headers: { 'x-csrf-token': csrf }, credentials: 'same-origin' });
+        const data = await res.json();
+        if (data.ok) status.textContent = 'Автоматаар хадгалсан ' + data.saved_at;
+      } catch (e) {
+        dirty = true;
+        status.textContent = 'Автомат хадгалалт амжилтгүй — интернэтээ шалгана уу';
+      }
+    };
+    setInterval(save, 15000);
+    document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'hidden') save(); });
+    window.addEventListener('beforeunload', (e) => {
+      if (dirty) { e.preventDefault(); e.returnValue = ''; }
+    });
+
+    const offer = document.querySelector('.autosave-offer');
+    if (offer) {
+      offer.querySelector('[data-autosave-restore]').addEventListener('click', () => {
+        const data = JSON.parse(document.getElementById('autosave-data').textContent);
+        fields.forEach((f) => { const el = form.elements[f]; if (el && data[f] !== undefined) el.value = data[f]; });
+        checks.forEach((f) => { const el = form.elements[f]; if (el) el.checked = data[f] === '1'; });
+        quill.clipboard.dangerouslyPasteHTML(data.content || '');
+        dirty = true;
+        offer.remove();
+        status.textContent = 'Ноорог сэргээгдлээ — "Хадгалах" дарж хадгална уу';
+      });
+      offer.querySelector('[data-autosave-discard]').addEventListener('click', async () => {
+        const body = new FormData();
+        body.append('article_id', form.dataset.articleId || '');
+        await fetch(autosaveUrl + '/discard', { method: 'POST', body, headers: { 'x-csrf-token': csrf }, credentials: 'same-origin' });
+        offer.remove();
+      });
+    }
+  }
 
   const imageInput = document.getElementById('image-input');
   const preview = document.getElementById('image-preview');

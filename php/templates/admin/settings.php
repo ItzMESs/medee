@@ -73,6 +73,13 @@
     </details>
   </div>
   <div class="panel narrow-panel">
+    <h2>Push мэдэгдэл</h2>
+    <label class="check"><input type="checkbox" name="push_enabled" value="1" <?= $settings['push_enabled'] === '1' ? 'checked' : '' ?>> Уншигчид мэдэгдэл захиалах боломжтой (толгой хэсэгт хонх 🔔 гарна)</label>
+    <label class="check"><input type="checkbox" name="push_auto" value="1" <?= $settings['push_auto'] === '1' ? 'checked' : '' ?>> Мэдээ нийтлэхэд "push илгээх" сонголт анхнаасаа чагттай байх</label>
+    <small class="muted">Chrome, Edge, Firefox, Android дээр ажиллана. iPhone дээр зөвхөн сайтыг "Add to Home Screen"-ээр нүүр дэлгэцэд нэмсэн үед (iOS 16.4+) ажиллана.</small>
+  </div>
+
+  <div class="panel narrow-panel">
     <h2>Сэтгэгдэл</h2>
     <label class="check"><input type="checkbox" name="comments_enabled" value="1" <?= $settings['comments_enabled'] === '1' ? 'checked' : '' ?>> Уншигчид мэдээн доор сэтгэгдэл бичих боломжтой</label>
     <label class="check"><input type="checkbox" name="comments_moderation" value="1" <?= $settings['comments_moderation'] === '1' ? 'checked' : '' ?>> Сэтгэгдлийг админ зөвшөөрсний дараа нийтлэх</label>
@@ -107,6 +114,16 @@
 
   <div><button class="btn btn-primary">Хадгалах</button></div>
 </form>
+<div class="panel narrow-panel" id="push">
+  <h2>Push мэдэгдэл</h2>
+  <?php if (!push_supported()): ?>
+    <p class="error-text">Сервер дээр PHP openssl (7.3+), cURL идэвхгүй тул push мэдэгдэл ажиллахгүй.</p>
+  <?php else: ?>
+    <p>Захиалагч: <b><?= (int) q('SELECT COUNT(*) FROM push_subscriptions')->fetchColumn() ?></b> · Сайт <b>https://</b>-ээр нээгдэж байх ёстой.</p>
+    <form method="post" action="<?= url('/admin/push/test') ?>"><?= csrf_field() ?><button class="btn" <?= push_enabled() ? '' : 'disabled' ?>>Туршилтын мэдэгдэл илгээх</button></form>
+  <?php endif; ?>
+</div>
+
 <div class="panel narrow-panel" id="watermark">
   <h2>Зурган дээрх лого (watermark)</h2>
   <p class="muted">Шинээр хуулсан нүүр зураг болон мэдээн доторх зураг дээр лого автоматаар тавигдана. Гэрэлтэй буланд өнгөт лого, бараан буланд цагаан лого сонгогдоно.</p>

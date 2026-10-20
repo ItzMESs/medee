@@ -11,6 +11,17 @@
     <?php if ($article['excerpt']): ?><p class="lead"><?= e($article['excerpt']) ?></p><?php endif; ?>
     <div class="article-body"><?= insert_after_paragraph($article['content'], 3, ad_slot('article')) ?></div>
     <?= ad_slot('article_end') ?>
+    <section class="reactions" data-react-url="<?= url('/news/' . (int) $article['id'] . '/react') ?>">
+      <h3>Энэ мэдээ танд ямар сэтгэгдэл төрүүлэв?</h3>
+      <div class="reaction-list">
+        <?php foreach (reaction_types() as $key => $r): ?>
+          <button type="button" class="reaction<?= $myReaction === $key ? ' active' : '' ?>" data-type="<?= $key ?>" aria-pressed="<?= $myReaction === $key ? 'true' : 'false' ?>" title="<?= e($r[1]) ?>">
+            <span class="emoji"><?= $r[0] ?></span><span class="count"><?= (int) $reactions[$key] ?></span><span class="label"><?= e($r[1]) ?></span>
+          </button>
+        <?php endforeach; ?>
+      </div>
+    </section>
+
     <?php if (ornaments_enabled()): ?><div class="orn-divider"><?= ornament('ulzii') ?></div><?php endif; ?>
     <div class="article-foot">
       <div class="author-box">

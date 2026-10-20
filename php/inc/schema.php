@@ -1,6 +1,6 @@
 <?php
 // Bump when tables are added; bootstrap re-runs create_schema() on older databases.
-define('SCHEMA_VERSION', 5);
+define('SCHEMA_VERSION', 6);
 
 // Creates the tables (safe to run more than once) and default rows.
 function create_schema(PDO $pdo)
@@ -92,6 +92,38 @@ function create_schema(PDO $pdo)
         clicks INT UNSIGNED NOT NULL DEFAULT 0,
         created_at DATETIME NOT NULL,
         INDEX idx_slot (slot, active)
+    ) $opts");
+    $pdo->exec("CREATE TABLE IF NOT EXISTS article_reactions (
+        article_id INT UNSIGNED NOT NULL,
+        voter CHAR(32) NOT NULL,
+        type VARCHAR(16) NOT NULL,
+        created_at DATETIME NOT NULL,
+        PRIMARY KEY (article_id, voter),
+        INDEX idx_type (article_id, type),
+        CONSTRAINT fk_react_art FOREIGN KEY (article_id) REFERENCES articles(id) ON DELETE CASCADE
+    ) $opts");
+    $pdo->exec("CREATE TABLE IF NOT EXISTS push_subscriptions (
+        id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+        endpoint_hash CHAR(64) NOT NULL UNIQUE,
+        endpoint TEXT NOT NULL,
+        p256dh VARCHAR(255) NOT NULL,
+        auth VARCHAR(64) NOT NULL,
+        created_at DATETIME NOT NULL,
+        last_sent_at DATETIME NULL
+    ) $opts");
+    $pdo->exec("CREATE TABLE IF NOT EXISTS push_log (
+        article_id INT UNSIGNED NOT NULL PRIMARY KEY,
+        sent_at DATETIME NOT NULL,
+        sent INT UNSIGNED NOT NULL DEFAULT 0,
+        failed INT UNSIGNED NOT NULL DEFAULT 0,
+        CONSTRAINT fk_push_art FOREIGN KEY (article_id) REFERENCES articles(id) ON DELETE CASCADE
+    ) $opts");
+    $pdo->exec("CREATE TABLE IF NOT EXISTS autosaves (
+        user_id INT UNSIGNED NOT NULL,
+        article_key VARCHAR(32) NOT NULL,
+        data MEDIUMTEXT NOT NULL,
+        saved_at DATETIME NOT NULL,
+        PRIMARY KEY (user_id, article_key)
     ) $opts");
     $pdo->exec("CREATE TABLE IF NOT EXISTS settings (
         name VARCHAR(64) NOT NULL PRIMARY KEY,

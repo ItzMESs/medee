@@ -7,6 +7,9 @@ function public_dispatch($path)
         track_view();
         return page_home();
     }
+    if (preg_match('#^/news/(\d+)/react$#', $path, $m) && $_SERVER['REQUEST_METHOD'] === 'POST') {
+        return post_reaction((int) $m[1]);
+    }
     if (preg_match('#^/news/(\d+)/comment$#', $path, $m) && $_SERVER['REQUEST_METHOD'] === 'POST') {
         return post_comment((int) $m[1]);
     }
@@ -27,6 +30,15 @@ function public_dispatch($path)
     }
     if ($path === '/rss.xml') {
         return page_rss();
+    }
+    if ($path === '/push/subscribe' && $_SERVER['REQUEST_METHOD'] === 'POST') {
+        return push_subscribe();
+    }
+    if ($path === '/push/unsubscribe' && $_SERVER['REQUEST_METHOD'] === 'POST') {
+        return push_unsubscribe();
+    }
+    if ($path === '/manifest.webmanifest') {
+        return page_manifest();
     }
     if (preg_match('#^/ad/(\d+)$#', $path, $m)) {
         return ad_click((int) $m[1]);
@@ -116,7 +128,9 @@ function page_article($id, $slug)
     $words = count(preg_split('/\s+/u', strip_html($article['content']), -1, PREG_SPLIT_NO_EMPTY));
     $readMinutes = max(1, (int) ceil($words / 200));
     $isArticle = true;
-    render('article', public_context(compact('article', 'related', 'meta', 'comments', 'commentNotice', 'readMinutes', 'isArticle')));
+    $reactions = reaction_counts($id);
+    $myReaction = my_reaction($id);
+    render('article', public_context(compact('article', 'related', 'meta', 'comments', 'commentNotice', 'readMinutes', 'isArticle', 'reactions', 'myReaction')));
 }
 
 function page_list($heading, $where, array $params, array $extra = [])
@@ -246,4 +260,23 @@ function page_static($slug)
     track_view();
     $meta = ['title' => $page['title'], 'description' => excerpt_from($page['content'], 160), 'url' => absolute_url('/p/' . $page['slug'])];
     render('page', public_context(compact('page', 'meta')));
+}
+
+// Lets phones add the site to the home screen (needed for push on iPhone).
+function page_manifest()
+{
+    header('Content-Type: application/manifest+json; charset=utf-8');
+    echo json_encode([
+        'name' => setting('site_name'),
+        'short_name' => mb_substr(setting('site_name'), 0, 12),
+        'start_url' => url('/'),
+        'scope' => url('/'),
+        'display' => 'standalone',
+        'background_color' => '#ffffff',
+        'theme_color' => brand_color(),
+        'icons' => [
+            ['src' => url('/assets/img/icon-192.png'), 'sizes' => '192x192', 'type' => 'image/png'],
+            ['src' => url('/assets/img/icon-512.png'), 'sizes' => '512x512', 'type' => 'image/png', 'purpose' => 'any maskable'],
+        ],
+    ], JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
 }

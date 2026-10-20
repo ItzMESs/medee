@@ -37,6 +37,8 @@ $socials = array_filter([
   <script async src="https://www.googletagmanager.com/gtag/js?id=<?= e($settings['ga_id']) ?>"></script>
   <script>window.dataLayer = window.dataLayer || []; function gtag(){dataLayer.push(arguments);} gtag('js', new Date()); gtag('config', '<?= e($settings['ga_id']) ?>');</script>
   <?php endif; ?>
+  <link rel="manifest" href="<?= url('/manifest.webmanifest') ?>">
+  <?php if (is_file(ROOT . '/assets/img/icon-192.png')): ?><link rel="apple-touch-icon" href="<?= asset('img/icon-192.png') ?>"><?php endif; ?>
   <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<?= rawurlencode('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64"><rect width="64" height="64" rx="12" fill="' . $brand . '"/><text x="32" y="46" font-family="Georgia,serif" font-size="40" font-weight="700" fill="#fff" text-anchor="middle">' . htmlspecialchars(mb_strtoupper(mb_substr($settings['site_name'], 0, 1)), ENT_XML1) . '</text></svg>') ?>">
   <link rel="alternate" type="application/rss+xml" title="<?= e($settings['site_name']) ?>" href="<?= url('/rss.xml') ?>">
   <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -69,6 +71,9 @@ $socials = array_filter([
           <input type="search" name="q" placeholder="Мэдээ хайх..." value="<?= e($query) ?>" aria-label="Мэдээ хайх">
           <button type="submit" aria-label="Хайх"><?= icon('search', 24) ?></button>
         </form>
+        <?php if (push_enabled()): list($vapidPublic) = vapid_keys(); ?>
+        <button type="button" class="icon-btn push-btn" hidden data-push-key="<?= e($vapidPublic) ?>" data-push-base="<?= e(url('/')) ?>" title="Шинэ мэдээний мэдэгдэл авах" aria-label="Шинэ мэдээний мэдэгдэл авах"><?= icon('bell', 24) ?><span class="push-dot"></span></button>
+        <?php endif; ?>
         <button type="button" class="icon-btn search-toggle" aria-label="Хайх" onclick="document.body.classList.toggle('search-open'); var i = document.querySelector('.header-search input'); if (document.body.classList.contains('search-open')) i.focus();"><?= icon('search', 26) ?></button>
       </div>
     </div>
