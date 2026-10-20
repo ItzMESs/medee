@@ -359,7 +359,7 @@ body.drawer-open .drawer-overlay { opacity: 1; pointer-events: auto; }
   .card-mini { grid-template-columns: 110px minmax(0, 1fr); gap: 14px; }
   .card-mini .card-title { font-size: 16px; }
   .article-foot { flex-direction: column; align-items: flex-start; }
-  .header-inner { min-height: 68px; grid-template-columns: auto 1fr auto; gap: 8px; }
+  .header-inner { min-height: 68px; grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr); gap: 8px; }
   .header-left { gap: 0; }
   .logo { font-size: 28px; text-align: center; }
   .logo img { max-height: 32px; margin: 0 auto; }
