@@ -24,7 +24,6 @@
     </div>
     <ul class="footer-links">
       <?php foreach (footer_pages() as $pg): if ($pg['in_footer']): ?><li><a href="<?= url('/p/' . $pg['slug']) ?>"><?= e($pg['title']) ?></a></li><?php endif; endforeach; ?>
-      <li><a href="<?= url('/rss.xml') ?>">RSS</a></li>
     </ul>
   </div>
   <div class="container footer-bottom">
