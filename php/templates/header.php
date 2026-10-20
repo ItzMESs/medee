@@ -117,3 +117,4 @@ $socials = array_filter([
   <?php if ($socials): ?><div class="socials"><?php foreach ($socials as $net => $link): ?><a href="<?= e($link) ?>" target="_blank" rel="noopener" aria-label="<?= e($net) ?>"><?= icon($net, 20) ?></a><?php endforeach; ?></div><?php endif; ?>
 </nav>
 <main class="site-main">
+<?php $topAd = ad_slot('top'); if ($topAd !== ''): ?><div class="container ad-wrap-top"><?= $topAd ?></div><?php endif; ?>

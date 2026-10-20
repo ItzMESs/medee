@@ -22,6 +22,21 @@
   </div>
 
   <div class="panel narrow-panel">
+    <h2>Зурган дээрх лого</h2>
+    <label class="check"><input type="checkbox" name="watermark_enabled" value="1" <?= $settings['watermark_enabled'] === '1' ? 'checked' : '' ?>> Хуулсан зураг дээр лого тавих</label>
+    <div class="inline-form rate-inputs">
+      <label>Байрлал
+        <select name="watermark_position">
+          <?php foreach (['br' => 'Баруун доод', 'bl' => 'Зүүн доод', 'tr' => 'Баруун дээд', 'tl' => 'Зүүн дээд'] as $k => $v): ?>
+            <option value="<?= $k ?>" <?= $settings['watermark_position'] === $k ? 'selected' : '' ?>><?= $v ?></option>
+          <?php endforeach; ?>
+        </select></label>
+      <label>Хэмжээ (зургийн өргөний %)<input type="number" name="watermark_size" min="8" max="40" value="<?= (int) $settings['watermark_size'] ?>"></label>
+      <label>Тод байдал (%)<input type="number" name="watermark_opacity" min="20" max="100" value="<?= (int) $settings['watermark_opacity'] ?>"></label>
+    </div>
+  </div>
+
+  <div class="panel narrow-panel">
     <h2>Footer ба холбоо барих</h2>
     <label>Сайтын тухай товч <small>footer-т логоны доор гарна</small><textarea name="footer_about" rows="3"><?= e($settings['footer_about']) ?></textarea></label>
     <label>Хаяг<input name="contact_address" value="<?= e($settings['contact_address']) ?>" placeholder="Сүхбаатар дүүрэг, ... Улаанбаатар"></label>
@@ -92,6 +107,17 @@
 
   <div><button class="btn btn-primary">Хадгалах</button></div>
 </form>
+<div class="panel narrow-panel" id="watermark">
+  <h2>Зурган дээрх лого (watermark)</h2>
+  <p class="muted">Шинээр хуулсан нүүр зураг болон мэдээн доторх зураг дээр лого автоматаар тавигдана. Гэрэлтэй буланд өнгөт лого, бараан буланд цагаан лого сонгогдоно.</p>
+  <form method="post" action="<?= url('/admin/images/watermark') ?>">
+    <?= csrf_field() ?>
+    <input type="hidden" name="offset" value="<?= (int) (isset($_SESSION['watermark_offset']) ? $_SESSION['watermark_offset'] : 0) ?>">
+    <button class="btn"><?= $settings['watermark_enabled'] === '1' ? 'Одоо байгаа бүх зураг дээр тавих / шинэчлэх' : 'Одоо байгаа зургуудаас лого авах' ?></button>
+  </form>
+  <small class="muted">Тохиргоогоо доорх "Хадгалах" товчоор хадгалсны дараа энэ товчийг дарна. Эх зураг хадгалагддаг тул лого давхардахгүй.</small>
+</div>
+
 <div class="panel narrow-panel">
   <h2>Зураг</h2>
   <?php if (!$imageStats['gd']): ?>

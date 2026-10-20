@@ -80,7 +80,8 @@ function admin_dispatch($path, $method)
     if ($path === '/profile') {
         return $isPost ? admin_profile_post() : admin_render('profile');
     }
-    if ($path === '/users' || strpos($path, '/users/') === 0 || $path === '/settings' || $path === '/images/optimize') {
+    if ($path === '/users' || strpos($path, '/users/') === 0 || $path === '/settings' || strpos($path, '/images/') === 0
+        || $path === '/ads' || strpos($path, '/ads/') === 0) {
         if (!is_admin()) {
             http_response_code(403);
             exit('Зөвхөн админ хандах эрхтэй.');
@@ -96,6 +97,26 @@ function admin_dispatch($path, $method)
         }
         if ($path === '/images/optimize' && $isPost) {
             return admin_optimize_images();
+        }
+        if ($path === '/images/watermark' && $isPost) {
+            return admin_watermark_images();
+        }
+        if ($path === '/ads') {
+            return admin_ads();
+        }
+        if ($path === '/ads/new') {
+            return admin_ad_form(['id' => null, 'title' => '', 'slot' => 'sidebar', 'kind' => 'image', 'image' => null, 'url' => '',
+                'code' => '', 'starts_at' => null, 'ends_at' => null, 'active' => 1]);
+        }
+        if ($path === '/ads/save' && $isPost) {
+            return admin_ad_save(null);
+        }
+        if (preg_match('#^/ads/(\d+)(/delete)?$#', $path, $m)) {
+            if (!$isPost) {
+                $ad = row('SELECT * FROM ads WHERE id = ?', [(int) $m[1]]);
+                return $ad ? admin_ad_form($ad) : redirect('/admin/ads');
+            }
+            return empty($m[2]) ? admin_ad_save((int) $m[1]) : admin_ad_delete((int) $m[1]);
         }
     }
     http_response_code(404);
@@ -513,12 +534,16 @@ function admin_settings_post()
     save_setting('weather_enabled', post('weather_enabled') ? '1' : '0');
     save_setting('comments_enabled', post('comments_enabled') ? '1' : '0');
     save_setting('ornaments', post('ornaments') ? '1' : '0');
+    save_setting('watermark_enabled', post('watermark_enabled') ? '1' : '0');
+    save_setting('watermark_position', in_array(post('watermark_position'), ['br', 'bl', 'tr', 'tl'], true) ? post('watermark_position') : 'br');
+    save_setting('watermark_size', (string) max(8, min(40, (int) post('watermark_size'))));
+    save_setting('watermark_opacity', (string) max(20, min(100, (int) post('watermark_opacity'))));
     save_setting('comments_moderation', post('comments_moderation') ? '1' : '0');
     if (post('clear_token')) {
         save_setting('fb_page_token', '');
     }
     try {
-        $logo = save_upload('logo_file', false);
+        $logo = save_upload('logo_file', false, false);
         if ($logo) {
             remove_upload(setting('logo'));
             save_setting('logo', $logo);
@@ -646,4 +671,127 @@ function admin_page_delete($id)
     q('DELETE FROM pages WHERE id = ?', [$id]);
     flash('success', 'Хуудас устгагдлаа.');
     redirect('/admin/pages');
+}
+
+// Every uploaded picture used by articles: covers plus images inside the text.
+function article_image_paths()
+{
+    $paths = [];
+    foreach (rows('SELECT image, content FROM articles') as $r) {
+        if ($r['image'] && strpos($r['image'], '/uploads/') === 0) {
+            $paths[$r['image']] = true;
+        }
+        if (preg_match_all('#src="[^"]*?(/uploads/[^"?]+)"#', $r['content'], $m)) {
+            foreach ($m[1] as $p) {
+                $paths[$p] = true;
+            }
+        }
+    }
+    return array_keys($paths);
+}
+
+// Re-applies (or removes) the watermark on existing pictures with the current settings.
+// Works from the clean "-orig" copies, so running it twice never doubles the logo.
+function admin_watermark_images()
+{
+    @set_time_limit(90);
+    $start = microtime(true);
+    $todo = article_image_paths();
+    $offset = max(0, (int) post('offset'));
+    $on = setting('watermark_enabled') === '1';
+    $done = 0;
+    for ($i = $offset; $i < count($todo); $i++) {
+        $on ? apply_watermark($todo[$i]) : remove_watermark($todo[$i]);
+        $done++;
+        if (microtime(true) - $start > 25) {
+            $i++;
+            break;
+        }
+    }
+    $left = count($todo) - $i;
+    $_SESSION['watermark_offset'] = $left > 0 ? $i : 0;
+    flash('success', $done . ' зураг ' . ($on ? 'дээр лого тавилаа.' : 'дээрээс лого авлаа.')
+        . ($left > 0 ? ' ' . $left . ' зураг үлдсэн — товчийг дахин дарна уу.' : ''));
+    redirect('/admin/settings#watermark');
+}
+
+// ---------- Advertising ----------
+
+function admin_ads()
+{
+    $ads = rows('SELECT * FROM ads ORDER BY active DESC, created_at DESC');
+    admin_render('ads', ['ads' => $ads, 'slots' => ad_slots(), 'now' => now()]);
+}
+
+function admin_ad_form(array $ad, $error = null)
+{
+    $local = function ($v) { return $v ? date('Y-m-d\TH:i', strtotime($v)) : ''; };
+    admin_render('ad-form', ['ad' => $ad, 'slots' => ad_slots(), 'error' => $error,
+        'startsLocal' => $local($ad['starts_at']), 'endsLocal' => $local($ad['ends_at'])]);
+}
+
+function admin_ad_save($id)
+{
+    $existing = $id ? row('SELECT * FROM ads WHERE id = ?', [$id]) : null;
+    $date = function ($key) {
+        $v = post($key);
+        return $v !== '' && strtotime($v) ? date('Y-m-d H:i:s', strtotime($v)) : null;
+    };
+    $data = [
+        'title' => mb_substr(post('title'), 0, 250),
+        'slot' => array_key_exists(post('slot'), ad_slots()) ? post('slot') : 'sidebar',
+        'kind' => post('kind') === 'code' ? 'code' : 'image',
+        'url' => post('url'),
+        'code' => isset($_POST['code']) ? (string) $_POST['code'] : '',
+        'starts_at' => $date('starts_at'),
+        'ends_at' => $date('ends_at'),
+        'active' => post('active') ? 1 : 0,
+        'image' => $existing ? $existing['image'] : null,
+    ];
+    $back = array_merge($existing ?: ['id' => null], $data);
+    if ($data['title'] === '') {
+        return admin_ad_form($back, 'Нэр заавал оруулна уу.');
+    }
+    if ($data['url'] !== '' && !safe_url($data['url'])) {
+        return admin_ad_form($back, 'Холбоос https:// эсвэл http://-ээр эхлэх ёстой.');
+    }
+    try {
+        // Banners are shown as uploaded: no watermark, no thumbnail.
+        $upload = save_upload('image', false, false);
+    } catch (RuntimeException $ex) {
+        return admin_ad_form($back, $ex->getMessage());
+    }
+    if ($upload) {
+        if ($existing) {
+            remove_upload($existing['image']);
+        }
+        $data['image'] = $upload;
+    }
+    if ($data['kind'] === 'image' && !$data['image']) {
+        return admin_ad_form($back, 'Баннерын зураг хуулна уу.');
+    }
+    if ($data['kind'] === 'code' && trim($data['code']) === '') {
+        return admin_ad_form($back, 'Сурталчилгааны кодоо оруулна уу.');
+    }
+    $cols = ['title', 'slot', 'kind', 'image', 'url', 'code', 'starts_at', 'ends_at', 'active'];
+    $vals = array_map(function ($c) use ($data) { return $data[$c]; }, $cols);
+    if ($existing) {
+        q('UPDATE ads SET ' . implode(' = ?, ', $cols) . ' = ? WHERE id = ?', array_merge($vals, [$id]));
+    } else {
+        q('INSERT INTO ads (' . implode(', ', $cols) . ', created_at) VALUES (' . str_repeat('?, ', count($cols)) . '?)', array_merge($vals, [now()]));
+        $id = (int) db()->lastInsertId();
+    }
+    flash('success', 'Сурталчилгаа хадгалагдлаа.');
+    redirect('/admin/ads/' . $id);
+}
+
+function admin_ad_delete($id)
+{
+    $ad = row('SELECT * FROM ads WHERE id = ?', [$id]);
+    if ($ad) {
+        remove_upload($ad['image']);
+        q('DELETE FROM ads WHERE id = ?', [$id]);
+        flash('success', 'Сурталчилгаа устгагдлаа.');
+    }
+    redirect('/admin/ads');
 }

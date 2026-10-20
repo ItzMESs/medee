@@ -52,6 +52,10 @@ function default_settings()
         'brand_color' => '#0a5cff',
         'logo' => '',
         'ornaments' => '1',
+        'watermark_enabled' => '1',
+        'watermark_position' => 'br',
+        'watermark_size' => '18',
+        'watermark_opacity' => '85',
         'footer_about' => '',
         'contact_address' => '',
         'contact_phone' => '',
@@ -309,7 +313,7 @@ function get($key, $default = '')
 // ---------- Uploads ----------
 
 // Saves an uploaded image and returns its public path (e.g. /uploads/2026/10/abc.jpg), or throws.
-function save_upload($field, $withThumb = true)
+function save_upload($field, $withThumb = true, $watermark = true)
 {
     if (empty($_FILES[$field]) || $_FILES[$field]['error'] === UPLOAD_ERR_NO_FILE) {
         return null;
@@ -345,6 +349,9 @@ function save_upload($field, $withThumb = true)
     $path = '/uploads/' . $sub . '/' . $name;
     if (function_exists('optimize_image')) {
         optimize_image($path, $withThumb);
+        if ($watermark) {
+            apply_watermark($path);
+        }
     }
     return $path;
 }
@@ -354,7 +361,7 @@ function remove_upload($path)
     if (!$path || strpos($path, '/uploads/') !== 0) {
         return;
     }
-    foreach ([$path, thumb_path($path)] as $p) {
+    foreach ([$path, thumb_path($path), orig_path($path)] as $p) {
         $file = realpath(ROOT . $p);
         if ($file && strpos($file, realpath(UPLOAD_DIR)) === 0 && is_file($file)) {
             @unlink($file);

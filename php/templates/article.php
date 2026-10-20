@@ -9,7 +9,8 @@
     </div>
     <?php if ($article['image']): ?><figure class="article-cover"><img src="<?= e(media($article['image'])) ?>" alt="<?= e($article['title']) ?>"></figure><?php endif; ?>
     <?php if ($article['excerpt']): ?><p class="lead"><?= e($article['excerpt']) ?></p><?php endif; ?>
-    <div class="article-body"><?= $article['content'] ?></div>
+    <div class="article-body"><?= insert_after_paragraph($article['content'], 3, ad_slot('article')) ?></div>
+    <?= ad_slot('article_end') ?>
     <?php if (ornaments_enabled()): ?><div class="orn-divider"><?= ornament('ulzii') ?></div><?php endif; ?>
     <div class="article-foot">
       <div class="author-box">

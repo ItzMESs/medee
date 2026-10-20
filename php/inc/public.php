@@ -28,6 +28,9 @@ function public_dispatch($path)
     if ($path === '/rss.xml') {
         return page_rss();
     }
+    if (preg_match('#^/ad/(\d+)$#', $path, $m)) {
+        return ad_click((int) $m[1]);
+    }
     if (preg_match('#^/p/([a-z0-9-]+)$#', $path, $m)) {
         return page_static($m[1]);
     }

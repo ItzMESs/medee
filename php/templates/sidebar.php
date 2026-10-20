@@ -19,6 +19,7 @@
       </ol>
     <?php endforeach; ?>
   </div>
+  <?= ad_slot('sidebar') ?>
   <?php if (safe_url($settings['fb_page_url'])): ?>
   <section class="widget">
     <iframe src="https://www.facebook.com/plugins/page.php?href=<?= rawurlencode($settings['fb_page_url']) ?>&tabs=timeline&width=340&height=420&small_header=true&adapt_container_width=true&hide_cover=false"

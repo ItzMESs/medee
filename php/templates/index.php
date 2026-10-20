@@ -17,6 +17,8 @@
   </section>
   <?php endif; ?>
 
+  <?php $homeAd = ad_slot('home'); if ($homeAd !== ''): ?><section class="section"><?= $homeAd ?></section><?php endif; ?>
+
   <?php foreach ($sections as $i => $s): $lead = $s['articles'][0]; $rest = array_slice($s['articles'], 1); ?>
   <section class="section">
     <h2 class="section-title"><a href="<?= url('/category/' . $s['category']['slug']) ?>"><?= e($s['category']['name']) ?></a><a class="more" href="<?= url('/category/' . $s['category']['slug']) ?>">Бүгдийг үзэх <?= icon('chev', 16) ?></a></h2>

@@ -24,6 +24,7 @@ require __DIR__ . '/facebook.php';
 require __DIR__ . '/widgets.php';
 require_once __DIR__ . '/images.php';
 require __DIR__ . '/icons.php';
+require __DIR__ . '/ads.php';
 
 try {
     $pdo = new PDO(

@@ -1,6 +1,6 @@
 <?php
 // Bump when tables are added; bootstrap re-runs create_schema() on older databases.
-define('SCHEMA_VERSION', 4);
+define('SCHEMA_VERSION', 5);
 
 // Creates the tables (safe to run more than once) and default rows.
 function create_schema(PDO $pdo)
@@ -76,6 +76,22 @@ function create_schema(PDO $pdo)
         in_footer TINYINT(1) NOT NULL DEFAULT 1,
         position INT NOT NULL DEFAULT 0,
         updated_at DATETIME NOT NULL
+    ) $opts");
+    $pdo->exec("CREATE TABLE IF NOT EXISTS ads (
+        id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+        title VARCHAR(255) NOT NULL,
+        slot VARCHAR(32) NOT NULL,
+        kind VARCHAR(16) NOT NULL DEFAULT 'image',
+        image VARCHAR(255) NULL,
+        url VARCHAR(500) NOT NULL DEFAULT '',
+        code TEXT NULL,
+        starts_at DATETIME NULL,
+        ends_at DATETIME NULL,
+        active TINYINT(1) NOT NULL DEFAULT 1,
+        views INT UNSIGNED NOT NULL DEFAULT 0,
+        clicks INT UNSIGNED NOT NULL DEFAULT 0,
+        created_at DATETIME NOT NULL,
+        INDEX idx_slot (slot, active)
     ) $opts");
     $pdo->exec("CREATE TABLE IF NOT EXISTS settings (
         name VARCHAR(64) NOT NULL PRIMARY KEY,

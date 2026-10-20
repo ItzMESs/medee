@@ -334,6 +334,16 @@ body.drawer-open .drawer-overlay { opacity: 1; pointer-events: auto; }
   -webkit-mask: var(--orn-alkhan) repeat-x left center / 10px 10px; mask: var(--orn-alkhan) repeat-x left center / 10px 10px;
 }
 
+/* ---------- Advertising ---------- */
+.ad { position: relative; text-align: center; margin: 0 auto; }
+.ad img { display: block; margin: 0 auto; max-width: 100%; height: auto; }
+.ad a { display: block; }
+.ad-label { display: block; font-size: 10px; letter-spacing: 1.2px; text-transform: uppercase; color: #a5a9b3; margin-bottom: 6px; text-align: center; }
+.ad-wrap-top { margin-bottom: 40px; }
+.ad-sidebar img { width: 100%; }
+.article-body .ad, .ad-article_end { margin: 32px auto; padding: 16px 0; border-top: 1px solid var(--line); border-bottom: 1px solid var(--line); text-indent: 0; }
+.article-body .ad img { margin: 0 auto; }
+
 /* ---------- Responsive ---------- */
 @media (max-width: 1280px) {
   .grid-4 { grid-template-columns: repeat(3, minmax(0, 1fr)); }
