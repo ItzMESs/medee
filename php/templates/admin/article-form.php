@@ -71,7 +71,7 @@
 
     <div class="panel">
       <h3>Нүүр зураг</h3>
-      <img id="image-preview" src="<?= e(media($article['image'])) ?>" alt="" class="<?= $article['image'] ? '' : 'hidden' ?>">
+      <img id="image-preview"<?= $article['image'] ? ' src="' . e(media($article['image'])) . '"' : '' ?> alt="" class="<?= $article['image'] ? '' : 'hidden' ?>">
       <input type="file" name="image" accept="image/jpeg,image/png,image/webp,image/gif" id="image-input">
       <?php if ($article['image']): ?><label class="check"><input type="checkbox" name="remove_image" value="1"> Зургийг устгах</label><?php endif; ?>
       <small class="muted">Facebook-д 1200×630 хэмжээтэй зураг хамгийн сайн харагдана.</small>

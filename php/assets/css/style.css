@@ -132,7 +132,7 @@ body.drawer-open .drawer-overlay { opacity: 1; pointer-events: auto; }
 .card-title a:hover { color: var(--brand); }
 .excerpt { color: var(--muted); font-size: 16px; line-height: 1.8; margin: 0 0 14px; display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; }
 
-.card-feature .card-img { aspect-ratio: 10 / 7; }
+.card-feature .card-img { aspect-ratio: 16 / 9; }
 .card-label { position: absolute; left: 0; bottom: 0; background: var(--brand); color: #fff; font-size: 15px; font-weight: 600; text-transform: uppercase; letter-spacing: .3px; padding: 6px 12px; }
 .card-feature .card-body { padding-top: 26px; }
 .card-feature .card-title { font-size: 34px; line-height: 1.28; margin-bottom: 20px; display: -webkit-box; -webkit-line-clamp: 4; -webkit-box-orient: vertical; overflow: hidden; }
@@ -416,8 +416,8 @@ body.drawer-open .drawer-overlay { opacity: 1; pointer-events: auto; }
   .strip-breaking { flex-basis: 100%; }
   .site-main { padding: 24px 0 48px; }
   .featured-pair { grid-template-columns: 1fr; gap: 36px; }
-  .card-feature .card-title { font-size: 25px; margin-bottom: 14px; }
-  .card-feature .card-body { padding-top: 18px; }
+  .card-feature .card-title { font-size: 22px; margin-bottom: 12px; -webkit-line-clamp: 3; }
+  .card-feature .card-body { padding-top: 14px; }
   .card-label { font-size: 13px; }
   .grid-4, .grid-3 { grid-template-columns: 1fr 1fr; gap: 28px 16px; }
   .card-title { font-size: 16px; }
