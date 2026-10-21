@@ -7,6 +7,8 @@ SET NAMES utf8mb4;
 SET FOREIGN_KEY_CHECKS = 0;
 
 DROP TABLE IF EXISTS `settings`;
+DROP TABLE IF EXISTS `article_tags`;
+DROP TABLE IF EXISTS `tags`;
 DROP TABLE IF EXISTS `autosaves`;
 DROP TABLE IF EXISTS `push_log`;
 DROP TABLE IF EXISTS `push_subscriptions`;
@@ -165,6 +167,22 @@ CREATE TABLE `autosaves` (
   PRIMARY KEY (`user_id`,`article_key`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
+CREATE TABLE `tags` (
+  `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
+  `name` varchar(64) NOT NULL,
+  `slug` varchar(100) NOT NULL,
+  `created_at` datetime NOT NULL,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `slug` (`slug`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+CREATE TABLE `article_tags` (
+  `article_id` int(10) unsigned NOT NULL,
+  `tag_id` int(10) unsigned NOT NULL,
+  PRIMARY KEY (`article_id`,`tag_id`),
+  KEY `idx_tag` (`tag_id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
 CREATE TABLE `settings` (
   `name` varchar(64) NOT NULL,
   `value` text NOT NULL,
@@ -209,7 +227,7 @@ INSERT INTO `pages` (`id`, `title`, `slug`, `content`, `in_footer`, `position`, 
 
 -- Тохиргоо
 INSERT INTO `settings` (`name`, `value`) VALUES
-('schema_version', 6),
+('schema_version', 7),
 ('site_name', 'NationX.site');
 
 SET FOREIGN_KEY_CHECKS = 1;

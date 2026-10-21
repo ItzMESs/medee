@@ -163,3 +163,10 @@ body[data-kind="image"] .kind-code, body[data-kind="code"] .kind-image { display
 .mono { font-family: ui-monospace, Menlo, Consolas, monospace; font-size: 13px; }
 .autosave-status { display: block; margin-top: 8px; text-align: center; font-size: 12px; min-height: 16px; }
 .push-box { margin-top: 8px; }
+
+.tag-input-box { display: flex; flex-wrap: wrap; gap: 6px; padding: 6px; border: 1px solid var(--line); border-radius: 6px; background: #fff; margin-bottom: 6px; }
+.tag-input-box:focus-within { border-color: #0b5cff; box-shadow: 0 0 0 3px rgba(11, 92, 255, .12); }
+.tag-input-box input { flex: 1 1 120px; border: 0; outline: 0; padding: 4px; min-width: 0; box-shadow: none; }
+.tag-pill { display: inline-flex; align-items: center; gap: 4px; background: #e7efff; color: #0a3fae; border-radius: 999px; padding: 3px 4px 3px 10px; font-size: 13px; }
+.tag-pill button { border: 0; background: none; color: inherit; cursor: pointer; font-size: 15px; line-height: 1; padding: 0 4px; border-radius: 50%; }
+.tag-pill button:hover { background: rgba(10, 63, 174, .12); }

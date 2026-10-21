@@ -35,6 +35,7 @@ $socials = array_filter([
   <meta property="og:image:alt" content="<?= e(!empty($meta['title']) ? $meta['title'] : $settings['site_name']) ?>">
   <meta name="twitter:card" content="summary_large_image"><meta name="twitter:image" content="<?= e($meta['image']) ?>">
   <?php endif; ?>
+  <?php if (!empty($meta['tags'])): foreach ($meta['tags'] as $tg): ?><meta property="article:tag" content="<?= e($tg) ?>"><?php endforeach; endif; ?>
   <?php if (!empty($meta['published'])): ?><meta property="article:published_time" content="<?= e($meta['published']) ?>"><?php endif; ?>
   <?php if ($settings['fb_app_id']): ?><meta property="fb:app_id" content="<?= e($settings['fb_app_id']) ?>"><?php endif; ?>
   <?php if ($settings['google_verification'] !== ''): ?><meta name="google-site-verification" content="<?= e($settings['google_verification']) ?>"><?php endif; ?>

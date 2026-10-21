@@ -70,6 +70,16 @@
     </div>
 
     <div class="panel">
+      <h3>Шошго</h3>
+      <div class="tag-input" data-tag-input>
+        <input type="hidden" name="tags" value="<?= e(isset($article['tags']) ? $article['tags'] : '') ?>">
+        <div class="tag-input-box"><input type="text" list="tag-suggest" placeholder="ж: Сонгууль" aria-label="Шошго нэмэх" maxlength="40"></div>
+        <datalist id="tag-suggest"><?php foreach ($allTags as $tn): ?><option value="<?= e($tn) ?>"><?php endforeach; ?></datalist>
+      </div>
+      <small class="muted">Enter эсвэл таслал (,) дарж нэмнэ. Ихдээ 10 шошго. Ижил сэдвийн мэдээнүүд нэг хуудсанд цугларна.</small>
+    </div>
+
+    <div class="panel">
       <h3>Нүүр зураг</h3>
       <img id="image-preview"<?= $article['image'] ? ' src="' . e(media($article['image'])) . '"' : '' ?> alt="" class="<?= $article['image'] ? '' : 'hidden' ?>">
       <input type="file" name="image" accept="image/jpeg,image/png,image/webp,image/gif" id="image-input">

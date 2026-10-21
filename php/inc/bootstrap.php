@@ -27,6 +27,7 @@ require __DIR__ . '/icons.php';
 require __DIR__ . '/ads.php';
 require __DIR__ . '/reactions.php';
 require __DIR__ . '/webpush.php';
+require __DIR__ . '/tags.php';
 
 try {
     $pdo = new PDO(

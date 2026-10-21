@@ -10,6 +10,9 @@
     <?php if ($article['image']): ?><figure class="article-cover"><img src="<?= e(media($article['image'])) ?>" alt="<?= e($article['title']) ?>"></figure><?php endif; ?>
     <?php if ($article['excerpt']): ?><p class="lead"><?= e($article['excerpt']) ?></p><?php endif; ?>
     <div class="article-body"><?= insert_after_paragraph($article['content'], 3, ad_slot('article')) ?></div>
+    <?php if ($tags): ?>
+      <div class="article-tags"><span>Шошго:</span><?php foreach ($tags as $t): ?><a href="<?= url(tag_path($t)) ?>" class="tag-chip">#<?= e($t['name']) ?></a><?php endforeach; ?></div>
+    <?php endif; ?>
     <?= ad_slot('article_end') ?>
     <section class="reactions" data-react-url="<?= url('/news/' . (int) $article['id'] . '/react') ?>">
       <h3>Энэ мэдээ танд ямар сэтгэгдэл төрүүлэв?</h3>

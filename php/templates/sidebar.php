@@ -19,6 +19,12 @@
       </ol>
     <?php endforeach; ?>
   </div>
+  <?php $sideTags = popular_tags(15); if ($sideTags): ?>
+  <section class="widget tag-widget">
+    <h3 class="widget-title">Түгээмэл сэдэв</h3>
+    <div class="tag-cloud"><?php foreach ($sideTags as $t): ?><a href="<?= url(tag_path($t)) ?>" class="tag-chip<?= !empty($currentTag) && $currentTag['slug'] === $t['slug'] ? ' active' : '' ?>">#<?= e($t['name']) ?><small><?= (int) $t['cnt'] ?></small></a><?php endforeach; ?></div>
+  </section>
+  <?php endif; ?>
   <?= ad_slot('sidebar') ?>
   <?php if (safe_url($settings['fb_page_url'])): ?>
   <section class="widget">

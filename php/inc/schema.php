@@ -1,6 +1,6 @@
 <?php
 // Bump when tables are added; bootstrap re-runs create_schema() on older databases.
-define('SCHEMA_VERSION', 6);
+define('SCHEMA_VERSION', 7);
 
 // Creates the tables (safe to run more than once) and default rows.
 function create_schema(PDO $pdo)
@@ -124,6 +124,18 @@ function create_schema(PDO $pdo)
         data MEDIUMTEXT NOT NULL,
         saved_at DATETIME NOT NULL,
         PRIMARY KEY (user_id, article_key)
+    ) $opts");
+    $pdo->exec("CREATE TABLE IF NOT EXISTS tags (
+        id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+        name VARCHAR(64) NOT NULL,
+        slug VARCHAR(100) NOT NULL UNIQUE,
+        created_at DATETIME NOT NULL
+    ) $opts");
+    $pdo->exec("CREATE TABLE IF NOT EXISTS article_tags (
+        article_id INT UNSIGNED NOT NULL,
+        tag_id INT UNSIGNED NOT NULL,
+        PRIMARY KEY (article_id, tag_id),
+        INDEX idx_tag (tag_id)
     ) $opts");
     $pdo->exec("CREATE TABLE IF NOT EXISTS settings (
         name VARCHAR(64) NOT NULL PRIMARY KEY,

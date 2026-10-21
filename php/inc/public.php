@@ -20,6 +20,9 @@ function public_dispatch($path)
         track_view();
         return page_category($m[1]);
     }
+    if (preg_match('#^/tag/([a-z0-9-]+)$#', $path, $m)) {
+        return page_tag($m[1]);
+    }
     if ($path === '/latest') {
         track_view();
         return page_list('Шинэ мэдээ', '', []);
@@ -96,9 +99,8 @@ function page_article($id, $slug)
         q('UPDATE articles SET views = views + 1 WHERE id = ?', [$id]);
         $article['views']++;
     }
-    $related = $article['category_id']
-        ? list_articles('a.category_id = ? AND a.id != ?', [$article['category_id'], $id], 3)
-        : [];
+    $tags = article_tags($id);
+    $related = related_articles($article, $tags, 3);
     $meta = [
         'title' => $article['title'],
         'description' => $article['excerpt'],
@@ -106,6 +108,7 @@ function page_article($id, $slug)
         'image' => $article['image'] ? absolute_url($article['image']) : null,
         'type' => 'article',
         'published' => date('c', strtotime($article['published_at'])),
+        'tags' => array_column($tags, 'name'),
     ];
     $meta['jsonld'] = [
         '@context' => 'https://schema.org',
@@ -119,6 +122,9 @@ function page_article($id, $slug)
         'author' => ['@type' => 'Person', 'name' => $article['author_name'] ?: setting('site_name')],
         'publisher' => ['@type' => 'Organization', 'name' => setting('site_name'), 'url' => absolute_url('/')],
     ];
+    if ($tags) {
+        $meta['jsonld']['keywords'] = implode(', ', array_column($tags, 'name'));
+    }
     $comments = [];
     if (setting('comments_enabled') === '1') {
         $comments = rows("SELECT name, body, created_at FROM comments WHERE article_id = ? AND status = 'approved'
@@ -131,7 +137,7 @@ function page_article($id, $slug)
     $isArticle = true;
     $reactions = reaction_counts($id);
     $myReaction = my_reaction($id);
-    render('article', public_context(compact('article', 'related', 'meta', 'comments', 'commentNotice', 'readMinutes', 'isArticle', 'reactions', 'myReaction')));
+    render('article', public_context(compact('article', 'tags', 'related', 'meta', 'comments', 'commentNotice', 'readMinutes', 'isArticle', 'reactions', 'myReaction')));
 }
 
 function page_list($heading, $where, array $params, array $extra = [])
@@ -151,6 +157,21 @@ function page_category($slug)
         not_found();
     }
     page_list($c['name'], 'a.category_id = ?', [$c['id']]);
+}
+
+function page_tag($slug)
+{
+    $t = row('SELECT * FROM tags WHERE slug = ?', [$slug]);
+    if (!$t) {
+        not_found();
+    }
+    $meta = [
+        'title' => $t['name'] . ' — мэдээ',
+        'description' => $t['name'] . ' сэдвээр ' . setting('site_name') . ' сайтад нийтлэгдсэн хамгийн сүүлийн мэдээнүүд.',
+        'url' => absolute_url(tag_path($t)) . (current_page() > 1 ? '?page=' . current_page() : ''),
+    ];
+    page_list('#' . $t['name'], 'a.id IN (SELECT article_id FROM article_tags WHERE tag_id = ?)', [$t['id']],
+        ['meta' => $meta, 'currentTag' => $t]);
 }
 
 function page_search()
@@ -227,6 +248,9 @@ function page_sitemap()
     echo '<url><loc>' . $x(absolute_url('/')) . '</loc><changefreq>hourly</changefreq><priority>1.0</priority></url>' . "\n";
     foreach (all_categories() as $c) {
         echo '<url><loc>' . $x(absolute_url('/category/' . $c['slug'])) . '</loc><changefreq>hourly</changefreq><priority>0.7</priority></url>' . "\n";
+    }
+    foreach (popular_tags(1000) as $t) {
+        echo '<url><loc>' . $x(absolute_url(tag_path($t))) . '</loc><changefreq>daily</changefreq><priority>0.6</priority></url>' . "\n";
     }
     $newsCutoff = time() - 2 * 86400;
     foreach (list_articles('', [], 5000) as $a) {

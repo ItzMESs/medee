@@ -71,11 +71,59 @@
     dirty = false;
   });
 
+  // Tag input: chips stored as a comma-separated list in a hidden field.
+  const tagBox = form.querySelector('[data-tag-input]');
+  const tags = { set() {} };
+  if (tagBox) {
+    const hidden = tagBox.querySelector('input[type=hidden]');
+    const box = tagBox.querySelector('.tag-input-box');
+    const input = box.querySelector('input');
+    let list = [];
+    const render = () => {
+      box.querySelectorAll('.tag-pill').forEach((el) => el.remove());
+      list.forEach((name, i) => {
+        const pill = document.createElement('span');
+        pill.className = 'tag-pill';
+        pill.textContent = '#' + name;
+        const x = document.createElement('button');
+        x.type = 'button';
+        x.textContent = '×';
+        x.setAttribute('aria-label', name + ' устгах');
+        x.onclick = () => { list.splice(i, 1); sync(); };
+        pill.appendChild(x);
+        box.insertBefore(pill, input);
+      });
+    };
+    const sync = () => { hidden.value = list.join(', '); render(); form.dispatchEvent(new Event('change')); };
+    const add = (raw) => {
+      raw.split(/[,;]/).forEach((part) => {
+        const name = part.replace(/^#+/, '').replace(/\s+/g, ' ').trim().slice(0, 40);
+        if (name && list.length < 10 && !list.some((t) => t.toLowerCase() === name.toLowerCase())) list.push(name);
+      });
+      input.value = '';
+      sync();
+    };
+    tags.set = (value) => { list = []; add(value || ''); };
+    input.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter' || e.key === ',') { e.preventDefault(); add(input.value); }
+      if (e.key === 'Backspace' && input.value === '' && list.length) { list.pop(); sync(); }
+    });
+    // Picking a suggestion from the datalist fires "input" without a key press.
+    input.addEventListener('input', (e) => { if (!e.inputType || e.inputType === 'insertReplacementText') add(input.value); });
+    input.addEventListener('blur', () => { if (input.value.trim()) add(input.value); });
+    box.addEventListener('click', (e) => { if (e.target === box) input.focus(); });
+    tags.set(hidden.value);
+    // Runs after the main submit handler; a typed-but-unconfirmed tag is still saved.
+    form.addEventListener('submit', () => {
+      if (input.value.trim()) hidden.value = list.concat(input.value.trim()).join(', ');
+    });
+  }
+
   // Autosave: every 15 seconds the editor's fields are stored on the server (not published).
   const autosaveUrl = form.dataset.autosaveUrl;
   if (autosaveUrl) {
     const status = form.querySelector('.autosave-status');
-    const fields = ['title', 'excerpt', 'category_id', 'status', 'published_at'];
+    const fields = ['title', 'excerpt', 'category_id', 'tags', 'status', 'published_at'];
     const checks = ['is_featured', 'is_breaking'];
     quill.on('text-change', (delta, old, source) => { if (source === 'user') dirty = true; });
     form.addEventListener('input', () => { dirty = true; });
@@ -109,6 +157,7 @@
       offer.querySelector('[data-autosave-restore]').addEventListener('click', () => {
         const data = JSON.parse(document.getElementById('autosave-data').textContent);
         fields.forEach((f) => { const el = form.elements[f]; if (el && data[f] !== undefined) el.value = data[f]; });
+        tags.set(data.tags);
         checks.forEach((f) => { const el = form.elements[f]; if (el) el.checked = data[f] === '1'; });
         quill.clipboard.dangerouslyPasteHTML(data.content || '');
         dirty = true;

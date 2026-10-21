@@ -61,6 +61,12 @@ function admin_dispatch($path, $method)
     if (preg_match('#^/categories/(\d+)(/delete)?$#', $path, $m) && $isPost) {
         return empty($m[2]) ? admin_category_update((int) $m[1]) : admin_category_delete((int) $m[1]);
     }
+    if ($path === '/tags') {
+        return admin_tags();
+    }
+    if (preg_match('#^/tags/(\d+)(/delete)?$#', $path, $m) && $isPost) {
+        return empty($m[2]) ? admin_tag_update((int) $m[1]) : admin_tag_delete((int) $m[1]);
+    }
     if ($path === '/pages') {
         return admin_pages();
     }
@@ -263,7 +269,7 @@ function blank_article()
     return [
         'id' => null, 'title' => '', 'excerpt' => '', 'content' => '', 'status' => 'draft', 'category_id' => null,
         'is_featured' => 0, 'is_breaking' => 0, 'image' => null, 'published_at' => null, 'fb_post_id' => null,
-        'fb_error' => null, 'slug' => '',
+        'fb_error' => null, 'slug' => '', 'tags' => '',
     ];
 }
 
@@ -280,6 +286,7 @@ function admin_article_form(array $article, $error = null)
         'pushReady' => push_enabled(), 'pushLog' => $pushLog, 'autosave' => $autosave,
         'pushSubscribers' => (int) q('SELECT COUNT(*) FROM push_subscriptions')->fetchColumn(),
         'article' => $article, 'categories' => all_categories(), 'error' => $error, 'fbReady' => fb_configured(),
+        'allTags' => array_column(rows('SELECT name FROM tags ORDER BY name LIMIT 500'), 'name'),
         'publishedLocal' => $article['published_at'] ? date('Y-m-d\TH:i', strtotime($article['published_at'])) : '',
     ]);
 }
@@ -291,6 +298,7 @@ function admin_article_edit($id)
         http_response_code(404);
         exit('Мэдээ олдсонгүй');
     }
+    $a['tags'] = implode(', ', array_column(article_tags($id), 'name'));
     admin_article_form($a);
 }
 
@@ -320,15 +328,17 @@ function admin_article_save($id)
         'published_at' => $pubAt,
         'image' => $existing ? $existing['image'] : null,
     ];
+    $tagNames = parse_tag_input(post('tags'));
     $data['slug'] = slugify($data['title']);
+    $formData = $data + ['tags' => implode(', ', $tagNames)];
 
     if ($data['title'] === '') {
-        return admin_article_form(array_merge($existing ?: blank_article(), $data), 'Гарчиг заавал оруулна уу.');
+        return admin_article_form(array_merge($existing ?: blank_article(), $formData), 'Гарчиг заавал оруулна уу.');
     }
     try {
         $upload = save_upload('image');
     } catch (RuntimeException $ex) {
-        return admin_article_form(array_merge($existing ?: blank_article(), $data), $ex->getMessage());
+        return admin_article_form(array_merge($existing ?: blank_article(), $formData), $ex->getMessage());
     }
     if ($upload) {
         if ($existing) {
@@ -355,6 +365,7 @@ function admin_article_save($id)
         $id = (int) db()->lastInsertId();
     }
 
+    save_article_tags($id, $tagNames);
     q('DELETE FROM autosaves WHERE user_id = ? AND article_key IN (?, ?)', [current_user()['id'], autosave_key($id), autosave_key(null)]);
     $article = row('SELECT * FROM articles WHERE id = ?', [$id]);
     $type = 'success';
@@ -386,6 +397,7 @@ function admin_article_delete($id)
     if ($a) {
         remove_upload($a['image']);
         q('DELETE FROM articles WHERE id = ?', [$id]);
+        q('DELETE FROM article_tags WHERE article_id = ?', [$id]);
         flash('success', 'Мэдээ устгагдлаа.');
     }
     redirect('/admin/articles');
@@ -860,7 +872,7 @@ function admin_autosave()
     header('Content-Type: application/json; charset=utf-8');
     $id = (int) post('article_id');
     $data = [];
-    foreach (['title', 'excerpt', 'category_id', 'status', 'published_at', 'is_featured', 'is_breaking'] as $k) {
+    foreach (['title', 'excerpt', 'category_id', 'tags', 'status', 'published_at', 'is_featured', 'is_breaking'] as $k) {
         $data[$k] = post($k);
     }
     $data['content'] = isset($_POST['content']) ? (string) $_POST['content'] : '';
@@ -880,4 +892,34 @@ function admin_autosave_discard()
     $id = (int) post('article_id');
     q('DELETE FROM autosaves WHERE user_id = ? AND article_key = ?', [current_user()['id'], autosave_key($id ?: null)]);
     echo json_encode(['ok' => true]);
+}
+
+function admin_tags()
+{
+    $tags = rows('SELECT t.*, COUNT(at.article_id) AS count FROM tags t LEFT JOIN article_tags at ON at.tag_id = t.id
+        GROUP BY t.id ORDER BY count DESC, t.name');
+    admin_render('tags', ['tags' => $tags]);
+}
+
+function admin_tag_update($id)
+{
+    $name = parse_tag_input(post('name'));
+    $slug = slugify(post('slug') !== '' ? post('slug') : (isset($name[0]) ? $name[0] : ''));
+    if (!$name) {
+        flash('error', 'Шошгоны нэр хоосон байж болохгүй.');
+    } elseif (row('SELECT id FROM tags WHERE (slug = ? OR LOWER(name) = ?) AND id != ?', [$slug, mb_strtolower($name[0]), $id])) {
+        flash('error', 'Ийм нэр эсвэл холбоостой шошго аль хэдийн байна.');
+    } else {
+        q('UPDATE tags SET name = ?, slug = ? WHERE id = ?', [$name[0], $slug, $id]);
+        flash('success', 'Шошго хадгалагдлаа.');
+    }
+    redirect('/admin/tags');
+}
+
+function admin_tag_delete($id)
+{
+    q('DELETE FROM article_tags WHERE tag_id = ?', [$id]);
+    q('DELETE FROM tags WHERE id = ?', [$id]);
+    flash('success', 'Шошго устгагдлаа. Мэдээнүүд хэвээр үлдсэн.');
+    redirect('/admin/tags');
 }
