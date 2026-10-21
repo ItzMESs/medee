@@ -87,6 +87,7 @@
       <small class="muted">Facebook-д 1200×630 хэмжээтэй зураг хамгийн сайн харагдана.</small>
     </div>
   </div>
+  <button type="submit" class="btn btn-primary mobile-save">Хадгалах</button>
 </form>
 
 <?php if ($article['id']): ?>

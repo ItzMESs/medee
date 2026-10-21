@@ -35,7 +35,7 @@ $dayCount = count($daily);
     .tools input { padding: 6px 8px; border: 1px solid #ccd; border-radius: 6px; }
     .tools button, .tools a { padding: 8px 14px; border-radius: 6px; border: 0; background: #0a5cff; color: #fff; cursor: pointer; text-decoration: none; font-size: 14px; }
     .tools a { background: #fff; color: #14171f; border: 1px solid #ccd; }
-    @media (max-width: 640px) { .sheet { padding: 24px 18px; margin: 0; } .kpis { grid-template-columns: 1fr 1fr; } }
+    @media (max-width: 640px) { .sheet { padding: 24px 16px; margin: 0; } .kpis { grid-template-columns: 1fr 1fr; } .tools { padding: 0 12px; } .tools label { flex: 1 1 45%; } .tools input { width: 100%; min-width: 0; box-sizing: border-box; } .tools label { min-width: 0; } .top { flex-direction: column; } .top > div { text-align: left !important; } th, td { padding: 7px 6px; } }
     @media print { body { background: #fff; } .tools { display: none; } .sheet { box-shadow: none; margin: 0; max-width: none; padding: 0; } }
   </style>
 </head>

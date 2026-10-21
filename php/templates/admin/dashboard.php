@@ -1,5 +1,12 @@
 <?php include __DIR__ . '/header.php'; ?>
-<h1>Хянах самбар</h1>
+<h1>Сайн байна уу, <?= e($user['name']) ?> 👋</h1>
+<div class="quick">
+  <a href="<?= url('/admin/articles/new') ?>"><span class="q-ico"><?= icon('plus', 20) ?></span><span>Мэдээ нэмэх<small>Шинэ мэдээ бичих</small></span></a>
+  <a href="<?= url('/admin/articles') ?>"><span class="q-ico"><?= icon('file', 20) ?></span><span>Бүх мэдээ<small><?= (int) $stats['published'] ?> нийтлэгдсэн, <?= (int) $stats['drafts'] ?> ноорог</small></span></a>
+  <a href="<?= url('/admin/comments' . ($pendingComments ? '?status=pending' : '')) ?>"><span class="q-ico"><?= icon('comment', 20) ?></span><span>Сэтгэгдэл<small><?= $pendingComments ? (int) $pendingComments . ' хүлээгдэж буй' : 'Шинэ сэтгэгдэл алга' ?></small></span></a>
+  <?php if ($user['role'] === 'admin'): ?><a href="<?= url('/admin/ads') ?>"><span class="q-ico"><?= icon('megaphone', 20) ?></span><span>Сурталчилгаа<small>Баннер, тайлан</small></span></a><?php endif; ?>
+  <a href="<?= url('/') ?>" target="_blank"><span class="q-ico"><?= icon('external', 20) ?></span><span>Сайт үзэх<small><?= e(preg_replace('#^https?://#', '', rtrim($settings['site_url'], '/'))) ?></small></span></a>
+</div>
 <?php if (!empty($endingAds)): ?>
   <div class="flash flash-error">⏰ Удахгүй дуусах сурталчилгаа:
     <?php foreach ($endingAds as $i => $ea): ?><?= $i ? ', ' : '' ?><a href="<?= url('/admin/ads/' . $ea['id']) ?>"><b><?= e($ea['title']) ?></b></a> (<?= e(format_date($ea['ends_at'])) ?>)<?php endforeach; ?>.
