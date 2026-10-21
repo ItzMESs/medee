@@ -29,7 +29,7 @@
   </section>
   <?php endif; ?>
   <?= ad_slot('sidebar') ?>
-  <?php if (safe_url($settings['fb_page_url'])): ?>
+  <?php if ($settings['fb_page_widget'] === '1' && safe_url($settings['fb_page_url'])): ?>
   <section class="widget">
     <iframe src="https://www.facebook.com/plugins/page.php?href=<?= rawurlencode($settings['fb_page_url']) ?>&tabs=timeline&width=340&height=420&small_header=true&adapt_container_width=true&hide_cover=false"
       width="100%" height="420" style="border:none;overflow:hidden" scrolling="no" frameborder="0" allowfullscreen="true"

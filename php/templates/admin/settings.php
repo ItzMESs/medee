@@ -50,8 +50,9 @@
 
   <div class="panel narrow-panel">
     <h2>Facebook</h2>
-    <label>Facebook пэйжийн хаяг <small>ж: https://www.facebook.com/nationx.site — сайтын хажууд пэйж харагдана</small>
+    <label>Facebook пэйжийн хаяг <small>ж: https://www.facebook.com/nationx.site — footer-ийн Facebook дүрс энэ хаяг руу очно</small>
       <input name="fb_page_url" value="<?= e($settings['fb_page_url']) ?>"></label>
+    <label class="check"><input type="checkbox" name="fb_page_widget" value="1" <?= $settings['fb_page_widget'] === '1' ? 'checked' : '' ?>> Сайтын хажуу талд Facebook пэйжийн цонх харуулах</label>
     <label>Facebook App ID <small>(Messenger хуваалцах, сэтгэгдэлд хэрэглэнэ)</small>
       <input name="fb_app_id" value="<?= e($settings['fb_app_id']) ?>"></label>
     <label>Facebook Page ID<input name="fb_page_id" value="<?= e($settings['fb_page_id']) ?>"></label>

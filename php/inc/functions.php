@@ -44,6 +44,7 @@ function default_settings()
         'fb_page_token' => '',
         'fb_auto_post' => '1',
         'fb_comments' => '0',
+        'fb_page_widget' => '0',
         'rates_mode' => 'auto',
         'rate_usd' => '',
         'rate_cny' => '',

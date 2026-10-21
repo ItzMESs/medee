@@ -597,6 +597,7 @@ function admin_settings_post()
     }
     save_setting('fb_auto_post', post('fb_auto_post') ? '1' : '0');
     save_setting('fb_comments', post('fb_comments') ? '1' : '0');
+    save_setting('fb_page_widget', post('fb_page_widget') ? '1' : '0');
     save_setting('rates_mode', in_array(post('rates_mode'), ['auto', 'manual', 'off'], true) ? post('rates_mode') : 'auto');
     save_setting('weather_enabled', post('weather_enabled') ? '1' : '0');
     save_setting('comments_enabled', post('comments_enabled') ? '1' : '0');
