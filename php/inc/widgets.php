@@ -12,7 +12,7 @@ function http_get_json($url, $timeout = 4)
         CURLOPT_RETURNTRANSFER => true,
         CURLOPT_TIMEOUT => $timeout,
         CURLOPT_CONNECTTIMEOUT => 3,
-        CURLOPT_USERAGENT => 'Nationalrbc.com/1.0',
+        CURLOPT_USERAGENT => 'NationX.site/1.0',
     ]);
     $body = curl_exec($ch);
     $status = (int) curl_getinfo($ch, CURLINFO_HTTP_CODE);

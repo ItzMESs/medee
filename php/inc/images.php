@@ -156,8 +156,8 @@ function watermark_logo_file($brightCorner = false)
     if ($custom !== '' && is_file(ROOT . $custom)) {
         return ROOT . $custom;
     }
-    $color = ROOT . '/assets/img/nationalrbc-logo.png';
-    $white = ROOT . '/assets/img/nationalrbc-logo-white.png';
+    $color = ROOT . '/assets/img/nationx-logo.png';
+    $white = ROOT . '/assets/img/nationx-logo-white.png';
     if ($brightCorner && is_file($color)) {
         return $color;
     }

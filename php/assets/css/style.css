@@ -44,7 +44,7 @@ button { font: inherit; }
 .icon-btn { background: none; border: 0; color: inherit; padding: 4px; cursor: pointer; display: inline-flex; }
 .logo { flex-shrink: 0; font-family: var(--serif); font-size: 28px; font-weight: 500; color: #fff; letter-spacing: -.5px; line-height: 1; white-space: nowrap; }
 .logo:hover { color: #fff; }
-.logo img { height: 40px; width: auto; display: block; }
+.logo img { height: 48px; width: auto; display: block; }
 /* Categories in the bar; ones that do not fit wrap onto a hidden second line (all are in the drawer). */
 .main-nav { flex: 1; min-width: 0; display: flex; flex-wrap: wrap; height: 72px; overflow: hidden; column-gap: 22px; }
 .main-nav a { display: flex; align-items: center; height: 72px; color: #fff; font-size: 15px; font-weight: 600; white-space: nowrap; border-bottom: 3px solid transparent; padding-top: 3px; transition: border-color .15s, opacity .15s; }
@@ -90,7 +90,7 @@ body.drawer-open .drawer { transform: translateX(0); }
 body.drawer-open .drawer-overlay { opacity: 1; pointer-events: auto; }
 .drawer-head { display: flex; justify-content: space-between; align-items: center; padding: 22px 24px; background: var(--brand); color: #fff; }
 .logo-sm { font-size: 28px; }
-.logo-sm img { max-height: 34px; }
+.logo-sm img { max-height: 40px; }
 .drawer-nav, .drawer-pages { list-style: none; margin: 0; padding: 8px 0; }
 .drawer-nav a { display: block; padding: 13px 24px; font-size: 16px; font-weight: 600; color: var(--ink); border-left: 3px solid transparent; }
 .drawer-nav a:hover, .drawer-nav a.active { color: var(--brand); background: var(--brand-soft); border-left-color: var(--brand); }
@@ -229,7 +229,7 @@ body.drawer-open .drawer-overlay { opacity: 1; pointer-events: auto; }
 .site-footer { background: var(--footer); color: #fff; }
 .footer-grid { display: grid; grid-template-columns: 1.5fr 1.2fr .8fr; gap: 64px; padding-top: 88px; padding-bottom: 56px; }
 .footer-brand p { font-size: 14px; line-height: 1.95; margin: 26px 0 36px; max-width: 560px; }
-.footer-brand .logo img { max-height: 46px; }
+.footer-brand .logo img { max-height: 56px; }
 .socials { display: flex; gap: 12px; }
 .socials a { width: 44px; height: 44px; border-radius: 50%; border: 2px solid currentColor; display: inline-flex; align-items: center; justify-content: center; color: #fff; transition: background .2s, color .2s; }
 .site-footer .socials a:hover { background: #fff; color: var(--footer); }
@@ -405,7 +405,7 @@ body.drawer-open .drawer-overlay { opacity: 1; pointer-events: auto; }
   .article-foot { flex-direction: column; align-items: flex-start; }
   .header-inner { height: 60px; gap: 12px; }
   .main-nav { display: none; }
-  .logo img { height: 30px; }
+  .logo img { height: 38px; }
   .header-actions { gap: 4px; }
   .header-search-inner { height: 58px; }
   .header-search-inner > .icon { display: none; }

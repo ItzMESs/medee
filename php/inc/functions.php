@@ -35,7 +35,7 @@ function now()
 function default_settings()
 {
     return [
-        'site_name' => 'Nationalrbc.com',
+        'site_name' => 'NationX.site',
         'site_tagline' => 'Шуурхай, бодит мэдээ',
         'site_url' => detect_site_url(),
         'fb_page_url' => '',
@@ -540,7 +540,7 @@ function site_logo_url()
     if (setting('logo') !== '') {
         return media(setting('logo'));
     }
-    return is_file(ROOT . '/assets/img/nationalrbc-logo-white.png') ? asset('img/nationalrbc-logo-white.png') : '';
+    return is_file(ROOT . '/assets/img/nationx-logo-white.png') ? asset('img/nationx-logo-white.png') : '';
 }
 
 // Share image for pages without their own picture.

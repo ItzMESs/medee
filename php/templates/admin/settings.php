@@ -15,7 +15,7 @@
     <label>Үндсэн өнгө <small>толгой хэсэг, товч, холбоосын өнгө</small>
       <span class="color-row"><input type="color" name="brand_color" value="<?= e(brand_color()) ?>"><code><?= e(brand_color()) ?></code></span></label>
     <label>Лого <small>PNG (тунгалаг дэвсгэртэй), өндөр нь 80-120px байхад тохиромжтой. Байхгүй бол сайтын нэр бичигдэнэ.</small>
-      <?php if (site_logo_url()): ?><span class="logo-preview" style="background: <?= e(brand_color()) ?>"><img src="<?= e(site_logo_url()) ?>" alt=""></span><?php if (!$settings['logo']): ?><small> (анхдагч NATIONAL RBC цагаан лого)</small><?php endif; ?><?php endif; ?>
+      <?php if (site_logo_url()): ?><span class="logo-preview" style="background: <?= e(brand_color()) ?>"><img src="<?= e(site_logo_url()) ?>" alt=""></span><?php if (!$settings['logo']): ?><small> (анхдагч NATIONX.site цагаан лого)</small><?php endif; ?><?php endif; ?>
       <input type="file" name="logo_file" accept="image/png,image/jpeg,image/webp"></label>
     <?php if ($settings['logo']): ?><label class="check"><input type="checkbox" name="remove_logo" value="1"> Логог устгах</label><?php endif; ?>
     <label class="check"><input type="checkbox" name="ornaments" value="1" <?= $settings['ornaments'] !== '0' ? 'checked' : '' ?>> Монгол хээ угалз харуулах (алхан хээ, өлзий, эвэр угалз)</label>

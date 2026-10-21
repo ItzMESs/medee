@@ -14,7 +14,7 @@ $errors = [];
 $done = false;
 $f = [
     'db_host' => 'localhost', 'db_name' => '', 'db_user' => '', 'db_pass' => '',
-    'site_name' => 'Nationalrbc.com', 'admin_user' => 'admin', 'admin_pass' => '', 'demo' => '1',
+    'site_name' => 'NationX.site', 'admin_user' => 'admin', 'admin_pass' => '', 'demo' => '1',
 ];
 
 // A config.php made by hand (from config.sample.php) prefills the form; the site counts
@@ -91,7 +91,7 @@ if (!$installed && $_SERVER['REQUEST_METHOD'] === 'POST') {
                 $id = $pdo->lastInsertId();
             }
             $pdo->prepare('INSERT INTO settings (name, `value`) VALUES (?, ?) ON DUPLICATE KEY UPDATE `value` = VALUES(`value`)')
-                ->execute(['site_name', $f['site_name'] ?: 'Nationalrbc.com']);
+                ->execute(['site_name', $f['site_name'] ?: 'NationX.site']);
             $https = !empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off';
             $siteUrl = ($https ? 'https' : 'http') . '://' . $_SERVER['HTTP_HOST'] . rtrim(str_replace('\\', '/', dirname($_SERVER['SCRIPT_NAME'])), '/');
             $pdo->prepare('INSERT INTO settings (name, `value`) VALUES (?, ?) ON DUPLICATE KEY UPDATE `value` = VALUES(`value`)')
@@ -102,7 +102,7 @@ if (!$installed && $_SERVER['REQUEST_METHOD'] === 'POST') {
                 insert_demo_articles($pdo, (int) $id);
             }
 
-            $config = "<?php\n// Nationalrbc.com тохиргоо — install.php үүсгэсэн\nreturn " . var_export([
+            $config = "<?php\n// NationX.site тохиргоо — install.php үүсгэсэн\nreturn " . var_export([
                 'db_host' => $f['db_host'], 'db_name' => $f['db_name'], 'db_user' => $f['db_user'], 'db_pass' => $f['db_pass'],
                 'debug' => false,
             ], true) . ";\n";
@@ -127,13 +127,13 @@ $base = rtrim(str_replace('\\', '/', dirname($_SERVER['SCRIPT_NAME'])), '/');
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Суулгах — Nationalrbc.com</title>
+  <title>Суулгах — NationX.site</title>
   <link rel="stylesheet" href="<?= h($base) ?>/assets/css/admin.css">
   <style>.install{max-width:620px;margin:40px auto;padding:0 16px}.checks{list-style:none;padding:0;margin:0}.checks li{padding:4px 0}.ok{color:#166534}.bad{color:#b91c1c}</style>
 </head>
 <body>
 <div class="install">
-  <h1>Nationalrbc.com — Суулгах</h1>
+  <h1>NationX.site — Суулгах</h1>
   <?php if ($done): ?>
     <div class="flash flash-success">Амжилттай суулаа!</div>
     <div class="panel">
