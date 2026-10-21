@@ -1,6 +1,23 @@
 <?php include __DIR__ . '/header.php'; ?>
 <div class="panel-head"><h1>Сурталчилгаа</h1><a href="<?= url('/admin/ads/new') ?>" class="btn btn-primary">+ Сурталчилгаа нэмэх</a></div>
 <p class="muted">Нэг байрлалд хэд хэдэн сурталчилгаа идэвхтэй байвал гүйдэг баннер (слайд) болж, 6 секунд тутам ээлжилнэ. Дээр нь зураас, хоёр талд нь сум гарна. Дуусах огноо өнгөрөхөд автоматаар алга болно.</p>
+<?php
+$liveBySlot = [];
+foreach ($ads as $ad) {
+    if ($ad['active'] && (!$ad['starts_at'] || $ad['starts_at'] <= $now) && (!$ad['ends_at'] || $ad['ends_at'] >= $now)) {
+        $liveBySlot[$ad['slot']] = (isset($liveBySlot[$ad['slot']]) ? $liveBySlot[$ad['slot']] : 0) + 1;
+    }
+}
+?>
+<div class="slot-summary">
+  <?php foreach ($slots as $key => $info): $n = isset($liveBySlot[$key]) ? $liveBySlot[$key] : 0; ?>
+    <div class="slot-card<?= $n ? ' on' : '' ?>">
+      <b><?= e($info[0]) ?></b>
+      <span><?php if ($n > 1): ?>🎞 <?= $n ?> баннер гүйж байна<?php elseif ($n === 1): ?>1 баннер<?php elseif (adsense_unit($key) !== ''): ?>Google AdSense<?php else: ?>Хоосон<?php endif; ?></span>
+      <small><?= e($info[1]) ?></small>
+    </div>
+  <?php endforeach; ?>
+</div>
 <div class="panel">
   <div class="table-wrap">
   <table class="table">
