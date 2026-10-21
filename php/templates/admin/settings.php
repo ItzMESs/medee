@@ -6,7 +6,7 @@
     <h2>Сайт</h2>
     <label>Сайтын нэр<input name="site_name" value="<?= e($settings['site_name']) ?>" required></label>
     <label>Уриа<input name="site_tagline" value="<?= e($settings['site_tagline']) ?>"></label>
-    <label>Сайтын хаяг (домэйн) <small>ж: https://medee.mn — Facebook пост дээрх холбоос энэ хаягаар үүснэ</small>
+    <label>Сайтын хаяг (домэйн) <small>ж: https://nationx.site — Facebook пост дээрх холбоос энэ хаягаар үүснэ</small>
       <input name="site_url" value="<?= e($settings['site_url']) ?>" required></label>
   </div>
 
@@ -50,7 +50,7 @@
 
   <div class="panel narrow-panel">
     <h2>Facebook</h2>
-    <label>Facebook пэйжийн хаяг <small>ж: https://www.facebook.com/medee.mn — сайтын хажууд пэйж харагдана</small>
+    <label>Facebook пэйжийн хаяг <small>ж: https://www.facebook.com/nationx.site — сайтын хажууд пэйж харагдана</small>
       <input name="fb_page_url" value="<?= e($settings['fb_page_url']) ?>"></label>
     <label>Facebook App ID <small>(Messenger хуваалцах, сэтгэгдэлд хэрэглэнэ)</small>
       <input name="fb_app_id" value="<?= e($settings['fb_app_id']) ?>"></label>
