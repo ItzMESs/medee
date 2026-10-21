@@ -112,6 +112,23 @@
     <p class="muted">Sitemap хаяг: <code><?= e(rtrim($settings['site_url'], '/')) ?>/sitemap.xml</code> — Search Console → Sitemaps хэсэгт нэмнэ.</p>
   </div>
 
+  <div class="panel narrow-panel" id="adsense">
+    <h2>Google AdSense</h2>
+    <label>Publisher ID <small>ж: ca-pub-1234567890123456 — AdSense → Account → Account information. AdSense-ийн өгсөн &lt;script&gt; кодыг бүтнээр нь хуулж болно.</small>
+      <input name="adsense_client" value="<?= e($settings['adsense_client']) ?>" placeholder="ca-pub-XXXXXXXXXXXXXXXX"></label>
+    <?php if (adsense_client() !== ''): ?>
+      <p class="muted">✓ AdSense код бүх хуудсанд тавигдсан. <a href="<?= url('/ads.txt') ?>" target="_blank">ads.txt ↗</a> автоматаар үүссэн.<br>
+      AdSense дээр <b>Auto ads</b> асаавал Google өөрөө байрлал сонгоно. Эсвэл доор байрлал бүрт <b>ad unit</b>-ийн дугаар оруулна.</p>
+    <?php endif; ?>
+    <h3>Байрлал бүрийн ad unit <small class="muted">(заавал биш)</small></h3>
+    <small class="muted">AdSense → Ads → By ad unit → Display ads үүсгээд, кодын <code>data-ad-slot="..."</code> доторх дугаарыг (эсвэл кодыг бүтнээр нь) оруулна. Тухайн байрлалд таны шууд сурталчилгаа (Сурталчилгаа цэс) идэвхтэй бол түүнийг харуулж, байхгүй үед AdSense гарна.</small>
+    <?php foreach (ad_slots() as $key => $info): ?>
+      <label><?= e($info[0]) ?><input name="adsense_slot_<?= e($key) ?>" value="<?= e($settings['adsense_slot_' . $key]) ?>" placeholder="1234567890" inputmode="numeric"></label>
+    <?php endforeach; ?>
+    <label>ads.txt нэмэлт мөрүүд <small>Өөр сурталчилгааны сүлжээ ашиглавал тэдний өгсөн мөрийг энд бичнэ.</small>
+      <textarea name="ads_txt_extra" rows="3"><?= e($settings['ads_txt_extra']) ?></textarea></label>
+  </div>
+
   <div><button class="btn btn-primary">Хадгалах</button></div>
 </form>
 <div class="panel narrow-panel" id="push">

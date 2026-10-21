@@ -12,6 +12,41 @@ function ad_slots()
     ];
 }
 
+// Google AdSense publisher ID ("ca-pub-1234567890123456"), or '' when not set up.
+function adsense_client()
+{
+    $id = setting('adsense_client');
+    return preg_match('/^ca-pub-\d{10,20}$/', $id) ? $id : '';
+}
+
+// An AdSense ad unit for $slot, used where no direct (sold) ad is running.
+function adsense_unit($slot)
+{
+    $client = adsense_client();
+    $unit = setting('adsense_slot_' . $slot);
+    if ($client === '' || !preg_match('/^\d{6,20}$/', (string) $unit)) {
+        return '';
+    }
+    return '<ins class="adsbygoogle" style="display:block" data-ad-client="' . e($client) . '" data-ad-slot="' . e($unit) . '"'
+        . ($slot === 'article' ? ' data-ad-layout="in-article" data-ad-format="fluid"' : ' data-ad-format="auto" data-full-width-responsive="true"')
+        . '></ins><script>(adsbygoogle = window.adsbygoogle || []).push({});</script>';
+}
+
+// ads.txt: Google's line for the publisher ID plus any extra lines from other ad networks.
+function ads_txt()
+{
+    $lines = [];
+    if (($client = adsense_client()) !== '') {
+        $lines[] = 'google.com, ' . substr($client, 3) . ', DIRECT, f08c47fec0942fa0';
+    }
+    foreach (preg_split('/\r?\n/', setting('ads_txt_extra')) as $line) {
+        if (trim($line) !== '') {
+            $lines[] = trim($line);
+        }
+    }
+    return $lines;
+}
+
 function live_ads($slot)
 {
     static $cache = [];
@@ -28,7 +63,8 @@ function ad_slot($slot)
 {
     $ads = live_ads($slot);
     if (!$ads) {
-        return '';
+        $unit = adsense_unit($slot);
+        return $unit === '' ? '' : '<div class="ad ad-' . e($slot) . ' ad-adsense"><span class="ad-label">Сурталчилгаа</span>' . $unit . '</div>';
     }
     $ad = $ads[array_rand($ads)];
     if (!is_bot()) {

@@ -55,6 +55,15 @@ function public_dispatch($path)
     if ($path === '/robots.txt') {
         return page_robots();
     }
+    if ($path === '/ads.txt') {
+        $lines = ads_txt();
+        if (!$lines) {
+            not_found();
+        }
+        header('Content-Type: text/plain; charset=utf-8');
+        echo implode("\n", $lines) . "\n";
+        return;
+    }
     not_found();
 }
 

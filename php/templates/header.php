@@ -44,6 +44,10 @@ $socials = array_filter([
   <script async src="https://www.googletagmanager.com/gtag/js?id=<?= e($settings['ga_id']) ?>"></script>
   <script>window.dataLayer = window.dataLayer || []; function gtag(){dataLayer.push(arguments);} gtag('js', new Date()); gtag('config', '<?= e($settings['ga_id']) ?>');</script>
   <?php endif; ?>
+  <?php if (adsense_client() !== ''): ?>
+  <meta name="google-adsense-account" content="<?= e(adsense_client()) ?>">
+  <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=<?= e(adsense_client()) ?>" crossorigin="anonymous"></script>
+  <?php endif; ?>
   <link rel="manifest" href="<?= url('/manifest.webmanifest') ?>">
   <?php if (is_file(ROOT . '/assets/img/icon-192.png')): ?><link rel="apple-touch-icon" href="<?= asset('img/icon-192.png') ?>"><?php endif; ?>
   <?php if (is_file(ROOT . '/assets/img/favicon.png')): ?><link rel="icon" type="image/png" sizes="512x512" href="<?= asset('img/favicon.png') ?>"><?php else: ?>

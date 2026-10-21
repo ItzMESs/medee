@@ -71,6 +71,13 @@ function default_settings()
         'comments_moderation' => '0',
         'ga_id' => '',
         'google_verification' => '',
+        'adsense_client' => '',
+        'adsense_slot_top' => '',
+        'adsense_slot_home' => '',
+        'adsense_slot_sidebar' => '',
+        'adsense_slot_article' => '',
+        'adsense_slot_article_end' => '',
+        'ads_txt_extra' => '',
     ];
 }
 

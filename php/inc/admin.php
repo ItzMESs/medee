@@ -547,7 +547,8 @@ function admin_settings_post()
     foreach (['site_name', 'site_tagline', 'site_url', 'fb_page_url', 'fb_app_id', 'fb_page_id', 'fb_page_token',
         'rate_usd', 'rate_cny', 'rate_rub', 'ga_id', 'google_verification',
         'brand_color', 'footer_about', 'contact_address', 'contact_phone', 'contact_email',
-        'social_youtube', 'social_x', 'social_instagram'] as $key) {
+        'social_youtube', 'social_x', 'social_instagram', 'adsense_client', 'adsense_slot_top', 'adsense_slot_home',
+        'adsense_slot_sidebar', 'adsense_slot_article', 'adsense_slot_article_end', 'ads_txt_extra'] as $key) {
         // An empty token field keeps the stored token so it never has to be shown in the page.
         if ($key === 'fb_page_token' && post($key) === '') {
             continue;
@@ -565,6 +566,19 @@ function admin_settings_post()
             $value = '#0a5cff';
         } elseif (in_array($key, ['fb_page_url', 'social_youtube', 'social_x', 'social_instagram'], true) && $value !== '' && !safe_url($value)) {
             $value = 'https://' . ltrim($value, '/');
+        } elseif ($key === 'adsense_client') {
+            // Accept "pub-123…", "ca-pub-123…" or the whole <script> tag pasted from AdSense.
+            if (preg_match('/(?:ca-)?pub-(\d{10,20})/', $value, $m)) {
+                $value = 'ca-pub-' . $m[1];
+            } elseif ($value !== '') {
+                flash('error', 'AdSense publisher ID буруу байна. ca-pub-1234567890123456 хэлбэртэй байх ёстой.');
+                redirect('/admin/settings');
+            }
+        } elseif (strpos($key, 'adsense_slot_') === 0) {
+            // Accept the bare number or the whole <ins ... data-ad-slot="123"> code.
+            $value = preg_match('/data-ad-slot="(\d+)"/', $value, $m) ? $m[1] : preg_replace('/\D/', '', $value);
+        } elseif ($key === 'ads_txt_extra') {
+            $value = mb_substr(isset($_POST[$key]) ? str_replace("\r", '', (string) $_POST[$key]) : '', 0, 5000);
         } elseif ($key === 'google_verification' && preg_match('/content="([^"]+)"/', $value, $m)) {
             // Accept the whole <meta> tag pasted from Search Console.
             $value = $m[1];
