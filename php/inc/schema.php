@@ -1,6 +1,13 @@
 <?php
 // Bump when tables are added; bootstrap re-runs create_schema() on older databases.
-define('SCHEMA_VERSION', 7);
+define('SCHEMA_VERSION', 8);
+
+function ensure_column(PDO $pdo, $table, $column, $definition)
+{
+    if (!$pdo->query("SHOW COLUMNS FROM `$table` LIKE " . $pdo->quote($column))->fetch()) {
+        $pdo->exec("ALTER TABLE `$table` ADD COLUMN `$column` $definition");
+    }
+}
 
 // Creates the tables (safe to run more than once) and default rows.
 function create_schema(PDO $pdo)
@@ -83,8 +90,11 @@ function create_schema(PDO $pdo)
         slot VARCHAR(32) NOT NULL,
         kind VARCHAR(16) NOT NULL DEFAULT 'image',
         image VARCHAR(255) NULL,
+        image_mobile VARCHAR(255) NULL,
         url VARCHAR(500) NOT NULL DEFAULT '',
         code TEXT NULL,
+        client VARCHAR(255) NOT NULL DEFAULT '',
+        note TEXT NULL,
         starts_at DATETIME NULL,
         ends_at DATETIME NULL,
         active TINYINT(1) NOT NULL DEFAULT 1,
@@ -92,6 +102,17 @@ function create_schema(PDO $pdo)
         clicks INT UNSIGNED NOT NULL DEFAULT 0,
         created_at DATETIME NOT NULL,
         INDEX idx_slot (slot, active)
+    ) $opts");
+    // Columns added to ads after its first release.
+    ensure_column($pdo, 'ads', 'image_mobile', 'VARCHAR(255) NULL AFTER image');
+    ensure_column($pdo, 'ads', 'client', "VARCHAR(255) NOT NULL DEFAULT '' AFTER code");
+    ensure_column($pdo, 'ads', 'note', 'TEXT NULL AFTER client');
+    $pdo->exec("CREATE TABLE IF NOT EXISTS ad_stats_daily (
+        ad_id INT UNSIGNED NOT NULL,
+        day DATE NOT NULL,
+        views INT UNSIGNED NOT NULL DEFAULT 0,
+        clicks INT UNSIGNED NOT NULL DEFAULT 0,
+        PRIMARY KEY (ad_id, day)
     ) $opts");
     $pdo->exec("CREATE TABLE IF NOT EXISTS article_reactions (
         article_id INT UNSIGNED NOT NULL,

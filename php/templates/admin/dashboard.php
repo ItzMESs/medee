@@ -1,5 +1,10 @@
 <?php include __DIR__ . '/header.php'; ?>
 <h1>Хянах самбар</h1>
+<?php if (!empty($endingAds)): ?>
+  <div class="flash flash-error">⏰ Удахгүй дуусах сурталчилгаа:
+    <?php foreach ($endingAds as $i => $ea): ?><?= $i ? ', ' : '' ?><a href="<?= url('/admin/ads/' . $ea['id']) ?>"><b><?= e($ea['title']) ?></b></a> (<?= e(format_date($ea['ends_at'])) ?>)<?php endforeach; ?>.
+    Захиалагчтай сунгах эсэхийг ярилцаарай.</div>
+<?php endif; ?>
 <?php if (!$fbReady && $user['role'] === 'admin'): ?>
   <div class="flash flash-info">Facebook пэйж холбогдоогүй байна. Мэдээгээ автоматаар Facebook-д нийтлэхийн тулд <a href="<?= url('/admin/settings') ?>">Тохиргоо</a> хэсэгт пэйжийн ID болон access token оруулна уу.</div>
 <?php endif; ?>

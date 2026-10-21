@@ -31,6 +31,7 @@
     <?php foreach (footer_pages() as $pg): if ($pg['slug'] === 'privacy'): ?><a href="<?= url('/p/privacy') ?>"><?= e($pg['title']) ?></a><?php endif; endforeach; ?>
   </div>
 </footer>
+<?= sticky_ad() ?>
 <a href="#" class="to-top" aria-label="Дээш буцах"><?= icon('up', 30) ?></a>
 <script src="<?= asset('js/site.js') ?>" defer></script>
 </body>

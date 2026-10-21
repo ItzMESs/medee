@@ -9,6 +9,8 @@ function ad_slots()
         'sidebar' => ['Хажуу талд', '720 × 600 эсвэл 720 × 1440'],
         'article' => ['Мэдээн дотор (3-р догол мөрийн дараа)', '1456 × 500'],
         'article_end' => ['Мэдээний төгсгөлд', '1456 × 500'],
+        'list' => ['Жагсаалтын дунд (ангилал, шошго, хайлт)', '1456 × 500'],
+        'mobile_sticky' => ['Утасны доод наалттай баннер (зөвхөн утсанд)', '640 × 100 (6.4:1)'],
     ];
 }
 
@@ -69,12 +71,13 @@ function ad_slot($slot)
     $ad = $ads[array_rand($ads)];
     if (!is_bot()) {
         q('UPDATE ads SET views = views + 1 WHERE id = ?', [$ad['id']]);
+        ad_stat($ad['id'], 'views');
     }
     $inner = '';
     if ($ad['kind'] === 'code') {
         $inner = $ad['code'];
     } elseif ($ad['image']) {
-        $img = '<img src="' . e(media($ad['image'])) . '" alt="' . e($ad['title']) . '" loading="lazy">';
+        $img = ad_picture($ad, $slot === 'top' ? 'eager' : 'lazy');
         $inner = $ad['url'] !== ''
             ? '<a href="' . url('/ad/' . $ad['id']) . '" target="_blank" rel="sponsored noopener">' . $img . '</a>'
             : $img;
@@ -83,6 +86,46 @@ function ad_slot($slot)
         return '';
     }
     return '<div class="ad ad-' . e($slot) . '"><span class="ad-label">Сурталчилгаа</span>' . $inner . '</div>';
+}
+
+// Banner <img>, with the phone-sized image (if any) swapped in on small screens. Width and
+// height are set from the file so the page does not jump while the banner loads.
+function ad_picture(array $ad, $loading = 'lazy')
+{
+    $size = function ($path) {
+        $info = $path && is_file(ROOT . $path) ? @getimagesize(ROOT . $path) : false;
+        return $info ? ' width="' . (int) $info[0] . '" height="' . (int) $info[1] . '"' : '';
+    };
+    $img = '<img src="' . e(media($ad['image'])) . '" alt="' . e($ad['title']) . '"' . $size($ad['image']) . ' loading="' . $loading . '">';
+    if (empty($ad['image_mobile'])) {
+        return $img;
+    }
+    return '<picture><source media="(max-width: 760px)" srcset="' . e(media($ad['image_mobile'])) . '"' . $size($ad['image_mobile']) . '>' . $img . '</picture>';
+}
+
+function ad_stat($id, $field)
+{
+    $field = $field === 'clicks' ? 'clicks' : 'views';
+    q("INSERT INTO ad_stats_daily (ad_id, day, $field) VALUES (?, ?, 1) ON DUPLICATE KEY UPDATE $field = $field + 1", [$id, date('Y-m-d')]);
+}
+
+// The sticky phone banner is only rendered for phones, so desktop page views are not counted.
+function is_mobile_request()
+{
+    $ua = isset($_SERVER['HTTP_USER_AGENT']) ? $_SERVER['HTTP_USER_AGENT'] : '';
+    return (bool) preg_match('/Mobi|Android|iPhone|iPod/i', $ua) && !preg_match('/iPad|Tablet/i', $ua);
+}
+
+function sticky_ad()
+{
+    if (!is_mobile_request()) {
+        return '';
+    }
+    $html = ad_slot('mobile_sticky');
+    if ($html === '') {
+        return '';
+    }
+    return '<div class="ad-sticky" hidden>' . $html . '<button type="button" class="ad-sticky-close" aria-label="Сурталчилгааг хаах">×</button></div>';
 }
 
 // Counts the click, then sends the reader on to the advertiser.
@@ -94,6 +137,7 @@ function ad_click($id)
     }
     if (!is_bot()) {
         q('UPDATE ads SET clicks = clicks + 1 WHERE id = ?', [$id]);
+        ad_stat($id, 'clicks');
     }
     header('Location: ' . $ad['url'], true, 302);
     exit;

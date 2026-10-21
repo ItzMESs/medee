@@ -126,10 +126,17 @@ function admin_dispatch($path, $method)
         }
         if ($path === '/ads/new') {
             return admin_ad_form(['id' => null, 'title' => '', 'slot' => 'sidebar', 'kind' => 'image', 'image' => null, 'url' => '',
+                'image_mobile' => null, 'client' => '', 'note' => '',
                 'code' => '', 'starts_at' => null, 'ends_at' => null, 'active' => 1]);
         }
         if ($path === '/ads/save' && $isPost) {
             return admin_ad_save(null);
+        }
+        if (preg_match('#^/ads/(\d+)/report$#', $path, $m)) {
+            return admin_ad_report((int) $m[1]);
+        }
+        if (preg_match('#^/ads/(\d+)/copy$#', $path, $m) && $isPost) {
+            return admin_ad_copy((int) $m[1]);
         }
         if (preg_match('#^/ads/(\d+)(/delete)?$#', $path, $m)) {
             if (!$isPost) {
@@ -222,7 +229,10 @@ function admin_dashboard()
         FROM articles a LEFT JOIN categories c ON c.id = a.category_id
         WHERE a.status = 'published' ORDER BY a.views DESC LIMIT 10");
 
+    $endingAds = is_admin() ? rows('SELECT id, title, client, ends_at FROM ads WHERE active = 1 AND ends_at BETWEEN ? AND ? ORDER BY ends_at',
+        [now(), date('Y-m-d H:i:s', strtotime('+3 days'))]) : [];
     admin_render('dashboard', [
+        'endingAds' => $endingAds,
         'stats' => $stats, 'recent' => $recent, 'fbReady' => fb_configured(),
         'range' => $range, 'daily' => $daily, 'totals' => $totals, 'top' => $top, 'allTime' => $allTime,
     ]);
@@ -779,14 +789,19 @@ function admin_watermark_images()
 function admin_ads()
 {
     $ads = rows('SELECT * FROM ads ORDER BY active DESC, created_at DESC');
-    admin_render('ads', ['ads' => $ads, 'slots' => ad_slots(), 'now' => now()]);
+    $week = [];
+    foreach (rows('SELECT ad_id, SUM(views) AS v, SUM(clicks) AS c FROM ad_stats_daily WHERE day >= ? GROUP BY ad_id', [date('Y-m-d', strtotime('-6 days'))]) as $r) {
+        $week[$r['ad_id']] = $r;
+    }
+    admin_render('ads', ['ads' => $ads, 'slots' => ad_slots(), 'now' => now(), 'soon' => date('Y-m-d H:i:s', strtotime('+3 days')), 'week' => $week]);
 }
 
 function admin_ad_form(array $ad, $error = null)
 {
     $local = function ($v) { return $v ? date('Y-m-d\TH:i', strtotime($v)) : ''; };
     admin_render('ad-form', ['ad' => $ad, 'slots' => ad_slots(), 'error' => $error,
-        'startsLocal' => $local($ad['starts_at']), 'endsLocal' => $local($ad['ends_at'])]);
+        'startsLocal' => $local($ad['starts_at']), 'endsLocal' => $local($ad['ends_at']),
+        'daily' => $ad['id'] ? ad_daily_stats($ad['id'], 30) : []]);
 }
 
 function admin_ad_save($id)
@@ -806,6 +821,9 @@ function admin_ad_save($id)
         'ends_at' => $date('ends_at'),
         'active' => post('active') ? 1 : 0,
         'image' => $existing ? $existing['image'] : null,
+        'image_mobile' => $existing ? $existing['image_mobile'] : null,
+        'client' => mb_substr(post('client'), 0, 250),
+        'note' => mb_substr(post('note'), 0, 2000),
     ];
     $back = array_merge($existing ?: ['id' => null], $data);
     if ($data['title'] === '') {
@@ -817,8 +835,18 @@ function admin_ad_save($id)
     try {
         // Banners are shown as uploaded: no watermark, no thumbnail.
         $upload = save_upload('image', false, false);
+        $uploadMobile = save_upload('image_mobile', false, false);
     } catch (RuntimeException $ex) {
         return admin_ad_form($back, $ex->getMessage());
+    }
+    if ($uploadMobile) {
+        if ($existing) {
+            remove_upload($existing['image_mobile']);
+        }
+        $data['image_mobile'] = $uploadMobile;
+    } elseif (post('remove_image_mobile') && $data['image_mobile']) {
+        remove_upload($data['image_mobile']);
+        $data['image_mobile'] = null;
     }
     if ($upload) {
         if ($existing) {
@@ -832,7 +860,10 @@ function admin_ad_save($id)
     if ($data['kind'] === 'code' && trim($data['code']) === '') {
         return admin_ad_form($back, 'Сурталчилгааны кодоо оруулна уу.');
     }
-    $cols = ['title', 'slot', 'kind', 'image', 'url', 'code', 'starts_at', 'ends_at', 'active'];
+    if ($data['ends_at'] && $data['starts_at'] && $data['ends_at'] < $data['starts_at']) {
+        return admin_ad_form($back, 'Дуусах огноо эхлэх огнооноос өмнө байна.');
+    }
+    $cols = ['title', 'slot', 'kind', 'image', 'image_mobile', 'url', 'code', 'client', 'note', 'starts_at', 'ends_at', 'active'];
     $vals = array_map(function ($c) use ($data) { return $data[$c]; }, $cols);
     if ($existing) {
         q('UPDATE ads SET ' . implode(' = ?, ', $cols) . ' = ? WHERE id = ?', array_merge($vals, [$id]));
@@ -849,10 +880,74 @@ function admin_ad_delete($id)
     $ad = row('SELECT * FROM ads WHERE id = ?', [$id]);
     if ($ad) {
         remove_upload($ad['image']);
+        remove_upload($ad['image_mobile']);
         q('DELETE FROM ads WHERE id = ?', [$id]);
+        q('DELETE FROM ad_stats_daily WHERE ad_id = ?', [$id]);
         flash('success', 'Сурталчилгаа устгагдлаа.');
     }
     redirect('/admin/ads');
+}
+
+// Views and clicks per day for the last $days days (missing days count as zero).
+function ad_daily_stats($id, $days, $from = null, $to = null)
+{
+    $to = $to ?: date('Y-m-d');
+    $from = $from ?: date('Y-m-d', strtotime($to . ' -' . ($days - 1) . ' days'));
+    $byDay = [];
+    foreach (rows('SELECT day, views, clicks FROM ad_stats_daily WHERE ad_id = ? AND day BETWEEN ? AND ?', [$id, $from, $to]) as $r) {
+        $byDay[$r['day']] = $r;
+    }
+    $out = [];
+    for ($t = strtotime($from); $t <= strtotime($to); $t += 86400) {
+        $d = date('Y-m-d', $t);
+        $out[] = ['day' => $d, 'views' => isset($byDay[$d]) ? (int) $byDay[$d]['views'] : 0, 'clicks' => isset($byDay[$d]) ? (int) $byDay[$d]['clicks'] : 0];
+    }
+    return $out;
+}
+
+// A printable report for the advertiser, for the campaign dates (or the last 30 days).
+function admin_ad_report($id)
+{
+    $ad = row('SELECT * FROM ads WHERE id = ?', [$id]);
+    if (!$ad) {
+        redirect('/admin/ads');
+    }
+    $from = get('from') !== '' && strtotime(get('from')) ? date('Y-m-d', strtotime(get('from')))
+        : ($ad['starts_at'] ? date('Y-m-d', strtotime($ad['starts_at'])) : date('Y-m-d', strtotime($ad['created_at'])));
+    $to = get('to') !== '' && strtotime(get('to')) ? date('Y-m-d', strtotime(get('to')))
+        : ($ad['ends_at'] && $ad['ends_at'] < now() ? date('Y-m-d', strtotime($ad['ends_at'])) : date('Y-m-d'));
+    if ($from > $to) {
+        $from = $to;
+    }
+    if ((strtotime($to) - strtotime($from)) / 86400 > 366) {
+        $from = date('Y-m-d', strtotime($to . ' -365 days'));
+    }
+    $daily = ad_daily_stats($id, 0, $from, $to);
+    render('admin/ad-report', ['ad' => $ad, 'daily' => $daily, 'from' => $from, 'to' => $to, 'slots' => ad_slots(), 'settings' => settings()]);
+}
+
+// Copies a campaign (for next month's renewal) as a paused draft with fresh counters.
+function admin_ad_copy($id)
+{
+    $ad = row('SELECT * FROM ads WHERE id = ?', [$id]);
+    if (!$ad) {
+        redirect('/admin/ads');
+    }
+    $copyFile = function ($path) {
+        if (!$path || !is_file(ROOT . $path)) {
+            return null;
+        }
+        $new = preg_replace('/(\.[a-z0-9]+)$/i', '-copy' . substr(md5(uniqid('', true)), 0, 6) . '$1', $path);
+        return copy(ROOT . $path, ROOT . $new) ? $new : null;
+    };
+    q('INSERT INTO ads (title, slot, kind, image, image_mobile, url, code, client, note, starts_at, ends_at, active, created_at)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, NULL, NULL, 0, ?)', [
+        mb_substr($ad['title'] . ' (хуулбар)', 0, 250), $ad['slot'], $ad['kind'], $copyFile($ad['image']), $copyFile($ad['image_mobile']),
+        $ad['url'], $ad['code'], $ad['client'], $ad['note'], now(),
+    ]);
+    $newId = (int) db()->lastInsertId();
+    flash('success', 'Хуулбар үүслээ. Огноогоо тохируулаад "Идэвхтэй"-г чагтлан хадгална уу.');
+    redirect('/admin/ads/' . $newId);
 }
 
 // ---------- Push ----------

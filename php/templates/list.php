@@ -3,7 +3,10 @@
   <div class="content">
     <h1 class="page-title"><?php if (ornaments_enabled()): ?><?= ornament('ulzii', 'title-ulzii') ?><?php endif; ?><?= e($heading) ?></h1>
     <div class="list">
-      <?php foreach ($articles as $a) { $variant = 'card-row'; $showExcerpt = true; include __DIR__ . '/card.php'; } ?>
+      <?php foreach ($articles as $i => $a) {
+          $variant = 'card-row'; $showExcerpt = true; include __DIR__ . '/card.php';
+          if ($i === 3 && count($articles) > 4) { echo ad_slot('list'); }
+      } ?>
     </div>
     <?php if (!$articles): ?><p class="empty"><?= $query !== '' ? 'Хайлтад тохирох мэдээ олдсонгүй.' : 'Мэдээ алга.' ?></p><?php endif; ?>
     <?php if ($pages > 1): ?>

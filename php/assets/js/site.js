@@ -163,4 +163,17 @@
   if (header) {
     window.addEventListener('scroll', function () { header.classList.toggle('scrolled', window.scrollY > 10); }, { passive: true });
   }
+
+  // Sticky phone banner: hidden for the rest of the visit once closed.
+  var sticky = document.querySelector('.ad-sticky');
+  if (sticky) {
+    var closed = false;
+    try { closed = sessionStorage.getItem('adStickyClosed') === '1'; } catch (e) {}
+    if (!closed) { sticky.hidden = false; document.body.classList.add('has-sticky-ad'); }
+    sticky.querySelector('.ad-sticky-close').addEventListener('click', function () {
+      sticky.remove();
+      document.body.classList.remove('has-sticky-ad');
+      try { sessionStorage.setItem('adStickyClosed', '1'); } catch (e) {}
+    });
+  }
 })();

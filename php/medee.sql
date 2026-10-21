@@ -13,6 +13,7 @@ DROP TABLE IF EXISTS `autosaves`;
 DROP TABLE IF EXISTS `push_log`;
 DROP TABLE IF EXISTS `push_subscriptions`;
 DROP TABLE IF EXISTS `article_reactions`;
+DROP TABLE IF EXISTS `ad_stats_daily`;
 DROP TABLE IF EXISTS `ads`;
 DROP TABLE IF EXISTS `pages`;
 DROP TABLE IF EXISTS `article_views_daily`;
@@ -116,8 +117,11 @@ CREATE TABLE `ads` (
   `slot` varchar(32) NOT NULL,
   `kind` varchar(16) NOT NULL DEFAULT 'image',
   `image` varchar(255) DEFAULT NULL,
+  `image_mobile` varchar(255) DEFAULT NULL,
   `url` varchar(500) NOT NULL DEFAULT '',
   `code` text DEFAULT NULL,
+  `client` varchar(255) NOT NULL DEFAULT '',
+  `note` text DEFAULT NULL,
   `starts_at` datetime DEFAULT NULL,
   `ends_at` datetime DEFAULT NULL,
   `active` tinyint(1) NOT NULL DEFAULT 1,
@@ -126,6 +130,14 @@ CREATE TABLE `ads` (
   `created_at` datetime NOT NULL,
   PRIMARY KEY (`id`),
   KEY `idx_slot` (`slot`,`active`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+CREATE TABLE `ad_stats_daily` (
+  `ad_id` int(10) unsigned NOT NULL,
+  `day` date NOT NULL,
+  `views` int(10) unsigned NOT NULL DEFAULT 0,
+  `clicks` int(10) unsigned NOT NULL DEFAULT 0,
+  PRIMARY KEY (`ad_id`,`day`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 CREATE TABLE `article_reactions` (
@@ -227,7 +239,7 @@ INSERT INTO `pages` (`id`, `title`, `slug`, `content`, `in_footer`, `position`, 
 
 -- Тохиргоо
 INSERT INTO `settings` (`name`, `value`) VALUES
-('schema_version', 7),
+('schema_version', 8),
 ('site_name', 'NationX.site');
 
 SET FOREIGN_KEY_CHECKS = 1;

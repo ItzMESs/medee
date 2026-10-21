@@ -54,7 +54,7 @@ label, .label { display: block; font-weight: 500; margin-bottom: 14px; font-size
 label input, label select, label textarea { margin-top: 5px; font-weight: 400; }
 label small { font-weight: 400; color: var(--muted); }
 label.check { display: flex; gap: 8px; align-items: flex-start; font-weight: 400; }
-label.check input { margin-top: 3px; }
+label.check input { margin-top: 3px; width: auto; flex: none; }
 .stack { display: flex; flex-direction: column; }
 .inline-form { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; }
 .inline-form input, .inline-form select { width: auto; flex: 1 1 160px; }
@@ -170,3 +170,11 @@ body[data-kind="image"] .kind-code, body[data-kind="code"] .kind-image { display
 .tag-pill { display: inline-flex; align-items: center; gap: 4px; background: #e7efff; color: #0a3fae; border-radius: 999px; padding: 3px 4px 3px 10px; font-size: 13px; }
 .tag-pill button { border: 0; background: none; color: inherit; cursor: pointer; font-size: 15px; line-height: 1; padding: 0 4px; border-radius: 50%; }
 .tag-pill button:hover { background: rgba(10, 63, 174, .12); }
+
+.grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 0 16px; }
+@media (max-width: 700px) { .grid-2 { grid-template-columns: 1fr; } }
+.ad-preview-mobile { max-width: 320px; }
+.ad-spark { display: flex; align-items: flex-end; gap: 2px; height: 60px; margin: 10px 0 6px; padding: 4px; background: #f6f7f9; border-radius: 6px; }
+.ad-spark i { flex: 1; background: #0b5cff; border-radius: 2px 2px 0 0; opacity: .8; }
+.ad-spark i:hover { opacity: 1; }
+.title-link + small { display: block; }
