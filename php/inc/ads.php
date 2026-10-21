@@ -68,24 +68,70 @@ function ad_slot($slot)
         $unit = adsense_unit($slot);
         return $unit === '' ? '' : '<div class="ad ad-' . e($slot) . ' ad-adsense"><span class="ad-label">Сурталчилгаа</span>' . $unit . '</div>';
     }
-    $ad = $ads[array_rand($ads)];
+    if (count($ads) > 1) {
+        return ad_carousel($slot, $ads);
+    }
+    $ad = $ads[0];
     if (!is_bot()) {
         q('UPDATE ads SET views = views + 1 WHERE id = ?', [$ad['id']]);
         ad_stat($ad['id'], 'views');
     }
-    $inner = '';
-    if ($ad['kind'] === 'code') {
-        $inner = $ad['code'];
-    } elseif ($ad['image']) {
-        $img = ad_picture($ad, $slot === 'top' ? 'eager' : 'lazy');
-        $inner = $ad['url'] !== ''
-            ? '<a href="' . url('/ad/' . $ad['id']) . '" target="_blank" rel="sponsored noopener">' . $img . '</a>'
-            : $img;
-    }
+    $inner = ad_inner($ad, $slot === 'top' ? 'eager' : 'lazy');
     if ($inner === '') {
         return '';
     }
     return '<div class="ad ad-' . e($slot) . '"><span class="ad-label">Сурталчилгаа</span>' . $inner . '</div>';
+}
+
+function ad_inner(array $ad, $loading = 'lazy')
+{
+    if ($ad['kind'] === 'code') {
+        return (string) $ad['code'];
+    }
+    if (!$ad['image']) {
+        return '';
+    }
+    $img = ad_picture($ad, $loading);
+    return $ad['url'] !== ''
+        ? '<a href="' . url('/ad/' . $ad['id']) . '" target="_blank" rel="sponsored noopener">' . $img . '</a>'
+        : $img;
+}
+
+// Several campaigns in one slot rotate as a slider: arrows, a dash per banner and
+// auto-advance. Each banner's view is counted by the browser when it is first shown,
+// so banners nobody scrolled to are not counted.
+function ad_carousel($slot, array $ads)
+{
+    $slides = '';
+    $dots = '';
+    $n = 0;
+    foreach ($ads as $ad) {
+        $inner = ad_inner($ad, $n === 0 && $slot === 'top' ? 'eager' : 'lazy');
+        if ($inner === '') {
+            continue;
+        }
+        $slides .= '<div class="adc-slide" data-ad="' . (int) $ad['id'] . '"' . ($n ? ' aria-hidden="true"' : '') . '>' . $inner . '</div>';
+        $dots .= '<button type="button" class="adc-dot" aria-label="' . ($n + 1) . '-р сурталчилгаа"><i></i></button>';
+        $n++;
+    }
+    if ($n === 0) {
+        return '';
+    }
+    return '<div class="ad ad-' . e($slot) . ' ad-carousel" data-view-url="' . e(url('/ad/')) . '" data-start="' . mt_rand(0, $n - 1) . '" data-interval="6000">'
+        . '<div class="adc-bar"><button type="button" class="adc-arrow adc-prev" aria-label="Өмнөх">' . icon('prev', 18) . '</button>'
+        . '<div class="adc-dots">' . $dots . '</div>'
+        . '<button type="button" class="adc-arrow adc-next" aria-label="Дараах">' . icon('next', 18) . '</button></div>'
+        . '<div class="adc-viewport"><div class="adc-track">' . $slides . '</div></div></div>';
+}
+
+// Counts a slider banner's view (sent by the browser when the slide is first shown).
+function ad_view_beacon($id)
+{
+    if ($_SERVER['REQUEST_METHOD'] === 'POST' && !is_bot() && row('SELECT id FROM ads WHERE id = ? AND active = 1', [$id])) {
+        q('UPDATE ads SET views = views + 1 WHERE id = ?', [$id]);
+        ad_stat($id, 'views');
+    }
+    http_response_code(204);
 }
 
 // Banner <img>, with the phone-sized image (if any) swapped in on small screens. Width and

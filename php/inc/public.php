@@ -43,6 +43,9 @@ function public_dispatch($path)
     if ($path === '/manifest.webmanifest') {
         return page_manifest();
     }
+    if (preg_match('#^/ad/(\d+)/view$#', $path, $m)) {
+        return ad_view_beacon((int) $m[1]);
+    }
     if (preg_match('#^/ad/(\d+)$#', $path, $m)) {
         return ad_click((int) $m[1]);
     }

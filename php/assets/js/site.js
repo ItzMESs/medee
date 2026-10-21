@@ -176,4 +176,60 @@
       try { sessionStorage.setItem('adStickyClosed', '1'); } catch (e) {}
     });
   }
+
+  // Banner slider: arrows, dashes, auto-advance (paused on hover), swipe on phones.
+  document.querySelectorAll('.ad-carousel').forEach(function (box) {
+    var track = box.querySelector('.adc-track');
+    var slides = box.querySelectorAll('.adc-slide');
+    var dots = box.querySelectorAll('.adc-dot');
+    var time = parseInt(box.getAttribute('data-interval'), 10) || 6000;
+    var seen = {};
+    var index = parseInt(box.getAttribute('data-start'), 10) || 0;
+    var timer = null;
+    var visible = false;
+    box.style.setProperty('--adc-time', time / 1000 + 's');
+    function countView(i) {
+      var id = slides[i].getAttribute('data-ad');
+      if (!visible || seen[id]) return;
+      seen[id] = true;
+      var u = box.getAttribute('data-view-url') + id + '/view';
+      if (navigator.sendBeacon) navigator.sendBeacon(u); else fetch(u, { method: 'POST', keepalive: true });
+    }
+    function go(i) {
+      index = (i + slides.length) % slides.length;
+      track.style.transform = 'translateX(' + (-100 * index) + '%)';
+      slides.forEach(function (s, k) { s.setAttribute('aria-hidden', k === index ? 'false' : 'true'); });
+      dots.forEach(function (d, k) {
+        d.classList.remove('active');
+        d.classList.toggle('done', k < index);
+      });
+      void box.offsetWidth; // restart the dash animation
+      dots[index].classList.add('active');
+      countView(index);
+      clearTimeout(timer);
+      if (!box.classList.contains('paused')) timer = setTimeout(function () { go(index + 1); }, time);
+    }
+    box.querySelector('.adc-prev').addEventListener('click', function () { go(index - 1); });
+    box.querySelector('.adc-next').addEventListener('click', function () { go(index + 1); });
+    dots.forEach(function (d, k) { d.addEventListener('click', function () { go(k); }); });
+    box.addEventListener('mouseenter', function () { box.classList.add('paused'); clearTimeout(timer); });
+    box.addEventListener('mouseleave', function () { box.classList.remove('paused'); go(index); });
+    var startX = null;
+    track.addEventListener('touchstart', function (e) { startX = e.touches[0].clientX; }, { passive: true });
+    track.addEventListener('touchend', function (e) {
+      if (startX === null) return;
+      var dx = e.changedTouches[0].clientX - startX;
+      if (Math.abs(dx) > 40) go(index + (dx < 0 ? 1 : -1));
+      startX = null;
+    });
+    // Views count only once the slider is actually on screen.
+    if ('IntersectionObserver' in window) {
+      new IntersectionObserver(function (entries) {
+        entries.forEach(function (en) { visible = en.isIntersecting; if (visible) countView(index); });
+      }, { threshold: 0.5 }).observe(box);
+    } else {
+      visible = true;
+    }
+    go(index);
+  });
 })();

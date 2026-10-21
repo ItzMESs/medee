@@ -361,6 +361,31 @@ body.drawer-open .drawer-overlay { opacity: 1; pointer-events: auto; }
 .ad-sticky-close { position: absolute; right: 4px; top: 50%; transform: translateY(-50%); width: 28px; height: 28px; border: 0; border-radius: 50%; background: #eef0f4; color: #4b5263; font-size: 20px; line-height: 1; cursor: pointer; }
 body.has-sticky-ad .to-top { bottom: 120px; }
 @media (min-width: 761px) { .ad-sticky { display: none !important; } }
+/* Banner slider (several campaigns in one slot) */
+.ad-carousel { width: 100%; }
+.adc-bar { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 14px; }
+.adc-arrow { flex: none; width: 34px; height: 34px; display: inline-flex; align-items: center; justify-content: center; background: #fff; border: 1px solid var(--line); border-radius: 4px; color: var(--brand); cursor: pointer; transition: border-color .2s, background .2s; }
+.adc-arrow:hover { border-color: var(--brand); background: var(--brand-soft); }
+.adc-dots { display: flex; gap: 8px; flex-wrap: wrap; justify-content: center; }
+.adc-dot { width: 48px; height: 14px; padding: 5px 0; border: 0; background: none; cursor: pointer; }
+.adc-dot i { display: block; height: 4px; border-radius: 2px; background: #e2e4ea; overflow: hidden; position: relative; }
+.adc-dot.active i::after { content: ''; position: absolute; inset: 0; background: var(--brand); transform-origin: left; animation: adc-fill var(--adc-time, 6s) linear forwards; }
+.ad-carousel.paused .adc-dot.active i::after { animation-play-state: paused; }
+.adc-dot.done i { background: #b9c9ef; }
+@keyframes adc-fill { from { transform: scaleX(0); } to { transform: scaleX(1); } }
+.adc-viewport { overflow: hidden; }
+.adc-track { display: flex; align-items: center; transition: transform .5s ease; }
+.adc-slide { flex: 0 0 100%; min-width: 0; }
+.ad-sidebar .adc-dot { width: 28px; }
+.ad-sticky .adc-bar { position: absolute; right: 38px; top: 2px; margin: 0; }
+.ad-sticky .adc-arrow { display: none; }
+.ad-sticky .adc-dot { width: 16px; height: 10px; padding: 3px 0; }
+@media (max-width: 760px) {
+  .adc-dot { width: 26px; }
+  .adc-arrow { width: 30px; height: 30px; }
+  .adc-dots { gap: 5px; }
+}
+@media (prefers-reduced-motion: reduce) { .adc-track { transition: none; } }
 .ad-wrap-top { margin-bottom: 40px; }
 .ad-sidebar img { width: 100%; }
 .article-body .ad, .ad-article_end { margin: 32px auto; padding: 16px 0; border-top: 1px solid var(--line); border-bottom: 1px solid var(--line); text-indent: 0; }
