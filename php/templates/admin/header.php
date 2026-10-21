@@ -39,4 +39,10 @@ $navLink = function ($href, $label, $active, $extra = '') use ($path) {
     </form>
   </aside>
   <main class="admin-main">
+    <?php if (is_admin() && site_url_mismatch()): ?>
+      <form method="post" action="<?= url('/admin/site-url') ?>" class="flash flash-error site-url-warn"><?= csrf_field() ?>
+        Тохиргоонд хадгалсан сайтын хаяг <b><?= e(setting('site_url')) ?></b> нь одоогийн хаяг <b><?= e(detect_site_url()) ?></b>-аас өөр байна. Ийм үед Facebook, Messenger дээр мэдээний зураг, гарчиг гарахгүй.
+        <button class="btn btn-sm btn-primary">Засах</button>
+      </form>
+    <?php endif; ?>
     <?php if ($flash): ?><div class="flash flash-<?= e($flash['type']) ?>"><?= e($flash['text']) ?></div><?php endif; ?>

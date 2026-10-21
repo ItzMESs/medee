@@ -105,6 +105,19 @@ function base_path()
     return rtrim($dir, '/');
 }
 
+// True when the saved site_url points at another domain or http instead of https — e.g. after
+// moving to a new domain. Facebook reads og:url, so previews break until it is fixed.
+function site_url_mismatch()
+{
+    $saved = rtrim(setting('site_url'), '/');
+    $current = detect_site_url();
+    if (!isset($_SERVER['HTTP_HOST']) || $saved === $current) {
+        return false;
+    }
+    $strip = function ($u) { return preg_replace('#^https?://(www\.)?#', '', strtolower($u)); };
+    return $strip($saved) !== $strip($current) || (strpos($current, 'https://') === 0 && strpos($saved, 'https://') !== 0);
+}
+
 function detect_site_url()
 {
     $https = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off')

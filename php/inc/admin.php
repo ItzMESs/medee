@@ -87,7 +87,7 @@ function admin_dispatch($path, $method)
         return $isPost ? admin_profile_post() : admin_render('profile');
     }
     if ($path === '/users' || strpos($path, '/users/') === 0 || $path === '/settings' || strpos($path, '/images/') === 0
-        || $path === '/ads' || strpos($path, '/ads/') === 0 || $path === '/push/test') {
+        || $path === '/ads' || strpos($path, '/ads/') === 0 || $path === '/push/test' || $path === '/site-url') {
         if (!is_admin()) {
             http_response_code(403);
             exit('Зөвхөн админ хандах эрхтэй.');
@@ -106,6 +106,11 @@ function admin_dispatch($path, $method)
         }
         if ($path === '/images/watermark' && $isPost) {
             return admin_watermark_images();
+        }
+        if ($path === '/site-url' && $isPost) {
+            save_setting('site_url', detect_site_url());
+            flash('success', 'Сайтын хаяг ' . detect_site_url() . ' боллоо. Facebook-ийн Sharing Debugger дээр холбоосоо дахин уншуулаарай.');
+            return redirect('/admin');
         }
         if ($path === '/push/test' && $isPost) {
             return admin_push_test();
