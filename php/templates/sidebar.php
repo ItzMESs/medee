@@ -8,10 +8,13 @@
       <ol class="rank-list" data-panel="<?= $key ?>" <?= $key === 'popular' ? 'hidden' : '' ?>>
         <?php foreach ($list as $i => $a): ?>
           <li>
-            <span class="rank"><?= $i + 1 ?></span>
+            <a href="<?= article_url($a) ?>" class="rank-thumb<?= $a['image'] ? '' : ' no-img' ?>" tabindex="-1" aria-hidden="true">
+              <?php if ($a['image']): ?><img src="<?= e(thumb_url($a['image'])) ?>" alt="" loading="lazy"><?php endif; ?>
+              <?php if ($key === 'popular'): ?><span class="rank-num"><?= $i + 1 ?></span><?php endif; ?>
+            </a>
             <div>
               <a href="<?= article_url($a) ?>" class="rank-title"><?= e($a['title']) ?></a>
-              <?php $withDate = false; include __DIR__ . '/meta.php'; ?>
+              <small class="rank-meta"><?php if ($a['category_name']): ?><a href="<?= url('/category/' . $a['category_slug']) ?>"><?= e($a['category_name']) ?></a> · <?php endif; ?><?= e(time_ago($a['published_at'])) ?></small>
             </div>
           </li>
         <?php endforeach; ?>
