@@ -9,7 +9,7 @@
 <meta property="og:description" content="Төвөггүй, найдвартай, сайхан вэбсайт.">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&family=Oswald:wght@500;600&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&family=Unbounded:wght@700;800&family=Montserrat:wght@800;900&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="style.css">
 </head>
 <body>
@@ -17,25 +17,35 @@
 <!-- Лого: өөрийн логогоор солих бол энэ SVG-г <img src="logo.png"> болгоно -->
 <svg width="0" height="0" style="position:absolute">
   <defs>
-    <linearGradient id="g" x1="0" x2="1"><stop offset="0" stop-color="#e94bc7"/><stop offset="1" stop-color="#ff7a45"/></linearGradient>
-    <symbol id="mark" viewBox="0 0 64 64">
-      <circle cx="32" cy="32" r="29" fill="none" stroke="url(#g)" stroke-width="4"/>
-      <path d="M32 14 L48 42 H16 Z" fill="url(#g)"/>
-      <path d="M32 26 L40 40 H24 Z" fill="#0d0a0d"/>
+    <symbol id="ulzii" viewBox="0 0 64 64">
+      <circle cx="32" cy="32" r="30" fill="none" stroke="currentColor" stroke-width="2.5" stroke-dasharray="3 2.2"/>
+      <g fill="none" stroke="currentColor" stroke-width="3" stroke-linejoin="round" transform="rotate(45 32 32)">
+        <rect x="21" y="21" width="22" height="22"/>
+        <path d="M28.3 21V43M35.7 21V43M21 28.3H43M21 35.7H43"/>
+        <circle cx="21" cy="21" r="5"/><circle cx="43" cy="21" r="5"/><circle cx="21" cy="43" r="5"/><circle cx="43" cy="43" r="5"/>
+      </g>
     </symbol>
-    <symbol id="mark-dark" viewBox="0 0 64 64">
-      <circle cx="32" cy="32" r="29" fill="none" stroke="#111" stroke-width="5"/>
-      <path d="M32 14 L48 42 H16 Z" fill="#111"/>
-      <path d="M32 26 L40 40 H24 Z" fill="#fff"/>
+    <symbol id="orn" viewBox="0 0 32 32">
+      <g fill="none" stroke="currentColor" stroke-width="3"><path d="M16 2L30 16L16 30L2 16Z"/><path d="M16 10L22 16L16 22L10 16Z"/></g>
+      <circle cx="16" cy="16" r="2.5" fill="currentColor"/>
+    </symbol>
+    <symbol id="ugalz" viewBox="0 0 140 44">
+      <g fill="none" stroke="currentColor" stroke-width="4" stroke-linecap="round">
+        <path d="M4 40H136"/>
+        <path d="M24 40C12 40 10 27 20 25C28 23 30 34 23 34"/>
+        <path d="M48 40C38 22 54 6 70 15C86 6 102 22 92 40"/>
+        <path d="M58 32C55 23 65 19 70 26C75 19 85 23 82 32"/>
+        <path d="M116 40C128 40 130 27 120 25C112 23 110 34 117 34"/>
+      </g>
     </symbol>
   </defs>
 </svg>
 
 <header class="header">
-  <div class="wrap">
-    <a href="#home" class="logo" aria-label="Нүүр"><svg><use href="#mark"/></svg></a>
+  <div class="wrap bar">
+    <a href="#home" class="logo" aria-label="Нүүр"><svg style="color:var(--red)"><use href="#ulzii"/></svg><span>таны студи</span></a>
     <nav class="nav" id="nav">
-      <a href="#home">Эхлэл</a>
+      <a href="#home" class="active">Эхлэл</a>
       <div class="dd">
         <button type="button" aria-haspopup="true">Үйлчилгээнүүд ⌄</button>
         <div class="dd-menu">
@@ -55,54 +65,60 @@
     <a href="#quote" class="btn">Үнэгүй үнэлгээ</a>
     <button class="burger" id="burger" aria-label="Цэс">☰</button>
   </div>
+  <div class="alhan-band"></div>
 </header>
 
 <!-- HERO -->
 <section class="hero" id="home">
   <div class="wrap">
-    <h1>Төвөггүй<br>зүйлгүй,<br>найдвартай<br>сайхан вэбсайт</h1>
+    <div class="hero-kicker"><svg class="ornament"><use href="#orn"/></svg><span>Вэб студи · Улаанбаатар</span><svg class="ornament"><use href="#orn"/></svg></div>
+    <h1>Төвөггүй,<br><span class="red">найдвартай</span><br>сайхан вэбсайт</h1>
     <p>Цэвэрхэн код, ойлгомжтой загвар, бизнест тань бодит үр дүн авчрах шийдлийг бид хийж өгнө.</p>
-    <a href="#quote" class="btn btn-pill">Эхлэх</a>
+    <svg class="ugalz"><use href="#ugalz"/></svg>
+    <div class="hero-actions">
+      <a href="#quote" class="btn btn-pill">+ Эхлэх</a>
+      <a href="#portfolio" class="btn btn-pill btn-ghost">Портфолио үзэх</a>
+    </div>
   </div>
 </section>
 
 <!-- ҮЙЛЧИЛГЭЭ -->
 <section id="services" class="alt">
   <div class="wrap">
-    <h2 class="sec-title reveal">Бидний <span class="grad-text">үйлчилгээ</span></h2>
+    <div class="sec-head reveal"><svg class="ornament"><use href="#orn"/></svg><h2 class="sec-title">Бидний <span class="grad-text">үйлчилгээ</span></h2></div>
     <p class="sec-sub reveal">Жижиг бизнес, брэнд, хувь хүнд зориулсан онлайн шийдлүүд — эхнээс нь дуустал.</p>
     <div class="services">
-      <article class="svc reveal">
+      <article class="svc corners reveal">
         <svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="13" rx="2"/><path d="M8 21h8M12 17v4M9 9l-2 2 2 2M15 9l2 2-2 2"/></svg>
         <h3>Вэбсайт хөгжүүлэлт</h3>
         <p>Утсанд төгс харагдах, хурдан ачаалдаг, хайлтад сайн гардаг танилцуулга сайт.</p>
         <a href="#quote" class="more">Дэлгэрэнгүй →</a>
       </article>
-      <article class="svc reveal">
+      <article class="svc corners reveal">
         <svg class="ico" viewBox="0 0 24 24" fill="currentColor"><path d="M7 18a2 2 0 1 0 0 4 2 2 0 0 0 0-4Zm10 0a2 2 0 1 0 0 4 2 2 0 0 0 0-4ZM1 2h3.3l.9 2H21a1 1 0 0 1 .9 1.4l-3.6 7a2 2 0 0 1-1.7 1H8.1l-.9 1.6H19v2H5.6a1 1 0 0 1-.9-1.5L6.3 12 2.7 4H1V2Z"/></svg>
         <h3>Онлайн дэлгүүр хөгжүүлэлт</h3>
         <p>QPay, карт, банкны шилжүүлгээр төлбөр авдаг, бараа, захиалгаа удирддаг дэлгүүр.</p>
         <a href="#quote" class="more">Дэлгэрэнгүй →</a>
       </article>
-      <article class="svc reveal">
+      <article class="svc corners reveal">
         <svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="6" y="2" width="12" height="20" rx="2"/><path d="M11 18h2"/></svg>
         <h3>Мобайл апп хөгжүүлэлт</h3>
         <p>Android, iOS дээр ажиллах апп — хэрэглэгчиддээ гар утсаар нь шууд хүрнэ.</p>
         <a href="#quote" class="more">Дэлгэрэнгүй →</a>
       </article>
-      <article class="svc reveal">
+      <article class="svc corners reveal">
         <svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="9" cy="9" r="3"/><path d="M9 2v2M9 14v2M2 9h2M14 9h2M4 4l1.5 1.5M12.5 12.5 14 14M4 14l1.5-1.5M12.5 5.5 14 4"/><circle cx="18" cy="18" r="2"/><path d="M18 14v1M18 21v1M14 18h1M21 18h1"/></svg>
         <h3>Захиалгат систем хөгжүүлэлт</h3>
         <p>Цаг захиалга, CRM, бараа материал, дотоод удирдлага — танай ажлын урсгалд яг тааруулна.</p>
         <a href="#quote" class="more">Дэлгэрэнгүй →</a>
       </article>
-      <article class="svc reveal">
+      <article class="svc corners reveal">
         <svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 3a3 3 0 0 0-3 3 3 3 0 0 0-2 5 3 3 0 0 0 2 5 3 3 0 0 0 6 1V5a2 2 0 0 0-3-2ZM15 3a3 3 0 0 1 3 3 3 3 0 0 1 2 5 3 3 0 0 1-2 5 3 3 0 0 1-6 1"/></svg>
         <h3>AI интеграц</h3>
         <p>Чатбот, автомат хариулт, контент үүсгэлт — давтагддаг ажлаа хиймэл оюунд даатга.</p>
         <a href="#ai" class="more">Дэлгэрэнгүй →</a>
       </article>
-      <article class="svc reveal">
+      <article class="svc corners reveal">
         <svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="7" rx="1.5"/><rect x="3" y="14" width="18" height="7" rx="1.5"/><path d="M7 6.5h.01M7 17.5h.01"/></svg>
         <h3>Арчилгаа, хостинг, хурд</h3>
         <p>Домэйн, хостинг, SSL, нөөцлөлт, шинэчлэлт — сайтаа санаа зовохгүй ажиллуул.</p>
@@ -115,7 +131,7 @@
 <!-- АЖЛЫН ЯВЦ -->
 <section id="process">
   <div class="wrap">
-    <h2 class="sec-title reveal">Бидэнтэй <span class="grad-text">хамтран ажиллах</span></h2>
+    <div class="sec-head reveal"><svg class="ornament"><use href="#orn"/></svg><h2 class="sec-title">Бидэнтэй <span class="grad-text">хамтран ажиллах</span></h2></div>
     <p class="sec-sub reveal">Анхны ярилцлагаас нээлт хүртэл ил тод, ойлгомжтой алхмууд.</p>
     <div class="steps">
       <div class="step reveal"><span class="n">01</span><div><h3>Танилцах ярилцлага</h3><p>Таны зорилго, санаа, хэрэгцээг сонсож, юу хийх вэ гэдгийг тодорхойлно.</p></div></div>
@@ -149,7 +165,7 @@
 <!-- БИДНИЙ ТУХАЙ -->
 <section id="about">
   <div class="wrap about">
-    <div class="about-logo reveal"><div class="tile"><svg><use href="#mark-dark"/></svg></div></div>
+    <div class="about-logo reveal"><div class="tile corners"><svg style="color:var(--red)"><use href="#ulzii"/></svg></div></div>
     <div class="reveal">
       <span class="eyebrow">/ Студийн тухай</span>
       <h2>Таны <span class="grad-text">студи</span></h2>
@@ -173,7 +189,7 @@
 <!-- FAQ -->
 <section id="faq" class="alt">
   <div class="wrap">
-    <h2 class="sec-title center reveal">Түгээмэл асуудаг <span class="grad-text">асуулт</span></h2>
+    <div class="sec-head center reveal"><svg class="ornament"><use href="#orn"/></svg><h2 class="sec-title">Түгээмэл асуудаг <span class="grad-text">асуулт</span></h2></div>
     <p class="sec-sub center reveal">Хамтран ажиллахаас өмнө ихэвчлэн асуудаг зүйлс.</p>
     <div class="faq reveal">
       <details><summary>Одоо байгаа вэбсайтыг маань шинэчилж болох уу?</summary><p>Болно. Одоогийн сайтыг тань шалгаад, шинэ загвараар бүрэн хийх эсвэл хэсэгчлэн сайжруулах санал гаргана.</p></details>
@@ -193,7 +209,7 @@
 <!-- ПОРТФОЛИО (өөрийн ажлуудаар солино: thumb дотор <img src="..."> тавьж болно) -->
 <section id="portfolio">
   <div class="wrap">
-    <h2 class="sec-title center reveal"><span class="grad-text">Портфолио</span></h2>
+    <div class="sec-head center reveal"><svg class="ornament"><use href="#orn"/></svg><h2 class="sec-title"><span class="grad-text">Портфолио</span></h2></div>
     <p class="sec-sub center reveal">Бидний хийсэн ажлуудаас — төсөл бүр өөрийн гэсэн зорилготой.</p>
     <div class="portfolio">
       <a class="pf reveal" href="#"><div class="thumb"><span class="badge">● Нийтлэгдсэн</span>Төсөл 1</div><div class="body"><h3>Онлайн дэлгүүр</h3><div class="tags"><span>Дэлгүүр</span><span>QPay</span><span>Next.js</span></div></div></a>
@@ -209,16 +225,16 @@
 <!-- БАГЦ -->
 <section id="pricing" class="alt">
   <div class="wrap">
-    <h2 class="sec-title center reveal">Төслийн <span class="grad-text">үнийн</span> шатлал</h2>
+    <div class="sec-head center reveal"><svg class="ornament"><use href="#orn"/></svg><h2 class="sec-title">Төслийн <span class="grad-text">үнийн</span> шатлал</h2></div>
     <p class="sec-sub center reveal">Ойролцоо үнэ. Таны хэрэгцээг сонсоод тодорхой үнийн санал гаргана.</p>
     <div class="plans">
-      <div class="plan reveal">
+      <div class="plan corners reveal">
         <h3>Эхлэл</h3>
         <div class="price grad-text">₮1,500,000 – ₮3,500,000</div>
         <ul><li>Дизайн ба хөгжүүлэлт</li><li>1–5 хуудас</li><li>Утсанд тохирсон, SEO</li><li>Энгийн бизнес эсвэл портфолио сайт</li></ul>
         <a href="#quote" class="btn btn-ghost btn-block">Би үүнийг хүсэж байна</a>
       </div>
-      <div class="plan featured reveal">
+      <div class="plan featured corners reveal">
         <span class="pop">Түгээмэл</span>
         <h3>Премиум түвшин</h3>
         <div class="price grad-text">₮3,500,000+</div>
@@ -232,7 +248,7 @@
 <!-- ҮНИЙН САНАЛ -->
 <section id="quote">
   <div class="wrap">
-    <h2 class="sec-title center reveal"><span class="grad-text">Үнийн санал</span> авах</h2>
+    <div class="sec-head center reveal"><svg class="ornament"><use href="#orn"/></svg><h2 class="sec-title"><span class="grad-text">Үнийн санал</span> авах</h2></div>
     <p class="sec-sub center reveal">Хэдэн асуултад хариулаад төслийнхөө ойролцоо үнийг шууд хараарай.</p>
     <form class="calc" id="quoteForm" action="send.php" method="post">
       <div>
@@ -290,7 +306,7 @@
         <div class="form-msg" id="formMsg" role="status"></div>
       </div>
 
-      <aside class="summary">
+      <aside class="summary corners">
         <h3>Шууд тооцоолол</h3>
         <div class="range">Таны сонголтоор шинэчлэгдэнэ</div>
         <div class="total grad-text" id="total">₮0</div>
@@ -309,10 +325,11 @@
 </section>
 
 <footer class="footer">
+  <div class="alhan-band red"></div>
   <div class="wrap">
     <div class="f-cols">
       <div>
-        <a href="#home" class="logo"><svg><use href="#mark"/></svg></a>
+        <a href="#home" class="logo"><svg style="color:var(--red)"><use href="#ulzii"/></svg></a>
         <p>Утсанд гоё харагддаг, төвөггүй, найдвартай вэбсайтыг бид бүтээнэ.</p>
       </div>
       <div>
