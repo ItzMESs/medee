@@ -153,6 +153,16 @@
   <small class="muted">Тохиргоогоо доорх "Хадгалах" товчоор хадгалсны дараа энэ товчийг дарна. Эх зураг хадгалагддаг тул лого давхардахгүй.</small>
 </div>
 
+<div class="panel narrow-panel" id="server">
+  <h2>Сервер</h2>
+  <?php $phpSec = php_security_status(); ?>
+  <p>PHP хувилбар: <b><?= e($phpSec['version']) ?></b>
+    <?php if ($phpSec['state'] === 'ok'): ?><span class="badge badge-green">Аюулгүй</span>
+    <?php elseif ($phpSec['state'] === 'old'): ?><span class="badge badge-red">Эмзэг — <?= e($phpSec['fixed']) ?> болгож шинэчилнэ үү</span>
+    <?php else: ?><span class="badge badge-red">Дэмжлэг дууссан — 8.3 эсвэл 8.4 руу шилжинэ үү</span><?php endif; ?></p>
+  <small class="muted">cPanel → Select PHP Version (эсвэл MultiPHP Manager) хэсгээс хувилбараа сонгоно. Энэ сайт PHP 7.4–8.5 дээр ажиллана.</small>
+</div>
+
 <div class="panel narrow-panel">
   <h2>Зураг</h2>
   <?php if (!$imageStats['gd']): ?>

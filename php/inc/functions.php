@@ -585,3 +585,19 @@ function default_og_image()
 {
     return is_file(ROOT . '/assets/img/og-default.jpg') ? absolute_url('/assets/img/og-default.jpg') : '';
 }
+
+// PHP security status for the admin dashboard. Patched releases from the October 2026
+// advisory (pubcert.mn); branches older than 8.2 no longer get security fixes.
+function php_security_status()
+{
+    $fixed = ['8.2' => '8.2.35', '8.3' => '8.3.36', '8.4' => '8.4.27', '8.5' => '8.5.12'];
+    $branch = PHP_MAJOR_VERSION . '.' . PHP_MINOR_VERSION;
+    $version = PHP_MAJOR_VERSION . '.' . PHP_MINOR_VERSION . '.' . PHP_RELEASE_VERSION;
+    if (version_compare($branch, '8.2', '<')) {
+        return ['state' => 'eol', 'version' => $version, 'fixed' => '8.3.36'];
+    }
+    if (isset($fixed[$branch]) && version_compare($version, $fixed[$branch], '<')) {
+        return ['state' => 'old', 'version' => $version, 'fixed' => $fixed[$branch]];
+    }
+    return ['state' => 'ok', 'version' => $version, 'fixed' => null];
+}

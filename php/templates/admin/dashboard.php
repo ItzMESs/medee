@@ -7,6 +7,11 @@
   <?php if ($user['role'] === 'admin'): ?><a href="<?= url('/admin/ads') ?>"><span class="q-ico"><?= icon('megaphone', 20) ?></span><span>Сурталчилгаа<small>Баннер, тайлан</small></span></a><?php endif; ?>
   <a href="<?= url('/') ?>" target="_blank"><span class="q-ico"><?= icon('external', 20) ?></span><span>Сайт үзэх<small><?= e(preg_replace('#^https?://#', '', rtrim($settings['site_url'], '/'))) ?></small></span></a>
 </div>
+<?php $phpSec = $user['role'] === 'admin' ? php_security_status() : null; if ($phpSec && $phpSec['state'] !== 'ok'): ?>
+  <div class="flash flash-error">🛡 <b>Серверийн PHP хувилбар (<?= e($phpSec['version']) ?>) эмзэг байна.</b>
+    <?= $phpSec['state'] === 'eol' ? 'Энэ хувилбарын дэмжлэг дууссан тул засвар гарахгүй.' : 'Засварласан хувилбар: ' . e($phpSec['fixed']) . ' ба түүнээс дээш.' ?>
+    cPanel → <b>Select PHP Version</b> (эсвэл MultiPHP Manager) хэсгээс PHP 8.3 эсвэл 8.4-ийн хамгийн сүүлийн хувилбарыг сонгоно уу. Сонголтод засварласан хувилбар байхгүй бол хостингийн тусламжид хандана уу.</div>
+<?php endif; ?>
 <?php if (!empty($endingAds)): ?>
   <div class="flash flash-error">⏰ Удахгүй дуусах сурталчилгаа:
     <?php foreach ($endingAds as $i => $ea): ?><?= $i ? ', ' : '' ?><a href="<?= url('/admin/ads/' . $ea['id']) ?>"><b><?= e($ea['title']) ?></b></a> (<?= e(format_date($ea['ends_at'])) ?>)<?php endforeach; ?>.
