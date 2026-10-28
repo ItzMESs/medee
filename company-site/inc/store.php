@@ -98,8 +98,8 @@ function store_defaults() {
             'logo_title'    => 'NATIONAL ROAD BRIDGE',
             'logo_sub'      => 'CONSTRUCTION',
             'logo'          => 'assets/img/logo.png',
-            'logo_header'   => 'assets/img/logo-light.png',
-            'logo_wordmark' => 'assets/img/logo-wordmark-white.png',
+            'logo_header'   => 'assets/img/logo.png',
+            'logo_wordmark' => 'assets/img/logo-wordmark.png',
             'phone'       => '+976 7000-0000',
             'email'       => 'info@example.mn',
             'address'     => 'Монгол улс, Улаанбаатар хот, Сонгинохайрхан дүүрэг, 4-р хороо',
@@ -159,8 +159,12 @@ function store_load() {
     foreach (db()->query('SELECT `section`, `field`, `value` FROM ' . t('settings')) as $r) {
         if (isset($data[$r['section']])) $data[$r['section']][$r['field']] = $r['value'];
     }
-    // Хуучин загварын лого устсан тул шинэ лого руу шилжүүлнэ
-    if ($data['settings']['logo'] === 'assets/img/logo.svg') $data['settings']['logo'] = $defaults['settings']['logo'];
+    // Устгагдсан хуучин лого файлуудыг одоогийн лого руу шилжүүлнэ
+    foreach (['logo', 'logo_header', 'logo_wordmark'] as $k) {
+        if (in_array($data['settings'][$k], ['assets/img/logo.svg', 'assets/img/logo-light.png', 'assets/img/logo-wordmark-white.png'], true)) {
+            $data['settings'][$k] = $defaults['settings'][$k];
+        }
+    }
     foreach (LIST_COLUMNS as $list => $cols) {
         $data[$list] = db()->query('SELECT `id`, `' . implode('`, `', $cols) . '` FROM ' . t($list) . ' ORDER BY `sort`, `created_at`')->fetchAll();
     }
