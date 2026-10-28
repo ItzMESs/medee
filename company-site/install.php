@@ -82,7 +82,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && !$error) {
 <body>
 <main class="auth">
   <form method="post" class="card install">
-    <img src="assets/img/logo.svg" alt="" class="auth-logo">
+    <img src="assets/img/logo.png" alt="" class="auth-logo">
     <h1>Сайт суулгах</h1>
     <?php if ($error): ?><div class="alert err"><?= e($error) ?></div><?php endif; ?>
     <input type="hidden" name="csrf" value="<?= e($_SESSION['csrf']) ?>">

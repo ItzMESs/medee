@@ -25,18 +25,22 @@ $menu = [
 <link rel="icon" href="<?= e($site['logo']) ?>">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700;900&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Raleway:wght@500&family=Roboto:wght@300;400;500;700;900&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="<?= e(asset('assets/css/style.css')) ?>">
 </head>
 <body class="page-<?= e($page) ?>">
 <header class="site-header<?= $page === 'home' ? '' : ' solid' ?>" id="header">
   <div class="container header-inner">
     <a class="brand" href="index.php">
-      <img src="<?= e($site['logo']) ?>" alt="" width="56" height="64">
+      <?php if ($site['logo_header'] || $site['logo']): ?><img class="brand-mark" src="<?= e($site['logo_header'] ?: $site['logo']) ?>" alt=""><?php endif; ?>
+      <?php if ($site['logo_wordmark']): ?>
+      <img class="brand-wordmark" src="<?= e($site['logo_wordmark']) ?>" alt="<?= e($site['name']) ?>">
+      <?php else: ?>
       <span class="brand-text">
         <span class="brand-title"><?= e($site['logo_title']) ?></span>
         <span class="brand-sub"><?= e($site['logo_sub']) ?></span>
       </span>
+      <?php endif; ?>
     </a>
     <button class="nav-toggle" id="navToggle" aria-label="Цэс" aria-expanded="false"><span></span><span></span><span></span></button>
     <nav class="main-nav" id="mainNav">

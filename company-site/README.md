@@ -35,6 +35,8 @@ altainzam.mn сайтын бүтэц, дизайнтай ижил компани
 
 Нууц үгээ мартвал phpMyAdmin-аас `cs_admins` хүснэгтийн мөрийг устгаад `install.php` руу орж админаа шинээр үүсгэнэ.
 
+**Лого:** `assets/img/logo.png` (өнгөт — хөтчийн таб, админ), `logo-light.png` (бараан толгой дээрх цайвар хувилбар), `logo-wordmark-white.png` / `logo-wordmark.png` (бичиг). Админ → Ерөнхий тохиргоо хэсгээс сольж болно.
+
 Өнгө солих бол `assets/css/style.css` эхний `--yellow` хувьсагчийг өөрчилнө.
 
 Локал дээр үзэх: MySQL ажиллуулаад энэ хавтсан дотроос `php -S localhost:8000`, дараа нь `http://localhost:8000/install.php`.

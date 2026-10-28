@@ -30,11 +30,14 @@ h1, h2, h3, h4 { font-weight: 700; color: var(--dark); margin: 0 0 16px; }
 .site-header { position: fixed; top: 0; left: 0; right: 0; z-index: 100; padding: 36px 0; transition: background .3s, padding .3s; }
 .site-header.scrolled, .site-header.solid { background: rgba(30, 30, 30, .72); padding: 8px 0; backdrop-filter: blur(4px); }
 .header-inner { display: flex; align-items: center; justify-content: space-between; gap: 30px; }
-.brand { display: flex; align-items: center; gap: 6px; color: #fff; flex-shrink: 0; }
-.brand img { width: 62px; height: auto; transition: .3s; }
-.scrolled .brand img, .solid .brand img { width: 42px; }
+.brand { display: flex; align-items: center; gap: 12px; color: #fff; flex-shrink: 0; }
+.brand img { display: block; width: auto; transition: height .3s; }
+.brand-mark { height: 72px; }
+.brand-wordmark { height: 58px; }
+.scrolled .brand-mark, .solid .brand-mark { height: 46px; }
+.scrolled .brand-wordmark, .solid .brand-wordmark { height: 38px; }
 .brand-text { display: flex; flex-direction: column; line-height: 1; }
-.brand-title { white-space: nowrap; font-family: Georgia, 'Times New Roman', serif; font-size: 34px; letter-spacing: .5px; transition: .3s; }
+.brand-title { white-space: nowrap; font-family: 'Raleway', 'Roboto', Arial, sans-serif; font-weight: 500; font-size: 34px; letter-spacing: .5px; transition: .3s; }
 .brand-sub { font-size: 14px; text-align: center; margin-top: 4px; transition: .3s; }
 .scrolled .brand-title, .solid .brand-title { font-size: 26px; }
 .scrolled .brand-sub, .solid .brand-sub { font-size: 10px; }
@@ -159,6 +162,8 @@ h1, h2, h3, h4 { font-weight: 700; color: var(--dark); margin: 0 0 16px; }
   .main-nav > ul { gap: 18px; }
   .main-nav > ul > li > a { font-size: 14px; }
   .brand-title { font-size: 26px; }
+  .brand-mark { height: 60px; }
+  .brand-wordmark { height: 48px; }
   .slide h1 { font-size: 60px; }
   .slide p { font-size: 22px; }
 }
@@ -166,7 +171,8 @@ h1, h2, h3, h4 { font-weight: 700; color: var(--dark); margin: 0 0 16px; }
 /* Утас */
 @media (max-width: 900px) {
   .site-header { padding: 12px 0; background: rgba(30, 30, 30, .72); }
-  .brand img { width: 42px; }
+  .brand-mark, .scrolled .brand-mark, .solid .brand-mark { height: 42px; }
+  .brand-wordmark, .scrolled .brand-wordmark, .solid .brand-wordmark { height: 34px; }
   .brand-title { font-size: 24px; }
   .brand-sub { font-size: 9px; }
   .nav-toggle { display: block; }

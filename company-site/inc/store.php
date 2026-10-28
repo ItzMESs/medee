@@ -94,10 +94,12 @@ function db_install() {
 function store_defaults() {
     return [
         'settings' => [
-            'name'        => 'КОМПАНИЙН НЭР ХК',
-            'logo_title'  => 'COMPANY NAME',
-            'logo_sub'    => 'JOINT STOCK COMPANY',
-            'logo'        => 'assets/img/logo.svg',
+            'name'          => 'National Road Bridge Construction',
+            'logo_title'    => 'NATIONAL ROAD BRIDGE',
+            'logo_sub'      => 'CONSTRUCTION',
+            'logo'          => 'assets/img/logo.png',
+            'logo_header'   => 'assets/img/logo-light.png',
+            'logo_wordmark' => 'assets/img/logo-wordmark-white.png',
             'phone'       => '+976 7000-0000',
             'email'       => 'info@example.mn',
             'address'     => 'Монгол улс, Улаанбаатар хот, Сонгинохайрхан дүүрэг, 4-р хороо',
@@ -157,6 +159,8 @@ function store_load() {
     foreach (db()->query('SELECT `section`, `field`, `value` FROM ' . t('settings')) as $r) {
         if (isset($data[$r['section']])) $data[$r['section']][$r['field']] = $r['value'];
     }
+    // Хуучин загварын лого устсан тул шинэ лого руу шилжүүлнэ
+    if ($data['settings']['logo'] === 'assets/img/logo.svg') $data['settings']['logo'] = $defaults['settings']['logo'];
     foreach (LIST_COLUMNS as $list => $cols) {
         $data[$list] = db()->query('SELECT `id`, `' . implode('`, `', $cols) . '` FROM ' . t($list) . ' ORDER BY `sort`, `created_at`')->fetchAll();
     }
