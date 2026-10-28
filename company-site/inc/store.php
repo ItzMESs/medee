@@ -131,6 +131,7 @@ function store_defaults() {
             'about_text'  => $intro,
             'about_image' => 'assets/img/about.svg',
             'hero_big'    => 'NRBC',
+            'hero_big_sub'=> 'NATIONAL ROAD BRIDGE CONSTRUCTION',
             'video_title' => 'КОМПАНИЙН ТАНИЛЦУУЛГА БИЧЛЭГ',
             'video_file'  => '',
             'video_url'   => '',

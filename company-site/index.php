@@ -19,7 +19,12 @@ $slides = $content['slides'];
     </div>
   </div>
   <?php endforeach; ?>
-  <?php if (trim($home['hero_big']) !== ''): ?><div class="hero-big" aria-hidden="true"><?= e($home['hero_big']) ?></div><?php endif; ?>
+  <?php if (trim($home['hero_big']) !== ''): ?>
+  <div class="hero-big" aria-hidden="true">
+    <span class="hero-big-text"><?= e($home['hero_big']) ?></span>
+    <?php if (trim($home['hero_big_sub']) !== ''): ?><span class="hero-big-sub"><?= e($home['hero_big_sub']) ?></span><?php endif; ?>
+  </div>
+  <?php endif; ?>
   <?php if (count($slides) > 1): ?>
   <div class="hero-dots">
     <?php foreach ($slides as $i => $s): ?><button class="<?= $i === 0 ? 'active' : '' ?>" aria-label="Слайд <?= $i + 1 ?>"></button><?php endforeach; ?>
