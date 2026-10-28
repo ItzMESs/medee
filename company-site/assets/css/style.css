@@ -219,3 +219,24 @@ h1, h2, h3, h4 { font-weight: 700; color: var(--dark); margin: 0 0 16px; }
 .article .btn { margin-top: 10px; }
 .job p { font-size: 14px; margin: 8px 0 0; }
 .video-wrap iframe { width: 100%; aspect-ratio: 16 / 9; border: 0; display: block; }
+
+/* Жагсаалт, түүхэн замнал */
+.list { margin: 0 0 20px; padding-left: 20px; }
+.list li { margin-bottom: 6px; line-height: 1.6; }
+.content .list, .value .list { font-size: 15px; }
+.value .list { margin: 0; }
+.history { margin-top: 70px; }
+.timeline { list-style: none; margin: 0; padding: 0; position: relative; }
+.timeline::before { content: ''; position: absolute; left: 92px; top: 6px; bottom: 6px; width: 2px; background: #ece4cf; }
+.timeline li { display: grid; grid-template-columns: 92px 1fr; gap: 30px; position: relative; padding-bottom: 26px; }
+.timeline li::before { content: ''; position: absolute; left: 86px; top: 6px; width: 14px; height: 14px; border-radius: 50%; background: var(--yellow); border: 3px solid #fff; box-shadow: 0 0 0 1px var(--yellow); }
+.timeline .year { font-weight: 700; color: var(--dark); font-size: 17px; text-align: right; padding-right: 8px; white-space: nowrap; }
+.timeline li > div { grid-column: 2; }
+.timeline p { margin: 0 0 8px; }
+@media (max-width: 600px) {
+  .timeline::before { left: 6px; }
+  .timeline li { grid-template-columns: 1fr; gap: 4px; padding-left: 30px; }
+  .timeline li::before { left: 0; }
+  .timeline .year { text-align: left; padding: 0; }
+  .timeline li > div { grid-column: 1; }
+}

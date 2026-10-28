@@ -27,7 +27,7 @@ $slides = $content['slides'];
     <article class="service reveal">
       <h2><?= e($s['title']) ?></h2>
       <a href="operations.php#<?= e($s['id']) ?>" class="service-img"><img src="<?= e($s['image']) ?>" alt="<?= e($s['title']) ?>" loading="lazy"></a>
-      <p><?= e($s['text']) ?></p>
+      <p><?= e(preg_split('/\R{2,}/u', trim($s['text']))[0]) ?></p>
       <a href="operations.php#<?= e($s['id']) ?>" class="btn btn-white">ДЭЛГЭРЭНГҮЙ</a>
     </article>
     <?php endforeach; ?>

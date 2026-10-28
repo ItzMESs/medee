@@ -21,7 +21,7 @@ $menu = [
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title><?= e($title ? $title . ' | ' . $site['name'] : $site['name']) ?></title>
-<meta name="description" content="<?= e($site['name']) ?> — уул уурхай, зам барилга, зам арчлалт">
+<meta name="description" content="<?= e($site['name']) ?> — авто зам, замын байгууламжийн барилга, засвар арчлалт, техник хяналт">
 <link rel="icon" href="<?= e($site['logo']) ?>">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
