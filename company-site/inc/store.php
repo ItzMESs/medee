@@ -1,9 +1,19 @@
 <?php
-// Сайтын агуулгыг data/ хавтсанд JSON хэлбэрээр хадгална (өгөгдлийн сан шаардлагагүй).
-// Файлууд .php өргөтгөлтэй, эхэндээ exit-тэй тул вэбээс шууд уншигдахгүй.
+// Сайтын агуулгыг MySQL өгөгдлийн санд хадгална.
+// Холболтын тохиргоо config.php-д (install.php суулгахдаа үүсгэнэ).
 
-const DATA_DIR = __DIR__ . '/../data';
+const CONFIG_FILE = __DIR__ . '/../config.php';
 const UPLOAD_DIR = __DIR__ . '/../uploads';
+
+// Жагсаалт бүрийн хүснэгтийн баганууд
+const LIST_COLUMNS = [
+    'slides'   => ['image', 'title', 'text'],
+    'services' => ['title', 'image', 'text'],
+    'news'     => ['date', 'title', 'image', 'body'],
+    'docs'     => ['category', 'date', 'title', 'body', 'file'],
+    'jobs'     => ['title', 'location', 'type', 'body'],
+];
+const PAGE_SECTIONS = ['settings', 'home', 'about', 'careers'];
 
 if (!function_exists('e')) {
     function e($s) { return htmlspecialchars((string) $s, ENT_QUOTES, 'UTF-8'); }
@@ -18,22 +28,61 @@ function paragraphs($text) {
     return $out;
 }
 
-function json_read($name, $default) {
-    $file = DATA_DIR . "/$name.json.php";
-    if (!is_file($file)) return $default;
-    $raw = file_get_contents($file);
-    $raw = substr($raw, strpos($raw, "\n") + 1);
-    $data = json_decode($raw, true);
-    return is_array($data) ? $data : $default;
+function is_installed() {
+    return is_file(CONFIG_FILE);
 }
 
-function json_write($name, $data) {
-    if (!is_dir(DATA_DIR)) mkdir(DATA_DIR, 0755, true);
-    $file = DATA_DIR . "/$name.json.php";
-    $tmp = $file . '.' . bin2hex(random_bytes(4)) . '.tmp';
-    $json = json_encode($data, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES | JSON_PRETTY_PRINT);
-    if (file_put_contents($tmp, "<?php exit; ?>\n" . $json, LOCK_EX) === false) return false;
-    return rename($tmp, $file);
+function db_config() {
+    static $cfg;
+    if ($cfg === null) $cfg = require CONFIG_FILE;
+    return $cfg;
+}
+
+function db_connect($cfg) {
+    $dsn = 'mysql:host=' . $cfg['db_host'] . ';port=' . ($cfg['db_port'] ?? 3306) . ';dbname=' . $cfg['db_name'] . ';charset=utf8mb4';
+    return new PDO($dsn, $cfg['db_user'], $cfg['db_pass'], [
+        PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,
+        PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC,
+        PDO::ATTR_EMULATE_PREPARES => false,
+    ]);
+}
+
+function db() {
+    static $pdo;
+    if ($pdo === null) $pdo = db_connect(db_config());
+    return $pdo;
+}
+
+// Хүснэгтийн нэр (угтвартай)
+function t($name) {
+    return '`' . preg_replace('/[^a-z0-9_]/i', '', (db_config()['db_prefix'] ?? 'cs_') . $name) . '`';
+}
+
+// Хүснэгтүүдийг үүсгэж, хоосон бол анхны агуулгаар дүүргэнэ
+function db_install() {
+    $opts = 'ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci';
+    $item = '`id` VARCHAR(16) NOT NULL PRIMARY KEY, `sort` INT NOT NULL DEFAULT 0, `created_at` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP';
+    $sql = [
+        "CREATE TABLE IF NOT EXISTS " . t('settings') . " (`section` VARCHAR(32) NOT NULL, `field` VARCHAR(64) NOT NULL, `value` MEDIUMTEXT NOT NULL, PRIMARY KEY (`section`, `field`)) $opts",
+        "CREATE TABLE IF NOT EXISTS " . t('slides') . " ($item, `image` VARCHAR(255) NOT NULL DEFAULT '', `title` VARCHAR(255) NOT NULL DEFAULT '', `text` TEXT NOT NULL) $opts",
+        "CREATE TABLE IF NOT EXISTS " . t('services') . " ($item, `title` VARCHAR(255) NOT NULL DEFAULT '', `image` VARCHAR(255) NOT NULL DEFAULT '', `text` TEXT NOT NULL) $opts",
+        "CREATE TABLE IF NOT EXISTS " . t('news') . " ($item, `date` DATE NOT NULL, `title` VARCHAR(255) NOT NULL DEFAULT '', `image` VARCHAR(255) NOT NULL DEFAULT '', `body` MEDIUMTEXT NOT NULL, KEY `date` (`date`)) $opts",
+        "CREATE TABLE IF NOT EXISTS " . t('docs') . " ($item, `category` VARCHAR(32) NOT NULL DEFAULT '', `date` DATE NOT NULL, `title` VARCHAR(255) NOT NULL DEFAULT '', `body` TEXT NOT NULL, `file` VARCHAR(255) NOT NULL DEFAULT '') $opts",
+        "CREATE TABLE IF NOT EXISTS " . t('jobs') . " ($item, `title` VARCHAR(255) NOT NULL DEFAULT '', `location` VARCHAR(255) NOT NULL DEFAULT '', `type` VARCHAR(255) NOT NULL DEFAULT '', `body` MEDIUMTEXT NOT NULL) $opts",
+        "CREATE TABLE IF NOT EXISTS " . t('messages') . " (`id` INT UNSIGNED NOT NULL AUTO_INCREMENT PRIMARY KEY, `created_at` DATETIME NOT NULL, `is_read` TINYINT(1) NOT NULL DEFAULT 0, `name` VARCHAR(100) NOT NULL, `email` VARCHAR(150) NOT NULL, `phone` VARCHAR(30) NOT NULL DEFAULT '', `message` TEXT NOT NULL, `ip` VARCHAR(45) NOT NULL DEFAULT '') $opts",
+        "CREATE TABLE IF NOT EXISTS " . t('admins') . " (`id` INT UNSIGNED NOT NULL AUTO_INCREMENT PRIMARY KEY, `username` VARCHAR(64) NOT NULL UNIQUE, `password_hash` VARCHAR(255) NOT NULL, `created_at` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP) $opts",
+        "CREATE TABLE IF NOT EXISTS " . t('login_attempts') . " (`ip` VARCHAR(45) NOT NULL PRIMARY KEY, `attempts` INT NOT NULL, `last_at` INT NOT NULL) $opts",
+    ];
+    foreach ($sql as $q) db()->exec($q);
+
+    $defaults = store_defaults();
+    if (!db()->query('SELECT COUNT(*) FROM ' . t('settings'))->fetchColumn()) {
+        foreach (PAGE_SECTIONS as $section) store_save_page($section, $defaults[$section]);
+    }
+    foreach (LIST_COLUMNS as $list => $cols) {
+        if (db()->query('SELECT COUNT(*) FROM ' . t($list))->fetchColumn()) continue;
+        foreach ($defaults[$list] as $it) store_save_item($list, $it, true);
+    }
 }
 
 function store_defaults() {
@@ -97,24 +146,128 @@ function store_defaults() {
 
 function store_load() {
     $defaults = store_defaults();
-    $data = json_read('content', []);
-    foreach ($defaults as $key => $value) {
-        if (!array_key_exists($key, $data)) {
-            $data[$key] = $value;
-        } elseif (is_array($value) && !array_is_list_compat($value)) {
-            $data[$key] = array_replace($value, (array) $data[$key]);
-        }
+    $data = [];
+    foreach (PAGE_SECTIONS as $section) $data[$section] = $defaults[$section];
+    foreach (db()->query('SELECT `section`, `field`, `value` FROM ' . t('settings')) as $r) {
+        if (isset($data[$r['section']])) $data[$r['section']][$r['field']] = $r['value'];
+    }
+    foreach (LIST_COLUMNS as $list => $cols) {
+        $data[$list] = db()->query('SELECT `id`, `' . implode('`, `', $cols) . '` FROM ' . t($list) . ' ORDER BY `sort`, `created_at`')->fetchAll();
     }
     return $data;
 }
 
-function store_save($data) {
-    return json_write('content', $data);
+// Нийтийн хуудсуудад: суулгаагүй бол install.php руу, сан ажиллахгүй бол 503
+function load_site() {
+    if (!is_installed()) {
+        header('Location: install.php');
+        exit;
+    }
+    try {
+        return store_load();
+    } catch (PDOException $ex) {
+        http_response_code(503);
+        exit('<!doctype html><meta charset="utf-8"><p style="font:16px sans-serif;text-align:center;margin-top:20vh">Сайт түр засвартай байна. Түр хүлээгээд дахин оролдоно уу.</p>');
+    }
 }
 
-// PHP 7.4-д array_is_list байхгүй
-function array_is_list_compat($a) {
-    return $a === [] || array_keys($a) === range(0, count($a) - 1);
+function store_save_page($section, $values) {
+    $st = db()->prepare('REPLACE INTO ' . t('settings') . ' (`section`, `field`, `value`) VALUES (?, ?, ?)');
+    foreach ($values as $field => $value) $st->execute([$section, $field, (string) $value]);
+}
+
+function store_save_item($list, $item, $isNew) {
+    $cols = LIST_COLUMNS[$list];
+    $values = [];
+    foreach ($cols as $c) $values[] = (string) ($item[$c] ?? '');
+    if ($isNew) {
+        $sort = (int) db()->query('SELECT COALESCE(MAX(`sort`), 0) + 1 FROM ' . t($list))->fetchColumn();
+        $sql = 'INSERT INTO ' . t($list) . ' (`id`, `sort`, `' . implode('`, `', $cols) . '`) VALUES (?, ?' . str_repeat(', ?', count($cols)) . ')';
+        db()->prepare($sql)->execute(array_merge([$item['id'], $sort], $values));
+    } else {
+        $sql = 'UPDATE ' . t($list) . ' SET `' . implode('` = ?, `', $cols) . '` = ? WHERE `id` = ?';
+        db()->prepare($sql)->execute(array_merge($values, [$item['id']]));
+    }
+}
+
+function store_get_item($list, $id) {
+    $st = db()->prepare('SELECT * FROM ' . t($list) . ' WHERE `id` = ?');
+    $st->execute([$id]);
+    return $st->fetch() ?: null;
+}
+
+function store_delete_item($list, $id) {
+    db()->prepare('DELETE FROM ' . t($list) . ' WHERE `id` = ?')->execute([$id]);
+}
+
+// Дарааллыг хөрш мөртэй нь солино
+function store_move_item($list, $id, $up) {
+    $ids = db()->query('SELECT `id` FROM ' . t($list) . ' ORDER BY `sort`, `created_at`')->fetchAll(PDO::FETCH_COLUMN);
+    $i = array_search($id, $ids, true);
+    if ($i === false) return;
+    $j = $up ? $i - 1 : $i + 1;
+    if ($j < 0 || $j >= count($ids)) return;
+    [$ids[$i], $ids[$j]] = [$ids[$j], $ids[$i]];
+    $st = db()->prepare('UPDATE ' . t($list) . ' SET `sort` = ? WHERE `id` = ?');
+    db()->beginTransaction();
+    foreach ($ids as $n => $rid) $st->execute([$n + 1, $rid]);
+    db()->commit();
+}
+
+// ---------- Санал хүсэлт ----------
+function messages_all() {
+    return db()->query('SELECT *, `is_read` AS `read`, DATE_FORMAT(`created_at`, \'%Y-%m-%d %H:%i\') AS `date` FROM ' . t('messages') . ' ORDER BY `id` DESC')->fetchAll();
+}
+
+function message_add($name, $email, $phone, $message, $ip) {
+    db()->prepare('INSERT INTO ' . t('messages') . ' (`created_at`, `name`, `email`, `phone`, `message`, `ip`) VALUES (NOW(), ?, ?, ?, ?, ?)')
+        ->execute([$name, $email, $phone, $message, $ip]);
+}
+
+function message_toggle($id) {
+    db()->prepare('UPDATE ' . t('messages') . ' SET `is_read` = 1 - `is_read` WHERE `id` = ?')->execute([(int) $id]);
+}
+
+function message_delete($id) {
+    db()->prepare('DELETE FROM ' . t('messages') . ' WHERE `id` = ?')->execute([(int) $id]);
+}
+
+// ---------- Админ ----------
+function admin_get() {
+    return db()->query('SELECT * FROM ' . t('admins') . ' ORDER BY `id` LIMIT 1')->fetch() ?: null;
+}
+
+function admin_find($username) {
+    $st = db()->prepare('SELECT * FROM ' . t('admins') . ' WHERE `username` = ?');
+    $st->execute([$username]);
+    return $st->fetch() ?: null;
+}
+
+function admin_create($username, $password) {
+    db()->prepare('INSERT INTO ' . t('admins') . ' (`username`, `password_hash`) VALUES (?, ?)')
+        ->execute([$username, password_hash($password, PASSWORD_DEFAULT)]);
+}
+
+function admin_set_password($id, $password) {
+    db()->prepare('UPDATE ' . t('admins') . ' SET `password_hash` = ? WHERE `id` = ?')
+        ->execute([password_hash($password, PASSWORD_DEFAULT), $id]);
+}
+
+// Нэвтрэх оролдлогын хязгаар (IP бүрт 15 минутад 10 удаа)
+function login_blocked($ip) {
+    $st = db()->prepare('SELECT `attempts` FROM ' . t('login_attempts') . ' WHERE `ip` = ? AND `last_at` > ?');
+    $st->execute([$ip, time() - 900]);
+    return (int) $st->fetchColumn() >= 10;
+}
+
+function login_record($ip, $failed) {
+    db()->prepare('DELETE FROM ' . t('login_attempts') . ' WHERE `last_at` <= ?')->execute([time() - 900]);
+    if ($failed) {
+        db()->prepare('INSERT INTO ' . t('login_attempts') . ' (`ip`, `attempts`, `last_at`) VALUES (?, 1, ?) ON DUPLICATE KEY UPDATE `attempts` = `attempts` + 1, `last_at` = VALUES(`last_at`)')
+            ->execute([$ip, time()]);
+    } else {
+        db()->prepare('DELETE FROM ' . t('login_attempts') . ' WHERE `ip` = ?')->execute([$ip]);
+    }
 }
 
 function find_item($list, $id) {

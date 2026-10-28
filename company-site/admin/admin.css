@@ -96,3 +96,12 @@ h2 { font-size: 17px; margin: 0 0 12px; }
   .row { flex-wrap: wrap; }
   .row-actions { width: 100%; }
 }
+
+/* Суулгах */
+.install { max-width: 440px !important; }
+.install h2 { font-size: 16px; margin: 18px 0 4px; }
+.install .muted { margin: 0 0 12px; }
+.install .field { margin-bottom: 12px; }
+.install details { margin-bottom: 8px; }
+.install summary { cursor: pointer; margin-bottom: 10px; }
+.auth .field { margin-bottom: 12px; }

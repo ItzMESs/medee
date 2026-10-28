@@ -167,26 +167,21 @@ function collect_fields($fields, $old, &$replaced) {
     return $new;
 }
 
-// Нэвтрэх оролдлогын хязгаар (IP бүрт 15 минутад 10 удаа)
-function too_many_attempts() {
-    $t = json_read('throttle', []);
-    $r = $t[client_ip()] ?? null;
-    return $r && $r[0] >= 10 && time() - $r[1] < 900;
-}
-function record_attempt($failed) {
-    $t = json_read('throttle', []);
-    foreach ($t as $ip => $r) if (time() - $r[1] >= 900) unset($t[$ip]);
-    if ($failed) {
-        $r = $t[client_ip()] ?? [0, time()];
-        $t[client_ip()] = [$r[0] + 1, time()];
-    } else {
-        unset($t[client_ip()]);
-    }
-    json_write('throttle', $t);
-}
-
 // ---------- Хүсэлт боловсруулах ----------
-$auth = json_read('admin', []);
+if (!is_installed()) {
+    header('Location: ../install.php');
+    exit;
+}
+try {
+    $auth = admin_get();
+} catch (PDOException $ex) {
+    http_response_code(503);
+    exit('Өгөгдлийн сантай холбогдож чадсангүй. config.php доторх тохиргоог шалгана уу.');
+}
+if (!$auth) {
+    header('Location: ../install.php');
+    exit;
+}
 $p = $_GET['p'] ?? 'dash';
 $error = '';
 
@@ -201,44 +196,27 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     }
 }
 
-// Анх удаа: админы нэр, нууц үг үүсгэх
-if (!$auth) {
-    $p = 'setup';
-    if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-        $user = trim((string) ($_POST['user'] ?? ''));
-        $pass = (string) ($_POST['pass'] ?? '');
-        if ($user === '' || strlen($pass) < 8) {
-            $error = 'Нэвтрэх нэр оруулж, нууц үгээ хамгийн багадаа 8 тэмдэгт болгоно уу.';
-        } elseif ($pass !== ($_POST['pass2'] ?? '')) {
-            $error = 'Нууц үг таарахгүй байна.';
-        } elseif (!json_write('admin', ['user' => $user, 'hash' => password_hash($pass, PASSWORD_DEFAULT)])) {
-            $error = 'data хавтас руу бичих эрхгүй байна. Хавтасны эрхийг 755 болгоно уу.';
-        } else {
-            session_regenerate_id(true);
-            $_SESSION['admin'] = $user;
-            flash('Админ үүслээ. Тавтай морил!');
-            redirect();
-        }
-    }
-} elseif (empty($_SESSION['admin'])) {
+$me = !empty($_SESSION['admin_id']) ? db()->query('SELECT * FROM ' . t('admins') . ' WHERE `id` = ' . (int) $_SESSION['admin_id'])->fetch() : null;
+
+if (!$me) {
     $p = 'login';
     if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-        if (too_many_attempts()) {
+        $user = admin_find((string) ($_POST['user'] ?? ''));
+        if (login_blocked(client_ip())) {
             $error = 'Хэт олон удаа буруу оролдлоо. 15 минутын дараа дахин оролдоно уу.';
-        } elseif (hash_equals($auth['user'], (string) ($_POST['user'] ?? '')) && password_verify((string) ($_POST['pass'] ?? ''), $auth['hash'])) {
-            record_attempt(false);
+        } elseif ($user && password_verify((string) ($_POST['pass'] ?? ''), $user['password_hash'])) {
+            login_record(client_ip(), false);
             session_regenerate_id(true);
-            $_SESSION['admin'] = $auth['user'];
+            $_SESSION['admin_id'] = $user['id'];
             redirect();
         } else {
-            record_attempt(true);
+            login_record(client_ip(), true);
             sleep(1);
             $error = 'Нэвтрэх нэр эсвэл нууц үг буруу байна.';
         }
     }
 } elseif ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $action = $_POST['action'] ?? '';
-    $content = store_load();
     $l = (string) ($_POST['l'] ?? '');
     $id = (string) ($_POST['id'] ?? '');
 
@@ -251,15 +229,11 @@ if (!$auth) {
     if (in_array($action, ['save_item', 'delete_item', 'move_item'], true) && !isset($LISTS[$l])) redirect();
 
     if ($action === 'save_item') {
-        $items = $content[$l];
-        $index = null;
-        foreach ($items as $i => $it) if ($it['id'] === $id) $index = $i;
+        $old = $id !== '' ? store_get_item($l, $id) : null;
         $replaced = [];
         try {
-            $item = collect_fields($LISTS[$l]['fields'], $index !== null ? $items[$index] : ['id' => bin2hex(random_bytes(4))], $replaced);
-            if ($index !== null) $items[$index] = $item; else $items[] = $item;
-            $content[$l] = $items;
-            if (!store_save($content)) throw new RuntimeException('Хадгалж чадсангүй. data хавтасны эрхийг шалгана уу.');
+            $item = collect_fields($LISTS[$l]['fields'], $old ?: ['id' => bin2hex(random_bytes(4))], $replaced);
+            store_save_item($l, $item, !$old);
             foreach ($replaced as $r) delete_upload($r);
             flash('Хадгалагдлаа.');
             redirect('p=list&l=' . $l);
@@ -267,38 +241,24 @@ if (!$auth) {
             $error = $ex->getMessage();
             $p = 'edit';
             $_GET['l'] = $l;
-            $_GET['id'] = $index !== null ? $id : '';
+            $_GET['id'] = $old ? $id : '';
             $formValues = $_POST;
         }
     }
 
     if ($action === 'delete_item') {
-        foreach ($content[$l] as $i => $it) {
-            if ($it['id'] !== $id) continue;
-            array_splice($content[$l], $i, 1);
-            if (store_save($content)) {
-                foreach ($LISTS[$l]['fields'] as $key => $def) {
-                    if (in_array($def[1], ['image', 'file', 'video'], true)) delete_upload($it[$key] ?? '');
-                }
-                flash('Устгагдлаа.');
+        if ($it = store_get_item($l, $id)) {
+            store_delete_item($l, $id);
+            foreach ($LISTS[$l]['fields'] as $key => $def) {
+                if (in_array($def[1], ['image', 'file', 'video'], true)) delete_upload($it[$key] ?? '');
             }
-            break;
+            flash('Устгагдлаа.');
         }
         redirect('p=list&l=' . $l);
     }
 
     if ($action === 'move_item') {
-        $items = $content[$l];
-        foreach ($items as $i => $it) {
-            if ($it['id'] !== $id) continue;
-            $j = $i + (($_POST['dir'] ?? '') === 'up' ? -1 : 1);
-            if ($j >= 0 && $j < count($items)) {
-                [$items[$i], $items[$j]] = [$items[$j], $items[$i]];
-                $content[$l] = $items;
-                store_save($content);
-            }
-            break;
-        }
+        store_move_item($l, $id, ($_POST['dir'] ?? '') === 'up');
         redirect('p=list&l=' . $l);
     }
 
@@ -306,8 +266,8 @@ if (!$auth) {
         $k = $_POST['k'];
         $replaced = [];
         try {
-            $content[$k] = collect_fields($PAGES[$k]['fields'], $content[$k], $replaced);
-            if (!store_save($content)) throw new RuntimeException('Хадгалж чадсангүй. data хавтасны эрхийг шалгана уу.');
+            $values = collect_fields($PAGES[$k]['fields'], store_load()[$k], $replaced);
+            store_save_page($k, $values);
             foreach ($replaced as $r) delete_upload($r);
             flash('Хадгалагдлаа.');
             redirect('p=page&k=' . $k);
@@ -320,27 +280,19 @@ if (!$auth) {
     }
 
     if ($action === 'msg_read' || $action === 'msg_delete') {
-        $messages = json_read('messages', []);
-        foreach ($messages as $i => $m) {
-            if ($m['id'] !== $id) continue;
-            if ($action === 'msg_delete') array_splice($messages, $i, 1);
-            else $messages[$i]['read'] = !$m['read'];
-            break;
-        }
-        json_write('messages', $messages);
+        if ($action === 'msg_delete') message_delete($id); else message_toggle($id);
         redirect('p=messages');
     }
 
     if ($action === 'password') {
-        if (!password_verify((string) ($_POST['old'] ?? ''), $auth['hash'])) {
+        if (!password_verify((string) ($_POST['old'] ?? ''), $me['password_hash'])) {
             $error = 'Одоогийн нууц үг буруу байна.';
         } elseif (strlen((string) ($_POST['pass'] ?? '')) < 8) {
             $error = 'Шинэ нууц үг хамгийн багадаа 8 тэмдэгт байна.';
         } elseif ($_POST['pass'] !== ($_POST['pass2'] ?? '')) {
             $error = 'Шинэ нууц үг таарахгүй байна.';
         } else {
-            $auth['hash'] = password_hash($_POST['pass'], PASSWORD_DEFAULT);
-            json_write('admin', $auth);
+            admin_set_password($me['id'], $_POST['pass']);
             flash('Нууц үг солигдлоо.');
             redirect('p=password');
         }
@@ -351,7 +303,7 @@ if (!$auth) {
 $flash = $_SESSION['flash'] ?? null;
 unset($_SESSION['flash']);
 $content = store_load();
-$messages = json_read('messages', []);
+$messages = $me ? messages_all() : [];
 $unread = count(array_filter($messages, fn($m) => !$m['read']));
 
 // ---------- Харагдац ----------
@@ -410,18 +362,16 @@ $csrfField = '<input type="hidden" name="csrf" value="' . e($_SESSION['csrf']) .
 <link rel="stylesheet" href="admin.css">
 </head>
 <body>
-<?php if ($p === 'setup' || $p === 'login'): ?>
+<?php if ($p === 'login'): ?>
 <main class="auth">
   <form method="post" class="card">
     <img src="<?= e(preview_url($content['settings']['logo'])) ?>" alt="" class="auth-logo">
-    <h1><?= $p === 'setup' ? 'Админ үүсгэх' : 'Админ нэвтрэх' ?></h1>
-    <?php if ($p === 'setup'): ?><p class="muted">Анх удаа нэвтэрч байна. Админы нэвтрэх нэр, нууц үгээ үүсгэнэ үү.</p><?php endif; ?>
+    <h1>Админ нэвтрэх</h1>
     <?php if ($error): ?><div class="alert err"><?= e($error) ?></div><?php endif; ?>
     <?= $csrfField ?>
     <div class="field"><label>Нэвтрэх нэр</label><input name="user" required autofocus autocomplete="username" value="<?= e($_POST['user'] ?? '') ?>"></div>
-    <div class="field"><label>Нууц үг</label><input type="password" name="pass" required autocomplete="<?= $p === 'setup' ? 'new-password' : 'current-password' ?>"></div>
-    <?php if ($p === 'setup'): ?><div class="field"><label>Нууц үг давтах</label><input type="password" name="pass2" required autocomplete="new-password"></div><?php endif; ?>
-    <button class="btn primary wide"><?= $p === 'setup' ? 'Үүсгэх' : 'Нэвтрэх' ?></button>
+    <div class="field"><label>Нууц үг</label><input type="password" name="pass" required autocomplete="current-password"></div>
+    <button class="btn primary wide">Нэвтрэх</button>
     <a class="muted back" href="../">← Сайт руу буцах</a>
   </form>
 </main>

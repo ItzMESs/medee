@@ -1,7 +1,7 @@
 <?php
 $page = 'news'; $title = 'Мэдээ, мэдээлэл';
 require_once __DIR__ . '/inc/store.php';
-$content = store_load();
+$content = load_site();
 $item = isset($_GET['id']) ? find_item($content['news'], (string) $_GET['id']) : null;
 if (isset($_GET['id']) && !$item) { http_response_code(404); }
 if ($item) $title = $item['title'];

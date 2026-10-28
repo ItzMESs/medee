@@ -1,6 +1,6 @@
 <?php
 require_once __DIR__ . '/store.php';
-$content = store_load();
+$content = $content ?? load_site();
 $site = $content['settings'];
 $page = $page ?? 'home';
 $title = $title ?? '';
