@@ -75,8 +75,9 @@ h1, h2, h3, h4 { font-weight: 700; color: var(--dark); margin: 0 0 16px; }
 .slide.active .slide-side { animation-delay: .55s; }
 @keyframes rise { from { opacity: 0; transform: translateY(30px); } to { opacity: 1; transform: none; } }
 .hero-big { position: absolute; z-index: 2; left: 0; right: 0; top: 14%; display: flex; flex-direction: column; align-items: center; pointer-events: none; user-select: none; overflow: hidden; }
-.hero-big-text { font-size: min(17vw, 240px); font-weight: 900; letter-spacing: .03em; line-height: .8; color: transparent; -webkit-text-stroke: 2px rgba(255, 255, 255, .55); white-space: nowrap; }
-.hero-big-sub { margin-top: 22px; padding-left: .45em; font-size: min(1.3vw, 18px); font-weight: 700; letter-spacing: .45em; color: rgba(255, 255, 255, .85); white-space: nowrap; }
+.hero-big-text { display: block; width: min(50vw, 720px); height: auto; overflow: visible; }
+.hero-big-text text { font-size: 250px; font-weight: 900; letter-spacing: 8px; fill: #fff; }
+.hero-big-sub { margin-top: 18px; padding-left: .45em; font-size: min(1.3vw, 18px); font-weight: 700; letter-spacing: .45em; color: rgba(255, 255, 255, .85); white-space: nowrap; }
 .hero-dots { position: absolute; z-index: 4; bottom: 34px; left: 0; right: 0; display: flex; justify-content: center; gap: 10px; }
 .hero-dots button { width: 12px; height: 12px; border-radius: 50%; border: 2px solid #fff; background: transparent; cursor: pointer; padding: 0; }
 .hero-dots button.active { background: var(--yellow); border-color: var(--yellow); }

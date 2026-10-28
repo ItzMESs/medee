@@ -21,7 +21,18 @@ $slides = $content['slides'];
   <?php endforeach; ?>
   <?php if (trim($home['hero_big']) !== ''): ?>
   <div class="hero-big" aria-hidden="true">
-    <span class="hero-big-text"><?= e($home['hero_big']) ?></span>
+    <!-- Тойм зураасыг SVG шүүлтүүрээр зурна: фонтын давхцсан хэлбэрийн дотоод зураас гарахгүй -->
+    <svg class="hero-big-text" viewBox="0 0 1000 250" preserveAspectRatio="xMidYMid meet">
+      <defs>
+        <filter id="heroOutline" x="-5%" y="-5%" width="110%" height="110%">
+          <feMorphology in="SourceAlpha" operator="dilate" radius="2.5" result="grow"/>
+          <feComposite in="grow" in2="SourceAlpha" operator="out" result="ring"/>
+          <feFlood flood-color="#fff" flood-opacity=".6"/>
+          <feComposite in2="ring" operator="in"/>
+        </filter>
+      </defs>
+      <text x="500" y="215" text-anchor="middle" filter="url(#heroOutline)"><?= e($home['hero_big']) ?></text>
+    </svg>
     <?php if (trim($home['hero_big_sub']) !== ''): ?><span class="hero-big-sub"><?= e($home['hero_big_sub']) ?></span><?php endif; ?>
   </div>
   <?php endif; ?>

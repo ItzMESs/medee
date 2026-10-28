@@ -71,3 +71,21 @@
     if (ev.key === 'ArrowRight') open(index + 1);
   });
 })();
+
+// Нүүрний том тойм үсгийн SVG хэмжээг текстэд нь тааруулна
+(function () {
+  var svg = document.querySelector('.hero-big-text');
+  if (!svg) return;
+  function fit() {
+    var box = svg.querySelector('text').getBBox();
+    if (!box.width) return;
+    // Өндрийг том үсгийн өндрөөр (фонтын хэмжээний ~72%) авч, доод сул зайг хасна
+    var text = svg.querySelector('text');
+    var size = parseFloat(getComputedStyle(text).fontSize) || 250;
+    var baseline = Number(text.getAttribute('y'));
+    var cap = size * 0.72, pad = 8;
+    svg.setAttribute('viewBox', [box.x - pad, baseline - cap - pad, box.width + pad * 2, cap + pad * 2].join(' '));
+  }
+  fit();
+  if (document.fonts && document.fonts.ready) document.fonts.ready.then(fit);
+})();
