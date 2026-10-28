@@ -123,7 +123,6 @@ function store_defaults() {
             'email'       => 'info@example.mn',
             'address'     => 'Монгол улс, Улаанбаатар хот',
             'facebook'    => 'https://www.facebook.com/',
-            'english_url' => '#',
             'mail_to'     => 'info@example.mn',
             'developer'   => '',
         ],

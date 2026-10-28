@@ -72,7 +72,6 @@ $PAGES = [
         'email'       => ['И-мэйл', 'text'],
         'address'     => ['Хаяг', 'textarea'],
         'facebook'    => ['Facebook хуудас', 'url'],
-        'english_url' => ['Англи хувилбарын холбоос', 'url'],
         'mail_to'     => ['Санал хүсэлт хүлээн авах и-мэйл', 'text'],
         'developer'   => ['Вэб хөгжүүлэгч (footer-т харагдана, хоосон байж болно)', 'text'],
     ]],
