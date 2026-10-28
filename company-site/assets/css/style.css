@@ -188,13 +188,17 @@ h1, h2, h3, h4 { font-weight: 700; color: var(--dark); margin: 0 0 16px; }
   .sub { position: static; opacity: 1; visibility: visible; transform: none; box-shadow: none; background: transparent; display: none; padding: 0 0 6px 14px; }
   .has-sub.open .sub { display: block; }
   .sub a { color: #555; }
-  .slide-content { padding-bottom: 90px; }
-  .slide h1 { font-size: 42px; }
-  .slide p { font-size: 18px; }
+  .hero { height: 62vh; min-height: 400px; max-height: 560px; margin-top: 65px; }
+  .slide-content { padding-bottom: 46px; }
+  .slide h1 { font-size: 40px; margin-bottom: 12px; letter-spacing: 0; }
+  .slide p { font-size: 15px; line-height: 1.45; }
+  .hero-dots { bottom: 16px; }
+  .hero-dots button { width: 9px; height: 9px; }
   .grid-3, .about-grid, .op-row { grid-template-columns: 1fr; }
   .op-row.rev img { order: 0; }
   .grid-3 { gap: 40px; }
-  .services { padding: 50px 0 60px; }
+  .services { padding: 40px 0 60px; }
+  .service h2 { font-size: 30px; padding-bottom: 14px; margin-bottom: 20px; border-bottom-width: 2px; }
   .service p, .about-text p { font-size: 14px; line-height: 1.8; }
   .about { padding: 60px 0; }
   .about-grid { gap: 30px; }
@@ -210,6 +214,7 @@ h1, h2, h3, h4 { font-weight: 700; color: var(--dark); margin: 0 0 16px; }
 @media (max-width: 520px) {
   .footer-grid { grid-template-columns: 1fr; }
   .slide h1 { font-size: 34px; }
+  .hero { height: 56vh; min-height: 360px; }
 }
 
 /* Мэдээний дэлгэрэнгүй, баримт бичиг */
