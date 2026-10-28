@@ -9,13 +9,13 @@ const UPLOAD_DIR = __DIR__ . '/../uploads';
 const LIST_COLUMNS = [
     'slides'   => ['image', 'title', 'text'],
     'services' => ['title', 'image', 'text'],
-    'news'     => ['date', 'title', 'image', 'body'],
-    'docs'     => ['category', 'date', 'title', 'body', 'file'],
+    'projects' => ['year', 'title', 'location', 'image', 'body'],
+    'gallery'  => ['image', 'title'],
     'jobs'     => ['title', 'location', 'type', 'body'],
 ];
 const PAGE_SECTIONS = ['settings', 'home', 'about', 'careers'];
 // Анхны агуулга өөрчлөгдөх бүрт нэмэгдүүлнэ (inc/upgrade.php)
-const CONTENT_VERSION = 2;
+const CONTENT_VERSION = 3;
 
 if (!function_exists('e')) {
     function e($s) { return htmlspecialchars((string) $s, ENT_QUOTES, 'UTF-8'); }
@@ -76,21 +76,25 @@ function t($name) {
 }
 
 // Хүснэгтүүдийг үүсгэж, хоосон бол анхны агуулгаар дүүргэнэ
-function db_install() {
+function db_create_tables() {
     $opts = 'ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci';
     $item = '`id` VARCHAR(16) NOT NULL PRIMARY KEY, `sort` INT NOT NULL DEFAULT 0, `created_at` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP';
     $sql = [
         "CREATE TABLE IF NOT EXISTS " . t('settings') . " (`section` VARCHAR(32) NOT NULL, `field` VARCHAR(64) NOT NULL, `value` MEDIUMTEXT NOT NULL, PRIMARY KEY (`section`, `field`)) $opts",
         "CREATE TABLE IF NOT EXISTS " . t('slides') . " ($item, `image` VARCHAR(255) NOT NULL DEFAULT '', `title` VARCHAR(255) NOT NULL DEFAULT '', `text` TEXT NOT NULL) $opts",
         "CREATE TABLE IF NOT EXISTS " . t('services') . " ($item, `title` VARCHAR(255) NOT NULL DEFAULT '', `image` VARCHAR(255) NOT NULL DEFAULT '', `text` TEXT NOT NULL) $opts",
-        "CREATE TABLE IF NOT EXISTS " . t('news') . " ($item, `date` DATE NOT NULL, `title` VARCHAR(255) NOT NULL DEFAULT '', `image` VARCHAR(255) NOT NULL DEFAULT '', `body` MEDIUMTEXT NOT NULL, KEY `date` (`date`)) $opts",
-        "CREATE TABLE IF NOT EXISTS " . t('docs') . " ($item, `category` VARCHAR(32) NOT NULL DEFAULT '', `date` DATE NOT NULL, `title` VARCHAR(255) NOT NULL DEFAULT '', `body` TEXT NOT NULL, `file` VARCHAR(255) NOT NULL DEFAULT '') $opts",
+        "CREATE TABLE IF NOT EXISTS " . t('projects') . " ($item, `year` VARCHAR(32) NOT NULL DEFAULT '', `title` VARCHAR(255) NOT NULL DEFAULT '', `location` VARCHAR(255) NOT NULL DEFAULT '', `image` VARCHAR(255) NOT NULL DEFAULT '', `body` MEDIUMTEXT NOT NULL) $opts",
+        "CREATE TABLE IF NOT EXISTS " . t('gallery') . " ($item, `image` VARCHAR(255) NOT NULL DEFAULT '', `title` VARCHAR(255) NOT NULL DEFAULT '') $opts",
         "CREATE TABLE IF NOT EXISTS " . t('jobs') . " ($item, `title` VARCHAR(255) NOT NULL DEFAULT '', `location` VARCHAR(255) NOT NULL DEFAULT '', `type` VARCHAR(255) NOT NULL DEFAULT '', `body` MEDIUMTEXT NOT NULL) $opts",
         "CREATE TABLE IF NOT EXISTS " . t('messages') . " (`id` INT UNSIGNED NOT NULL AUTO_INCREMENT PRIMARY KEY, `created_at` DATETIME NOT NULL, `is_read` TINYINT(1) NOT NULL DEFAULT 0, `name` VARCHAR(100) NOT NULL, `email` VARCHAR(150) NOT NULL, `phone` VARCHAR(30) NOT NULL DEFAULT '', `message` TEXT NOT NULL, `ip` VARCHAR(45) NOT NULL DEFAULT '') $opts",
         "CREATE TABLE IF NOT EXISTS " . t('admins') . " (`id` INT UNSIGNED NOT NULL AUTO_INCREMENT PRIMARY KEY, `username` VARCHAR(64) NOT NULL UNIQUE, `password_hash` VARCHAR(255) NOT NULL, `created_at` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP) $opts",
         "CREATE TABLE IF NOT EXISTS " . t('login_attempts') . " (`ip` VARCHAR(45) NOT NULL PRIMARY KEY, `attempts` INT NOT NULL, `last_at` INT NOT NULL) $opts",
     ];
     foreach ($sql as $q) db()->exec($q);
+}
+
+function db_install() {
+    db_create_tables();
 
     $defaults = store_defaults();
     if (!db()->query('SELECT COUNT(*) FROM ' . t('settings'))->fetchColumn()) {
@@ -163,8 +167,18 @@ function store_defaults() {
             ['id' => 'o2', 'title' => 'ЗАСВАР АРЧЛАЛТ', 'image' => 'assets/img/road-maintenance.svg', 'text' => "Хатуу хучилттай болон хайрган хучилттай авто зам, замын байгууламжийн засвар, арчлалтын ажлыг гүйцэтгэдэг.\n\n- Хатуу хучилттай болон хайрган хучилттай зам засварлах\n- Замын байгууламжид хамаарах талбай засварлах\n- Тавилан засварлах"],
             ['id' => 'o3', 'title' => 'ТЕХНИК ХЯНАЛТ', 'image' => 'assets/img/supervision.svg', 'text' => "Авто зам, замын байгууламжийг барих, засварлахад техник, технологийн хяналт тавих зөвлөх үйлчилгээ үзүүлдэг.\n\nХэнтий аймгийн Өндөрхаан – Норовлин чиглэлийн 200 км хатуу хучилттай авто замын техник технологийн хяналтыг гүйцэтгэж байна."],
         ],
-        'news' => [],
-        'docs' => [],
+        'projects' => [
+            ['id' => 'p1', 'year' => '2022–2024', 'title' => 'Өндөрхаан – Норовлин чиглэлийн 200 км авто замын техник хяналт', 'location' => 'Хэнтий аймаг', 'image' => 'assets/img/supervision.svg', 'body' => "Өндөрхаан – Норовлин чиглэлийн 200 км хатуу хучилттай авто замын техник технологийн хяналт.\n\n- 2022 он: Багц 1-р хэсгийн 68.6 км\n- 2023 он: Багц 2-р хэсгийн 62 км\n- 2024 он: Багц 1, 2-р хэсгийн 130 км"],
+            ['id' => 'p2', 'year' => '2022', 'title' => 'Зүүнбаян – Ханги чиглэлийн төмөр замын доод бүтэц', 'location' => 'Дорноговь аймаг', 'image' => 'assets/img/supervision.svg', 'body' => 'Зүүнбаян – Ханги чиглэлийн төмөр замын доод бүтцийн ажлын ПК97+000 – ПК105+000-д "Диамонд Рөүд" ХХК-д инженерийн үйлчилгээ үзүүлсэн.'],
+            ['id' => 'p3', 'year' => '2020–2021', 'title' => 'Цогтцэций – Гашуун сухайт чиглэлийн хүнд даацын авто зам', 'location' => 'Өмнөговь аймаг', 'image' => 'assets/img/road-construction.svg', 'body' => 'Цогтцэций – Гашуун сухайт чиглэлийн хүнд даацын хатуу хучилттай авто замын ПК160+000 – ПК190+000-д "Мотор сервис" ХХК-д инженерийн үйлчилгээ үзүүлсэн.'],
+            ['id' => 'p4', 'year' => '2020', 'title' => 'Тавантолгой – Зүүнбаян төмөр замын суурь бүтэц', 'location' => 'Өмнөговь, Дорноговь аймаг', 'image' => 'assets/img/road-construction.svg', 'body' => 'Тавантолгойн нүүрсний уурхайгаас Зүүнбаян сум хүртэлх төмөр замын суурь бүтцийн ажлын 317 км-ээс 322 км хоорондох суурь бүтцийн ажлыг хийж гүйцэтгэсэн.'],
+            ['id' => 'p5', 'year' => '2019', 'title' => 'Мандалговь нисэх онгоцны буудлын перроны өргөтгөл', 'location' => 'Дундговь аймаг', 'image' => 'assets/img/road-construction.svg', 'body' => 'Мандалговь нисэх онгоцны буудлын перроны өргөтгөлийн ажлыг хийж гүйцэтгэсэн.'],
+            ['id' => 'p6', 'year' => '2019', 'title' => 'А0201, А0202 чиглэлийн авто замын засвар арчлалт', 'location' => 'Төв, Дундговь, Өмнөговь аймаг', 'image' => 'assets/img/road-maintenance.svg', 'body' => 'А0202 дугаартай Мандалговь – Даланзадгад чиглэлийн авто зам, А0201 дугаартай Улаанбаатар – Мандалговь чиглэлийн авто замын хучилтын засвар арчлалтын ажлыг хийж гүйцэтгэсэн.'],
+            ['id' => 'p7', 'year' => '2018', 'title' => 'Горхи-Тэрэлж – Амбан олом 5.4 км авто замын зураг төсөл', 'location' => 'Төв аймаг', 'image' => 'assets/img/road-construction.svg', 'body' => '"Асралт Групп" ХХК-ийн захиалгаар Горхи Тэрэлжээс Амбан олом хүртэлх 5.4 км хатуу хучилттай авто замын ажлын зураг төслийг иж бүрнээр хийж гүйцэтгэсэн.'],
+            ['id' => 'p8', 'year' => '2017–2019', 'title' => 'Сүхбаатар сумын 1.8 км хатуу хучилттай авто зам', 'location' => 'Сүхбаатар аймаг', 'image' => 'assets/img/road-construction.svg', 'body' => 'Сүхбаатар аймгийн Сүхбаатар сумын 1.8 км хатуу хучилттай авто замын ажлыг хийж гүйцэтгэсэн.'],
+            ['id' => 'p9', 'year' => '2017', 'title' => 'Хангайн даваа – Өгий нуур чиглэлийн авто замын засвар арчлалт', 'location' => 'Архангай аймаг', 'image' => 'assets/img/road-maintenance.svg', 'body' => 'Хангайн даваа – Өгий нуур чиглэлийн хатуу хучилттай авто замын засвар арчлалтын ажлыг хийж гүйцэтгэсэн.'],
+        ],
+        'gallery' => [],
         'jobs' => [],
     ];
 }
@@ -180,7 +194,7 @@ function store_load() {
     }
     if ($version < CONTENT_VERSION) {
         require_once __DIR__ . '/upgrade.php';
-        content_upgrade();
+        content_upgrade($version);
         return store_load();
     }
     // Устгагдсан хуучин лого файлуудыг одоогийн лого руу шилжүүлнэ

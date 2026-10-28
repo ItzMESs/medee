@@ -45,3 +45,29 @@
     items.forEach(function (el) { el.classList.add('visible'); });
   }
 })();
+
+// Зургийн цомгийн томруулж харах цонх
+(function () {
+  var box = document.getElementById('lightbox');
+  if (!box) return;
+  var items = Array.prototype.slice.call(document.querySelectorAll('.gallery-item'));
+  var img = box.querySelector('img'), cap = box.querySelector('figcaption'), index = 0;
+  function open(i) {
+    index = (i + items.length) % items.length;
+    img.src = items[index].getAttribute('href');
+    cap.textContent = items[index].getAttribute('data-caption') || '';
+    box.hidden = false;
+  }
+  function close() { box.hidden = true; img.src = ''; }
+  items.forEach(function (a, i) { a.addEventListener('click', function (ev) { ev.preventDefault(); open(i); }); });
+  box.querySelector('.lb-close').addEventListener('click', close);
+  box.querySelector('.lb-prev').addEventListener('click', function () { open(index - 1); });
+  box.querySelector('.lb-next').addEventListener('click', function () { open(index + 1); });
+  box.addEventListener('click', function (ev) { if (ev.target === box) close(); });
+  document.addEventListener('keydown', function (ev) {
+    if (box.hidden) return;
+    if (ev.key === 'Escape') close();
+    if (ev.key === 'ArrowLeft') open(index - 1);
+    if (ev.key === 'ArrowRight') open(index + 1);
+  });
+})();

@@ -105,3 +105,8 @@ h2 { font-size: 17px; margin: 0 0 12px; }
 .install details { margin-bottom: 8px; }
 .install summary { cursor: pointer; margin-bottom: 10px; }
 .auth .field { margin-bottom: 12px; }
+
+/* Олон зураг хуулах */
+.bulk { display: flex; flex-wrap: wrap; align-items: center; gap: 12px; margin-bottom: 14px; }
+.bulk label { display: flex; flex-direction: column; gap: 6px; flex: 1; min-width: 220px; }
+.bulk small { width: 100%; }

@@ -8,10 +8,9 @@ $menu = [
     'home'       => ['НҮҮР', 'index.php'],
     'about'      => ['БИДНИЙ ТУХАЙ', 'about.php'],
     'operations' => ['ҮЙЛ АЖИЛЛАГАА', 'operations.php'],
-    'news'       => ['МЭДЭЭ, МЭДЭЭЛЭЛ', 'news.php', [
-        ['Мэдээ', 'news.php'],
-        ['Тайлан', 'news.php#tailan'],
-        ['Худалдан авалт', 'news.php#hudaldan-avalt'],
+    'news'       => ['МЭДЭЭ, МЭДЭЭЛЭЛ', 'projects.php', [
+        ['Төсөл', 'projects.php'],
+        ['Зургийн цомог', 'gallery.php'],
     ]],
     'careers'    => ['ХҮНИЙ НӨӨЦ', 'careers.php'],
 ];

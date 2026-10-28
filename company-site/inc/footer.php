@@ -5,7 +5,8 @@
       <ul class="footer-links">
         <li><a href="about.php">БИДНИЙ ТУХАЙ</a></li>
         <li><a href="operations.php">ҮЙЛ АЖИЛЛАГАА</a></li>
-        <li><a href="news.php">МЭДЭЭ, МЭДЭЭЛЭЛ</a></li>
+        <li><a href="projects.php">ТӨСӨЛ</a></li>
+        <li><a href="gallery.php">ЗУРГИЙН ЦОМОГ</a></li>
         <li><a href="careers.php">ХҮНИЙ НӨӨЦ</a></li>
         <li><a href="contact.php">ХОЛБОО БАРИХ</a></li>
       </ul>

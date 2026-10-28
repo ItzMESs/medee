@@ -64,7 +64,19 @@ function store_defaults_v1() {
 
 // Админаас өөрчлөгдөөгүй (анхны хэвээрээ) агуулгыг шинэ анхны агуулгаар солино.
 // Хэрэглэгчийн өөрөө засварласан эсвэл нэмсэн зүйлд хүрэхгүй.
-function content_upgrade() {
+function content_upgrade($from) {
+    if ($from < 3) db_create_tables();
+    if ($from < 2) content_upgrade_v1();
+    if ($from < 3) {
+        // Мэдээ, тайлангийн оронд төсөл, зургийн цомог нэмэгдсэн
+        if (!db()->query('SELECT COUNT(*) FROM ' . t('projects'))->fetchColumn()) {
+            foreach (store_defaults()['projects'] as $it) store_save_item('projects', $it, true);
+        }
+    }
+    content_version_save();
+}
+
+function content_upgrade_v1() {
     $old = store_defaults_v1();
     $new = store_defaults();
     // Анхны хувилбарын "Алсын хараа" уул уурхайн тухай байсан
@@ -83,7 +95,7 @@ function content_upgrade() {
     }
 
     foreach (LIST_COLUMNS as $list => $cols) {
-        $oldRows = array_column($old[$list], null, 'id');
+        $oldRows = array_column($old[$list] ?? [], null, 'id');
         $newRows = array_column($new[$list], null, 'id');
         foreach (db()->query('SELECT * FROM ' . t($list))->fetchAll() as $row) {
             if (!isset($oldRows[$row['id']])) continue;
@@ -94,5 +106,4 @@ function content_upgrade() {
             else store_delete_item($list, $row['id']);
         }
     }
-    content_version_save();
 }

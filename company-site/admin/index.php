@@ -21,18 +21,16 @@ $LISTS = [
         'image' => ['Зураг', 'image'],
         'text'  => ['Тайлбар', 'textarea'],
     ]],
-    'news' => ['label' => 'Мэдээ', 'icon' => '📰', 'fields' => [
-        'date'  => ['Огноо', 'date'],
-        'title' => ['Гарчиг', 'text', 'required'],
-        'image' => ['Нүүр зураг', 'image'],
-        'body'  => ['Агуулга', 'textarea_big'],
+    'projects' => ['label' => 'Төсөл', 'icon' => '🛣', 'fields' => [
+        'title'    => ['Төслийн нэр', 'text', 'required'],
+        'year'     => ['Он (жишээ нь 2023 эсвэл 2022–2024)', 'text'],
+        'location' => ['Байршил', 'text'],
+        'image'    => ['Зураг', 'image'],
+        'body'     => ['Тайлбар', 'textarea_big'],
     ]],
-    'docs' => ['label' => 'Тайлан, худалдан авалт', 'icon' => '📄', 'fields' => [
-        'category' => ['Ангилал', 'select', ['tailan' => 'Тайлан', 'hudaldan-avalt' => 'Худалдан авалт']],
-        'date'     => ['Огноо', 'date'],
-        'title'    => ['Гарчиг', 'text', 'required'],
-        'body'     => ['Тайлбар', 'textarea'],
-        'file'     => ['Файл (PDF, Word, Excel, PowerPoint, ZIP)', 'file'],
+    'gallery' => ['label' => 'Зургийн цомог', 'icon' => '📷', 'fields' => [
+        'image' => ['Зураг', 'image', 'required'],
+        'title' => ['Тайлбар (заавал биш)', 'text'],
     ]],
     'jobs' => ['label' => 'Ажлын байр', 'icon' => '👷', 'fields' => [
         'title'    => ['Албан тушаал', 'text', 'required'],
@@ -134,7 +132,13 @@ function handle_upload($input, $type) {
 // Формын утгуудыг уншина. $old — өмнөх утга. Солигдсон файлуудыг $replaced-д буцаана.
 function collect_fields($fields, $old, &$replaced) {
     foreach ($fields as $key => $def) {
-        if (($def[2] ?? '') === 'required' && trim((string) ($_POST["f_$key"] ?? '')) === '') {
+        if (($def[2] ?? '') !== 'required') continue;
+        if (in_array($def[1], ['image', 'file', 'video'], true)) {
+            $hasFile = isset($_FILES["f_$key"]) && $_FILES["f_$key"]['error'] !== UPLOAD_ERR_NO_FILE;
+            if (!$hasFile && (($old[$key] ?? '') === '' || !empty($_POST["rm_$key"]))) {
+                throw new RuntimeException('"' . $def[0] . '" сонгоно уу.');
+            }
+        } elseif (trim((string) ($_POST["f_$key"] ?? '')) === '') {
             throw new RuntimeException('"' . $def[0] . '" талбарыг бөглөнө үү.');
         }
     }
@@ -247,6 +251,29 @@ if (!$me) {
             $_GET['id'] = $old ? $id : '';
             $formValues = $_POST;
         }
+    }
+
+    // Зургийн цомогт олон зураг нэг дор нэмэх
+    if ($action === 'bulk_gallery') {
+        $files = $_FILES['bulk'] ?? null;
+        $added = 0;
+        $errors = [];
+        if ($files && is_array($files['name'])) {
+            foreach (array_keys($files['name']) as $i) {
+                $_FILES['__one'] = ['name' => $files['name'][$i], 'type' => $files['type'][$i], 'tmp_name' => $files['tmp_name'][$i], 'error' => $files['error'][$i], 'size' => $files['size'][$i]];
+                try {
+                    $path = handle_upload('__one', 'image');
+                    if ($path === null) continue;
+                    store_save_item('gallery', ['id' => bin2hex(random_bytes(4)), 'image' => $path, 'title' => ''], true);
+                    $added++;
+                } catch (RuntimeException $ex) {
+                    $errors[] = $files['name'][$i] . ': ' . $ex->getMessage();
+                }
+            }
+        }
+        if ($errors) flash(($added ? "$added зураг нэмэгдлээ. " : '') . 'Алдаа: ' . implode('; ', $errors), 'err');
+        else flash($added ? "$added зураг нэмэгдлээ." : 'Зураг сонгоогүй байна.', $added ? 'ok' : 'err');
+        redirect('p=list&l=gallery');
     }
 
     if ($action === 'delete_item') {
@@ -407,16 +434,23 @@ $csrfField = '<input type="hidden" name="csrf" value="' . e($_SESSION['csrf']) .
       $l = $_GET['l']; $def = $LISTS[$l]; $items = $content[$l];
       $imgKey = isset($def['fields']['image']); ?>
     <div class="head"><h1><?= e($def['label']) ?></h1><a class="btn primary" href="?p=edit&l=<?= $l ?>">+ Шинэ нэмэх</a></div>
-    <?php if ($l === 'news'): ?><p class="muted">Сайт дээр мэдээ огноогоор (шинэ нь эхэндээ) эрэмбэлэгдэнэ.</p><?php endif; ?>
+    <?php if ($l === 'gallery'): ?>
+    <form method="post" enctype="multipart/form-data" class="card bulk">
+      <?= $csrfField ?><input type="hidden" name="action" value="bulk_gallery">
+      <label><b>Олон зураг нэг дор нэмэх</b><input type="file" name="bulk[]" accept="image/jpeg,image/png,image/webp,image/gif" multiple required></label>
+      <button class="btn primary">Хуулах</button>
+      <small class="muted">Нэг зураг хамгийн ихдээ <?= e(ini_get('upload_max_filesize')) ?>, нэг удаад нийт <?= e(ini_get('post_max_size')) ?>, <?= (int) ini_get('max_file_uploads') ?> хүртэл зураг.</small>
+    </form>
+    <?php endif; ?>
     <?php if (!$items): ?><div class="card empty">Одоогоор хоосон байна. "+ Шинэ нэмэх" товчоор нэмнэ үү.</div><?php endif; ?>
     <div class="rows">
       <?php foreach ($items as $i => $it): ?>
       <div class="row card">
         <?php if ($imgKey): ?><div class="thumb"><?php if ($it['image']): ?><img src="<?= e(preview_url($it['image'])) ?>" alt=""><?php endif; ?></div><?php endif; ?>
         <div class="row-main">
-          <strong><?= e($it['title']) ?></strong>
+          <strong><?= e($it['title'] !== '' ? $it['title'] : '(тайлбаргүй)') ?></strong>
           <span class="muted"><?= e(implode(' · ', array_filter([
-              $it['date'] ?? '',
+              $it['year'] ?? '',
               isset($it['category']) ? ($def['fields']['category'][2][$it['category']] ?? '') : '',
               $it['location'] ?? '',
               !empty($it['file']) ? '📎 ' . basename($it['file']) : '',
@@ -494,7 +528,7 @@ $csrfField = '<input type="hidden" name="csrf" value="' . e($_SESSION['csrf']) .
     </div>
     <div class="card help">
       <h2>Хурдан үйлдэл</h2>
-      <p><a class="btn primary" href="?p=edit&l=news">+ Мэдээ нэмэх</a> <a class="btn" href="?p=edit&l=slides">+ Слайд нэмэх</a> <a class="btn" href="?p=edit&l=jobs">+ Ажлын байр нэмэх</a> <a class="btn" href="?p=edit&l=docs">+ Тайлан нэмэх</a></p>
+      <p><a class="btn primary" href="?p=edit&l=projects">+ Төсөл нэмэх</a> <a class="btn" href="?p=list&l=gallery">+ Зураг нэмэх</a> <a class="btn" href="?p=edit&l=slides">+ Слайд нэмэх</a> <a class="btn" href="?p=edit&l=jobs">+ Ажлын байр нэмэх</a></p>
       <p class="muted">Компанийн нэр, утас, лого зэргийг <a href="?p=page&k=settings">Ерөнхий тохиргоо</a> хэсгээс солино.</p>
     </div>
     <?php endif; ?>
