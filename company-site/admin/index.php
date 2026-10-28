@@ -359,7 +359,7 @@ $csrfField = '<input type="hidden" name="csrf" value="' . e($_SESSION['csrf']) .
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="robots" content="noindex">
 <title>Админ — <?= e($content['settings']['name']) ?></title>
-<link rel="stylesheet" href="admin.css">
+<link rel="stylesheet" href="<?= e('../' . asset('admin/admin.css')) ?>">
 </head>
 <body>
 <?php if ($p === 'login'): ?>

@@ -77,7 +77,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && !$error) {
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="robots" content="noindex">
 <title>Сайт суулгах</title>
-<link rel="stylesheet" href="admin/admin.css">
+<link rel="stylesheet" href="<?= e(asset('admin/admin.css')) ?>">
 </head>
 <body>
 <main class="auth">

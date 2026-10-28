@@ -40,6 +40,6 @@
     <a class="fb" href="<?= e($site['facebook']) ?>" target="_blank" rel="noopener" aria-label="Facebook"><svg viewBox="0 0 24 24" width="18" height="18"><path fill="currentColor" d="M14 8V6c0-.8.2-1.3 1.4-1.3H17V1.2C16.7 1.1 15.6 1 14.4 1 11.8 1 10 2.6 10 5.5V8H7v3.9h3V23h4V11.9h3.1l.5-3.9H14z"/></svg></a>
   </div>
 </footer>
-<script src="assets/js/main.js"></script>
+<script src="<?= e(asset('assets/js/main.js')) ?>"></script>
 </body>
 </html>

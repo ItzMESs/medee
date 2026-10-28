@@ -19,6 +19,12 @@ if (!function_exists('e')) {
     function e($s) { return htmlspecialchars((string) $s, ENT_QUOTES, 'UTF-8'); }
 }
 
+// Файл өөрчлөгдөх бүрт хөтөч шинэ хувилбарыг татахаар ?v= нэмнэ
+function asset($path) {
+    $file = __DIR__ . '/../' . $path;
+    return $path . (is_file($file) ? '?v=' . filemtime($file) : '');
+}
+
 // Мөр хоорондын текстийг догол мөр болгон хэвлэнэ
 function paragraphs($text) {
     $out = '';
