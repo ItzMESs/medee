@@ -188,11 +188,11 @@ h1, h2, h3, h4 { font-weight: 700; color: var(--dark); margin: 0 0 16px; }
   .sub { position: static; opacity: 1; visibility: visible; transform: none; box-shadow: none; background: transparent; display: none; padding: 0 0 6px 14px; }
   .has-sub.open .sub { display: block; }
   .sub a { color: #555; }
-  .hero { height: 50vh; min-height: 330px; max-height: 460px; margin-top: 65px; }
-  .slide-content { padding-bottom: 40px; }
-  .slide h1 { font-size: 34px; margin-bottom: 10px; letter-spacing: 0; }
-  .slide p { font-size: 14px; line-height: 1.45; }
-  .hero-dots { bottom: 16px; }
+  .hero { height: 30vh; min-height: 230px; max-height: 340px; margin-top: 65px; }
+  .slide-content { padding-bottom: 30px; }
+  .slide h1 { font-size: 26px; margin-bottom: 6px; letter-spacing: 0; }
+  .slide p { font-size: 13px; line-height: 1.4; }
+  .hero-dots { bottom: 10px; }
   .hero-dots button { width: 9px; height: 9px; }
   .grid-3, .about-grid, .op-row { grid-template-columns: 1fr; }
   .op-row.rev img { order: 0; }
@@ -213,8 +213,7 @@ h1, h2, h3, h4 { font-weight: 700; color: var(--dark); margin: 0 0 16px; }
 }
 @media (max-width: 520px) {
   .footer-grid { grid-template-columns: 1fr; }
-  .slide h1 { font-size: 30px; }
-  .hero { height: 46vh; min-height: 310px; }
+  .slide h1 { font-size: 24px; }
 }
 
 /* Мэдээний дэлгэрэнгүй, баримт бичиг */
