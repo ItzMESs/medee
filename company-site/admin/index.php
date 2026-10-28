@@ -91,6 +91,16 @@ function redirect($query = '') {
 }
 function flash($msg, $type = 'ok') { $_SESSION['flash'] = [$msg, $type]; }
 function preview_url($path) { return preg_match('~^(https?:)?//~', $path) ? $path : '../' . $path; }
+// "8M" гэх мэт php.ini утгыг байт болгоно
+function ini_bytes($v) {
+    $n = (int) $v;
+    switch (strtoupper(substr(trim($v), -1))) {
+        case 'G': return $n * 1073741824;
+        case 'M': return $n * 1048576;
+        case 'K': return $n * 1024;
+    }
+    return $n;
+}
 function client_ip() { return $_SERVER['REMOTE_ADDR'] ?? '0'; }
 
 function delete_upload($path) {
@@ -390,7 +400,7 @@ $csrfField = '<input type="hidden" name="csrf" value="' . e($_SESSION['csrf']) .
 <title>Админ — <?= e($content['settings']['name']) ?></title>
 <link rel="stylesheet" href="<?= e('../' . asset('admin/admin.css')) ?>">
 </head>
-<body>
+<body data-max-upload="<?= ini_bytes(ini_get('upload_max_filesize')) ?>" data-max-post="<?= ini_bytes(ini_get('post_max_size')) ?>">
 <?php if ($p === 'login'): ?>
 <main class="auth">
   <form method="post" class="card">
@@ -534,5 +544,6 @@ $csrfField = '<input type="hidden" name="csrf" value="' . e($_SESSION['csrf']) .
   </main>
 </div>
 <?php endif; ?>
+<script src="<?= e('../' . asset('admin/admin.js')) ?>"></script>
 </body>
 </html>
