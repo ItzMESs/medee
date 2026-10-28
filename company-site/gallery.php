@@ -3,14 +3,14 @@ $page = 'news'; $title = 'Зургийн цомог';
 require __DIR__ . '/inc/header.php';
 require __DIR__ . '/inc/subpage.php';
 ?>
-<section class="content">
+<section class="content gallery-section">
   <div class="container">
-    <?php if (!$content['gallery']): ?><p>Одоогоор зураг алга.</p><?php endif; ?>
+    <?php if (!$content['gallery']): ?><p class="empty-note">Одоогоор зураг алга.</p><?php endif; ?>
     <div class="gallery">
       <?php foreach ($content['gallery'] as $g): ?>
       <a href="<?= e($g['image']) ?>" class="gallery-item" data-caption="<?= e($g['title']) ?>">
-        <img src="<?= e($g['image']) ?>" alt="<?= e($g['title']) ?>" loading="lazy">
-        <?php if ($g['title'] !== ''): ?><span><?= e($g['title']) ?></span><?php endif; ?>
+        <span class="gallery-img"><img src="<?= e($g['image']) ?>" alt="<?= e($g['title']) ?>" loading="lazy"><i class="zoom" aria-hidden="true"></i></span>
+        <?php if ($g['title'] !== ''): ?><span class="gallery-label"><?= e($g['title']) ?></span><?php endif; ?>
       </a>
       <?php endforeach; ?>
     </div>
