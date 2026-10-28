@@ -27,11 +27,10 @@ h1, h2, h3, h4 { font-weight: 700; color: var(--dark); margin: 0 0 16px; }
 .title-line.light::after { background: #fff; }
 
 /* Толгой хэсэг */
-.site-header { position: fixed; top: 0; left: 0; right: 0; z-index: 100; padding: 36px 0; transition: background .3s, padding .3s; }
-.site-header.scrolled, .site-header.solid { background: rgba(30, 30, 30, .72); padding: 8px 0; backdrop-filter: blur(4px); }
+.site-header { position: fixed; top: 0; left: 0; right: 0; z-index: 100; padding: 16px 0; background: #fff; box-shadow: 0 2px 14px rgba(0,0,0,.08); transition: padding .3s; }
+.site-header.scrolled, .site-header.solid { padding: 6px 0; }
 .header-inner { display: flex; align-items: center; justify-content: space-between; gap: 30px; }
-.brand { display: flex; align-items: center; gap: 12px; color: #1d5a8c; flex-shrink: 0; background: #fff; padding: 8px 16px; border-radius: 6px; box-shadow: 0 2px 12px rgba(0,0,0,.15); transition: padding .3s; }
-.scrolled .brand, .solid .brand { padding: 5px 12px; }
+.brand { display: flex; align-items: center; gap: 12px; color: #1d5a8c; flex-shrink: 0; }
 .brand img { display: block; width: auto; transition: height .3s; }
 .brand-mark { height: 62px; }
 .brand-wordmark { height: 50px; }
@@ -45,9 +44,9 @@ h1, h2, h3, h4 { font-weight: 700; color: var(--dark); margin: 0 0 16px; }
 
 .main-nav > ul { display: flex; align-items: center; list-style: none; margin: 0; padding: 0; gap: 24px; }
 .main-nav > ul > li { position: relative; }
-.main-nav > ul > li > a { display: flex; align-items: center; gap: 4px; color: #fff; font-weight: 700; font-size: 16px; padding: 10px 0; white-space: nowrap; transition: color .2s; }
+.main-nav > ul > li > a { display: flex; align-items: center; gap: 4px; color: #23324a; font-weight: 700; font-size: 16px; padding: 10px 0; white-space: nowrap; transition: color .2s; }
 .scrolled .main-nav > ul > li > a, .solid .main-nav > ul > li > a { font-size: 14px; }
-.main-nav li.active > a, .main-nav > ul > li > a:hover { color: var(--yellow); }
+.main-nav li.active > a, .main-nav > ul > li > a:hover { color: var(--yellow-dark); }
 .main-nav .lang { margin-left: 12px; }
 .main-nav .lang svg { display: block; }
 .sub { position: absolute; top: 100%; left: 0; min-width: 200px; list-style: none; margin: 0; padding: 8px 0; background: #fff; box-shadow: 0 8px 24px rgba(0,0,0,.15); opacity: 0; visibility: hidden; transform: translateY(8px); transition: .2s; }
@@ -55,7 +54,7 @@ h1, h2, h3, h4 { font-weight: 700; color: var(--dark); margin: 0 0 16px; }
 .sub a:hover { background: var(--yellow); color: #fff; }
 .has-sub:hover .sub, .has-sub.open .sub { opacity: 1; visibility: visible; transform: none; }
 .nav-toggle { display: none; background: none; border: 0; padding: 8px; cursor: pointer; }
-.nav-toggle span { display: block; width: 26px; height: 3px; background: #fff; margin: 5px 0; transition: .3s; }
+.nav-toggle span { display: block; width: 26px; height: 3px; background: #23324a; margin: 5px 0; transition: .3s; }
 
 /* Слайдер */
 .hero { position: relative; height: 100vh; min-height: 560px; overflow: hidden; background: #333; }
@@ -171,9 +170,9 @@ h1, h2, h3, h4 { font-weight: 700; color: var(--dark); margin: 0 0 16px; }
 
 /* Утас */
 @media (max-width: 900px) {
-  .site-header { padding: 12px 0; background: rgba(30, 30, 30, .72); }
+  .site-header { padding: 10px 0; }
   .brand-mark, .scrolled .brand-mark, .solid .brand-mark { height: 34px; }
-  .brand, .scrolled .brand, .solid .brand { padding: 5px 10px; gap: 8px; }
+  .brand { gap: 8px; }
   .brand-wordmark, .scrolled .brand-wordmark, .solid .brand-wordmark { height: 28px; }
   .brand-title { font-size: 24px; }
   .brand-sub { font-size: 9px; }
@@ -181,14 +180,14 @@ h1, h2, h3, h4 { font-weight: 700; color: var(--dark); margin: 0 0 16px; }
   .nav-open .nav-toggle span:nth-child(1) { transform: translateY(8px) rotate(45deg); }
   .nav-open .nav-toggle span:nth-child(2) { opacity: 0; }
   .nav-open .nav-toggle span:nth-child(3) { transform: translateY(-8px) rotate(-45deg); }
-  .main-nav { position: absolute; top: 100%; left: 0; right: 0; background: rgba(25, 25, 25, .96); max-height: 0; overflow: hidden; transition: max-height .35s ease; }
+  .main-nav { position: absolute; top: 100%; left: 0; right: 0; background: #fff; box-shadow: 0 10px 20px rgba(0,0,0,.08); max-height: 0; overflow: hidden; transition: max-height .35s ease; }
   .nav-open .main-nav { max-height: 80vh; overflow-y: auto; }
   .main-nav > ul { flex-direction: column; align-items: stretch; gap: 0; padding: 10px 20px 20px; }
-  .main-nav > ul > li > a, .scrolled .main-nav > ul > li > a, .solid .main-nav > ul > li > a { font-size: 15px; padding: 12px 0; border-bottom: 1px solid rgba(255,255,255,.08); justify-content: space-between; }
+  .main-nav > ul > li > a, .scrolled .main-nav > ul > li > a, .solid .main-nav > ul > li > a { font-size: 15px; padding: 12px 0; border-bottom: 1px solid #eee; justify-content: space-between; }
   .main-nav .lang { margin: 10px 0 0; }
   .sub { position: static; opacity: 1; visibility: visible; transform: none; box-shadow: none; background: transparent; display: none; padding: 0 0 6px 14px; }
   .has-sub.open .sub { display: block; }
-  .sub a { color: #ddd; }
+  .sub a { color: #555; }
   .slide-content { padding-bottom: 90px; }
   .slide h1 { font-size: 42px; }
   .slide p { font-size: 18px; }
