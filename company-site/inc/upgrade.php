@@ -66,12 +66,23 @@ function store_defaults_v1() {
 // Хэрэглэгчийн өөрөө засварласан эсвэл нэмсэн зүйлд хүрэхгүй.
 function content_upgrade($from) {
     if ($from < 3) db_create_tables();
+    if ($from < 4) {
+        // Слайдад "том гарчиг" багана нэмэгдсэн
+        $has = db()->query("SHOW COLUMNS FROM " . t('slides') . " LIKE 'headline'")->fetch();
+        if (!$has) db()->exec('ALTER TABLE ' . t('slides') . " ADD `headline` VARCHAR(255) NOT NULL DEFAULT '' AFTER `title`");
+    }
     if ($from < 2) content_upgrade_v1();
     if ($from < 3) {
         // Мэдээ, тайлангийн оронд төсөл, зургийн цомог нэмэгдсэн
         if (!db()->query('SELECT COUNT(*) FROM ' . t('projects'))->fetchColumn()) {
             foreach (store_defaults()['projects'] as $it) store_save_item('projects', $it, true);
         }
+    }
+    if ($from < 4) {
+        // Анхны слайдуудад том гарчиг, эхний слайдад гүүрийн зураг
+        $st = db()->prepare('UPDATE ' . t('slides') . " SET `headline` = ? WHERE `id` = ? AND `title` = ? AND `headline` = ''");
+        foreach (store_defaults()['slides'] as $s) $st->execute([$s['headline'], $s['id'], $s['title']]);
+        db()->exec('UPDATE ' . t('slides') . " SET `image` = 'assets/img/bridge.svg' WHERE `id` = 's1' AND `image` = 'assets/img/hero-1.svg'");
     }
     content_version_save();
 }

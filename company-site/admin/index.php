@@ -12,9 +12,10 @@ header('X-Content-Type-Options: nosniff');
 // Талбар: [нэр, төрөл, сонголтууд/тайлбар]
 $LISTS = [
     'slides' => ['label' => 'Слайдер', 'icon' => '🖼', 'fields' => [
-        'image' => ['Зураг (хэвтээ, 1920×1080 орчим)', 'image'],
-        'title' => ['Гарчиг', 'text', 'required'],
-        'text'  => ['Текст', 'textarea'],
+        'image'    => ['Зураг (хэвтээ, 1920×1080 орчим)', 'image'],
+        'title'    => ['Жижиг шар гарчиг (жишээ нь: АЛСЫН ХАРАА)', 'text', 'required'],
+        'headline' => ['Том гарчиг (хоосон бол жижиг гарчгийг томоор харуулна)', 'text'],
+        'text'     => ['Текст', 'textarea'],
     ]],
     'services' => ['label' => 'Үйл ажиллагаа', 'icon' => '🏗', 'fields' => [
         'title' => ['Нэр', 'text', 'required'],
@@ -44,6 +45,7 @@ $PAGES = [
         'about_title'  => ['"Бидний тухай" хэсгийн гарчиг', 'text'],
         'about_text'   => ['"Бидний тухай" текст', 'textarea_big'],
         'about_image'  => ['"Бидний тухай" зураг', 'image'],
+        'hero_big'     => ['Слайдер дээрх том тойм үсэг (жишээ нь NRBC, хоосон бол харагдахгүй)', 'text'],
         'video_title'  => ['Бичлэгийн гарчиг', 'text'],
         'video_url'    => ['YouTube холбоос (байвал үүнийг харуулна)', 'url'],
         'video_file'   => ['Эсвэл бичлэгийн файл (MP4)', 'video'],

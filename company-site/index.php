@@ -8,11 +8,18 @@ $slides = $content['slides'];
   <?php foreach ($slides as $i => $s): ?>
   <div class="slide<?= $i === 0 ? ' active' : '' ?>" style="background-image:url('<?= e($s['image']) ?>')">
     <div class="container slide-content">
-      <h1><?= e($s['title']) ?></h1>
-      <p><?= e($s['text']) ?></p>
+      <div class="slide-main">
+        <?php if ($s['headline'] !== ''): ?><span class="slide-label"><?= e($s['title']) ?></span><?php endif; ?>
+        <<?= $i === 0 ? 'h1' : 'h2' ?> class="slide-title"><?= e($s['headline'] !== '' ? $s['headline'] : $s['title']) ?></<?= $i === 0 ? 'h1' : 'h2' ?>>
+      </div>
+      <div class="slide-side">
+        <?php if ($s['text'] !== ''): ?><p><?= e($s['text']) ?></p><?php endif; ?>
+        <a href="projects.php" class="btn btn-yellow slide-btn">ТӨСЛҮҮД →</a>
+      </div>
     </div>
   </div>
   <?php endforeach; ?>
+  <?php if (trim($home['hero_big']) !== ''): ?><div class="hero-big" aria-hidden="true"><?= e($home['hero_big']) ?></div><?php endif; ?>
   <?php if (count($slides) > 1): ?>
   <div class="hero-dots">
     <?php foreach ($slides as $i => $s): ?><button class="<?= $i === 0 ? 'active' : '' ?>" aria-label="Слайд <?= $i + 1 ?>"></button><?php endforeach; ?>

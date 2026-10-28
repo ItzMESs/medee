@@ -7,7 +7,7 @@ const UPLOAD_DIR = __DIR__ . '/../uploads';
 
 // Жагсаалт бүрийн хүснэгтийн баганууд
 const LIST_COLUMNS = [
-    'slides'   => ['image', 'title', 'text'],
+    'slides'   => ['image', 'title', 'headline', 'text'],
     'services' => ['title', 'image', 'text'],
     'projects' => ['year', 'title', 'location', 'image', 'body'],
     'gallery'  => ['image', 'title'],
@@ -15,7 +15,7 @@ const LIST_COLUMNS = [
 ];
 const PAGE_SECTIONS = ['settings', 'home', 'about', 'careers'];
 // Анхны агуулга өөрчлөгдөх бүрт нэмэгдүүлнэ (inc/upgrade.php)
-const CONTENT_VERSION = 3;
+const CONTENT_VERSION = 4;
 
 if (!function_exists('e')) {
     function e($s) { return htmlspecialchars((string) $s, ENT_QUOTES, 'UTF-8'); }
@@ -81,7 +81,7 @@ function db_create_tables() {
     $item = '`id` VARCHAR(16) NOT NULL PRIMARY KEY, `sort` INT NOT NULL DEFAULT 0, `created_at` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP';
     $sql = [
         "CREATE TABLE IF NOT EXISTS " . t('settings') . " (`section` VARCHAR(32) NOT NULL, `field` VARCHAR(64) NOT NULL, `value` MEDIUMTEXT NOT NULL, PRIMARY KEY (`section`, `field`)) $opts",
-        "CREATE TABLE IF NOT EXISTS " . t('slides') . " ($item, `image` VARCHAR(255) NOT NULL DEFAULT '', `title` VARCHAR(255) NOT NULL DEFAULT '', `text` TEXT NOT NULL) $opts",
+        "CREATE TABLE IF NOT EXISTS " . t('slides') . " ($item, `image` VARCHAR(255) NOT NULL DEFAULT '', `title` VARCHAR(255) NOT NULL DEFAULT '', `headline` VARCHAR(255) NOT NULL DEFAULT '', `text` TEXT NOT NULL) $opts",
         "CREATE TABLE IF NOT EXISTS " . t('services') . " ($item, `title` VARCHAR(255) NOT NULL DEFAULT '', `image` VARCHAR(255) NOT NULL DEFAULT '', `text` TEXT NOT NULL) $opts",
         "CREATE TABLE IF NOT EXISTS " . t('projects') . " ($item, `year` VARCHAR(32) NOT NULL DEFAULT '', `title` VARCHAR(255) NOT NULL DEFAULT '', `location` VARCHAR(255) NOT NULL DEFAULT '', `image` VARCHAR(255) NOT NULL DEFAULT '', `body` MEDIUMTEXT NOT NULL) $opts",
         "CREATE TABLE IF NOT EXISTS " . t('gallery') . " ($item, `image` VARCHAR(255) NOT NULL DEFAULT '', `title` VARCHAR(255) NOT NULL DEFAULT '') $opts",
@@ -130,6 +130,7 @@ function store_defaults() {
             'about_title' => 'БИДНИЙ ТУХАЙ',
             'about_text'  => $intro,
             'about_image' => 'assets/img/about.svg',
+            'hero_big'    => 'NRBC',
             'video_title' => 'КОМПАНИЙН ТАНИЛЦУУЛГА БИЧЛЭГ',
             'video_file'  => '',
             'video_url'   => '',
@@ -157,9 +158,9 @@ function store_defaults() {
             'policy' => 'Бид ажилтнуудынхаа ур чадварыг тасралтгүй хөгжүүлж, аюулгүй, эрүүл ажлын байр, өрсөлдөхүйц цалин хөлс, нийгмийн баталгааг хангахыг эрхэмлэдэг.',
         ],
         'slides' => [
-            ['id' => 's1', 'image' => 'assets/img/hero-1.svg', 'title' => 'АЛСЫН ХАРАА', 'text' => $vision],
-            ['id' => 's2', 'image' => 'assets/img/hero-2.svg', 'title' => 'ЭРХЭМ ЗОРИЛГО', 'text' => $mission],
-            ['id' => 's3', 'image' => 'assets/img/hero-1.svg', 'title' => 'ҮНЭТ ЗҮЙЛС', 'text' => 'Мэдлэг туршлага, аюулгүй ажиллагаа, мэргэжлийн баг хамт олон, чанартай үйлчилгээ, өндөр хариуцлага.'],
+            ['id' => 's1', 'image' => 'assets/img/bridge.svg', 'title' => 'АЛСЫН ХАРАА', 'headline' => 'Олон улсын жишигт хүрсэн зам, гүүр', 'text' => $vision],
+            ['id' => 's2', 'image' => 'assets/img/hero-2.svg', 'title' => 'ЭРХЭМ ЗОРИЛГО', 'headline' => 'Чанарыг эрхэмлэсэн бүтээн байгуулалт', 'text' => $mission],
+            ['id' => 's3', 'image' => 'assets/img/hero-1.svg', 'title' => 'ҮНЭТ ЗҮЙЛС', 'headline' => 'Мэдлэг, туршлага, хариуцлага', 'text' => 'Мэдлэг туршлага, аюулгүй ажиллагаа, мэргэжлийн баг хамт олон, чанартай үйлчилгээ, өндөр хариуцлага.'],
         ],
         'services' => [
             ['id' => 'o1', 'title' => 'ЗАМ БАРИЛГА', 'image' => 'assets/img/road-construction.svg', 'text' => "Хатуу хучилттай болон хайрган хучилттай авто зам, замын байгууламжийг барих ажлыг гүйцэтгэдэг.\n\n- Хатуу хучилттай зам барих\n- Хайрган хучилттай зам барих\n- Замын байгууламжид хамаарах талбай барих\n- Үерийн хамгаалалтын далан барих\n- Тавилан барих"],
