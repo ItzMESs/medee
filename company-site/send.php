@@ -1,6 +1,7 @@
 <?php
-// Санал хүсэлтийн форм — и-мэйлээр илгээнэ.
-$site = require __DIR__ . '/config.php';
+// Санал хүсэлтийн форм — админ панелд хадгалж, и-мэйлээр бас илгээнэ.
+require __DIR__ . '/inc/store.php';
+$site = store_load()['settings'];
 $back = basename($_POST['back'] ?? 'index.php');
 if (!preg_match('/^[a-z]+\.php$/', $back) || !is_file(__DIR__ . '/' . $back)) $back = 'index.php';
 
@@ -20,9 +21,17 @@ $message = mb_substr(trim((string) ($_POST['message'] ?? '')), 0, 3000);
 
 if ($name === '' || $message === '' || !filter_var($email, FILTER_VALIDATE_EMAIL)) done($back, false);
 
+$messages = json_read('messages', []);
+array_unshift($messages, [
+    'id' => bin2hex(random_bytes(6)), 'date' => date('Y-m-d H:i'), 'read' => false,
+    'name' => $name, 'email' => $email, 'phone' => $phone, 'message' => $message,
+]);
+$saved = json_write('messages', array_slice($messages, 0, 1000));
+
 $body = "Нэр: $name\nИ-мэйл: $email\nУтас: $phone\n\n$message\n";
 $subject = '=?UTF-8?B?' . base64_encode('Санал хүсэлт: ' . $name) . '?=';
 $host = preg_replace('/[^a-z0-9.-]/i', '', $_SERVER['HTTP_HOST'] ?? 'localhost');
 $headers = "From: noreply@$host\r\nReply-To: $email\r\nContent-Type: text/plain; charset=UTF-8\r\n";
 
-done($back, @mail($site['mail_to'], $subject, $body, $headers));
+$mailed = $site['mail_to'] && @mail($site['mail_to'], $subject, $body, $headers);
+done($back, $saved || $mailed);

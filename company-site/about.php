@@ -2,20 +2,20 @@
 $page = 'about'; $title = 'Бидний тухай';
 require __DIR__ . '/inc/header.php';
 require __DIR__ . '/inc/subpage.php';
+$about = $content['about'];
 ?>
 <section class="content">
   <div class="container about-grid">
-    <div class="about-img"><img src="assets/img/about.svg" alt=""></div>
+    <div class="about-img"><img src="<?= e($about['image']) ?>" alt=""></div>
     <div>
-      <h2 class="title-line">КОМПАНИЙН ТАНИЛЦУУЛГА</h2>
-      <p>Манай компани нь 1995 онд үүсгэн байгуулагдсан бөгөөд авто зам барилга, зам арчлалт, уул уурхайн гэрээт олборлолтын чиглэлээр үйл ажиллагаа явуулдаг үндэсний компани юм.</p>
-      <p>Бид орчин үеийн техник технологи, туршлагатай мэргэжилтнүүд, аюулгүй ажиллагааны өндөр стандартаар харилцагчдадаа чанартай үйлчилгээ үзүүлдэг.</p>
+      <h2 class="title-line"><?= e($about['heading']) ?></h2>
+      <?= paragraphs($about['text']) ?>
     </div>
   </div>
   <div class="container grid-3 values">
-    <div class="value"><h3>АЛСЫН ХАРАА</h3><p>Монгол улсын уул уурхайн үйлдвэрлэлийн салбарын шинэчлэлд манлайлагч байж, тэргүүлэх орон зайг эзэлнэ.</p></div>
-    <div class="value"><h3>ЭРХЭМ ЗОРИЛГО</h3><p>Чанартай, аюулгүй, хариуцлагатай ажлаар харилцагч, ажилтан, нийгэмдээ үнэ цэнийг бүтээнэ.</p></div>
-    <div class="value"><h3>ҮНЭТ ЗҮЙЛС</h3><p>Аюулгүй ажиллагаа, багийн ажил, хариуцлага, тасралтгүй хөгжил.</p></div>
+    <div class="value"><h3>АЛСЫН ХАРАА</h3><?= paragraphs($about['vision']) ?></div>
+    <div class="value"><h3>ЭРХЭМ ЗОРИЛГО</h3><?= paragraphs($about['mission']) ?></div>
+    <div class="value"><h3>ҮНЭТ ЗҮЙЛС</h3><?= paragraphs($about['values']) ?></div>
   </div>
 </section>
 <?php require __DIR__ . '/inc/footer.php'; ?>

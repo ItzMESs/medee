@@ -1,8 +1,9 @@
 <?php
-$site = require __DIR__ . '/../config.php';
+require_once __DIR__ . '/store.php';
+$content = store_load();
+$site = $content['settings'];
 $page = $page ?? 'home';
 $title = $title ?? '';
-function e($s) { return htmlspecialchars((string) $s, ENT_QUOTES, 'UTF-8'); }
 $menu = [
     'home'       => ['НҮҮР', 'index.php'],
     'about'      => ['БИДНИЙ ТУХАЙ', 'about.php'],
@@ -40,12 +41,12 @@ $menu = [
     <button class="nav-toggle" id="navToggle" aria-label="Цэс" aria-expanded="false"><span></span><span></span><span></span></button>
     <nav class="main-nav" id="mainNav">
       <ul>
-        <?php foreach ($menu as $key => $item): ?>
-        <li class="<?= $key === $page ? 'active' : '' ?><?= isset($item[2]) ? ' has-sub' : '' ?>">
-          <a href="<?= e($item[1]) ?>"><?= e($item[0]) ?><?php if (isset($item[2])): ?><svg class="chev" viewBox="0 0 10 6" width="10" height="6"><path d="M1 1l4 4 4-4" stroke="currentColor" stroke-width="1.6" fill="none"/></svg><?php endif; ?></a>
-          <?php if (isset($item[2])): ?>
+        <?php foreach ($menu as $key => $mi): ?>
+        <li class="<?= $key === $page ? 'active' : '' ?><?= isset($mi[2]) ? ' has-sub' : '' ?>">
+          <a href="<?= e($mi[1]) ?>"><?= e($mi[0]) ?><?php if (isset($mi[2])): ?><svg class="chev" viewBox="0 0 10 6" width="10" height="6"><path d="M1 1l4 4 4-4" stroke="currentColor" stroke-width="1.6" fill="none"/></svg><?php endif; ?></a>
+          <?php if (isset($mi[2])): ?>
           <ul class="sub">
-            <?php foreach ($item[2] as $sub): ?><li><a href="<?= e($sub[1]) ?>"><?= e($sub[0]) ?></a></li><?php endforeach; ?>
+            <?php foreach ($mi[2] as $sub): ?><li><a href="<?= e($sub[1]) ?>"><?= e($sub[0]) ?></a></li><?php endforeach; ?>
           </ul>
           <?php endif; ?>
         </li>
