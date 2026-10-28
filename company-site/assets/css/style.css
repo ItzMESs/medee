@@ -168,6 +168,14 @@ h1, h2, h3, h4 { font-weight: 700; color: var(--dark); margin: 0 0 16px; }
 }
 
 /* Таблет */
+/* Компьютер дээр слайдер зөвхөн зураг, NRBC бичигтэй намхан хэсэг */
+@media (min-width: 901px) {
+  .hero { height: 62vh; min-height: 420px; max-height: 640px; }
+  .slide-content, .hero-dots { display: none; }
+  .slide::before { background: rgba(10, 18, 32, .45); }
+  .hero-big { top: 50%; transform: translateY(-50%); }
+}
+
 @media (max-width: 1280px) {
   .main-nav > ul { gap: 18px; }
   .main-nav > ul > li > a { font-size: 14px; }
